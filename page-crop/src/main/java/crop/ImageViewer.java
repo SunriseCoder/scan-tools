@@ -6,7 +6,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javafx.application.Application;
 import javafx.geometry.Bounds;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -103,16 +102,16 @@ public class ImageViewer {
         rootPane.setOnKeyPressed(e -> {
             switch (e.getCode()) {
                 case RIGHT:
-                    imageView.setTranslateX(imageView.getTranslateX() + 10);
+                    imagePane.setTranslateX(imagePane.getTranslateX() + 10);
                     break;
                 case LEFT:
-                    imageView.setTranslateX(imageView.getTranslateX() - 10);
+                	imagePane.setTranslateX(imagePane.getTranslateX() - 10);
                     break;
                 case UP:
-                    imageView.setTranslateY(imageView.getTranslateY() - 10);
+                	imagePane.setTranslateY(imagePane.getTranslateY() - 10);
                     break;
                 case DOWN:
-                    imageView.setTranslateY(imageView.getTranslateY() + 10);
+                	imagePane.setTranslateY(imagePane.getTranslateY() + 10);
                     break;
                 default:
                     // Ignore unsupported KeyCode
@@ -121,6 +120,7 @@ public class ImageViewer {
 
         // Rendering the form
         Scene scene = new Scene(rootPane, 300, 250);
+        primaryStage.setMaximized(true);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
