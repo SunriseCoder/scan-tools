@@ -1,14 +1,14 @@
 # Eclipse files
-/.classpath
-/.project
-/.settings/
+.classpath
+.project
+.settings/
 
 # Compiled
 /target/
 *.class
 
 # Data
-/data/
+data/
 /reorder/
 /reorder.bat
 
