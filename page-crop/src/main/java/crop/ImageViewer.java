@@ -18,6 +18,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
+import utils.MathUtils;
 
 public class ImageViewer {
     private static final Color CIRCLE_COLOR = Color.RED;
@@ -148,7 +149,7 @@ public class ImageViewer {
             double circleCenterX = circle.getCenterX();
             double circleCenterY = circle.getCenterY();
 
-            double currentRange = Math.sqrt(Math.pow(x - circleCenterX, 2) + Math.pow(y - circleCenterY, 2));
+            double currentRange = MathUtils.calculateDistance(x - circleCenterX, y - circleCenterY);
             double visibleRadius = circle.getRadius() / scale;
 
             if (currentRange <= visibleRadius && currentRange < foundRange) {
