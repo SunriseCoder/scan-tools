@@ -7,9 +7,6 @@
 target/
 *.class
 
-# Data
-data/
-
 # Log file
 *.log
 
