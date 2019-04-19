@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.shape.Polygon?>
+
+<SplitPane dividerPositions="0.8" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.171">
+    <items>
+        <!-- Left working area -->
+        <Pane fx:id="imagePane">
+            <children>
+                <Rectangle fx:id="rectangle"
+                    fill="TRANSPARENT" />
+                <ImageView fx:id="imageView"
+                    focusTraversable="true" />
+                <Polygon fx:id="polygon" fill="GREEN"
+                    strokeWidth="0" opacity="0.5" />
+            </children>
+        </Pane>
+        <!-- Right panel -->
+        <Rectangle width="200" height="300" />
+    </items>
+</SplitPane>
