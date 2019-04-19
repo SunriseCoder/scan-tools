@@ -12,6 +12,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
@@ -22,6 +23,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import utils.MathUtils;
 
@@ -35,6 +37,8 @@ public class ImageViewer {
     private static final String CIRCLE_NAME_TOP_RIGHT = "TopRight";
     private static final String CIRCLE_NAME_TOP_LEFT = "TopLeft";
 
+    private Stage stage;
+
     private Map<String, ExtCircle> circles;
     private Image image;
 
@@ -47,11 +51,15 @@ public class ImageViewer {
     @FXML
     private Rectangle rectangle;
 
+    @FXML
+    private TextField openFolderTextField;
+
     private double lastMousePosX;
     private double lastMousePosY;
     private double scale = 1;
 
     public void start(Stage primaryStage, String filename) throws Exception {
+        stage = primaryStage;
     	URL resource = getClass().getResource("ImageViewer.fxml");
 		FXMLLoader loader = new FXMLLoader(resource);
     	loader.setController(this);
@@ -339,5 +347,18 @@ public class ImageViewer {
         }
 
         return newY;
+    }
+
+    @FXML
+    public void startChooseFolder() {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Open Folder with Images");
+        File selectedFolder = directoryChooser.showDialog(stage);
+
+        if (selectedFolder == null) {
+            return;
+        }
+
+        openFolderTextField.setText(selectedFolder.getAbsolutePath());
     }
 }
