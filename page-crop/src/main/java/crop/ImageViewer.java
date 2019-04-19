@@ -8,6 +8,7 @@ import java.util.Map;
 
 import javafx.geometry.Bounds;
 import javafx.scene.Scene;
+import javafx.scene.control.SplitPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
@@ -46,10 +47,14 @@ public class ImageViewer {
         String uri = new File(filename).toURI().toString();
         image = new Image(uri);
 
-        Pane rootPane = new Pane();
+        SplitPane splitPane = new SplitPane();
 
+        // Left working area
         imagePane = new Pane();
-        rootPane.getChildren().add(imagePane);
+        splitPane.getItems().add(imagePane);
+
+        // Right panel
+        splitPane.getItems().add(new Rectangle(300, 500));
 
         // This rectangle has border around the image twice bigger than circle radius
         // to prevent imagePane resize during moving the circles
@@ -77,12 +82,12 @@ public class ImageViewer {
         imagePane.getChildren().add(polygon);
 
         // Saving mouse position when the button was pressed
-        rootPane.setOnMousePressed(e -> {
+        imagePane.setOnMousePressed(e -> {
             saveMouseClickPosition(e);
         });
 
         // Handling dragging event when mouse moved after the button is pressed
-        rootPane.setOnMouseDragged(e -> {
+        imagePane.setOnMouseDragged(e -> {
             if (e.getButton().equals(MouseButton.PRIMARY)) {
                 handleImageDrag(e);
             }
@@ -95,12 +100,12 @@ public class ImageViewer {
         });
 
         // Handle scaling event
-        rootPane.setOnScroll(e -> {
+        imagePane.setOnScroll(e -> {
             handleImageScale(e);
         });
 
         // Moving image (or circles) with the keyboard
-        rootPane.setOnKeyPressed(e -> {
+        imagePane.setOnKeyPressed(e -> {
             switch (e.getCode()) {
                 case RIGHT:
                     imagePane.setTranslateX(imagePane.getTranslateX() + 10);
@@ -120,7 +125,7 @@ public class ImageViewer {
         });
 
         // Rendering the form
-        Scene scene = new Scene(rootPane, 300, 250);
+        Scene scene = new Scene(splitPane);
         primaryStage.setMaximized(true);
         primaryStage.setScene(scene);
         primaryStage.show();
