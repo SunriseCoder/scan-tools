@@ -7,11 +7,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javafx.beans.Observable;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -37,11 +41,13 @@ public class ImageViewer {
     private static final String CIRCLE_NAME_TOP_RIGHT = "TopRight";
     private static final String CIRCLE_NAME_TOP_LEFT = "TopLeft";
 
-    private Stage stage;
-
     private Map<String, ExtCircle> circles;
+    private String currentFolderPath;
+
+    private Stage stage;
     private Image image;
 
+    // ImageViewer components
     @FXML
     private Pane imagePane;
     @FXML
@@ -51,30 +57,26 @@ public class ImageViewer {
     @FXML
     private Rectangle rectangle;
 
+    // File operations components
     @FXML
     private TextField openFolderTextField;
+    @FXML
+    private ListView<String> filesListView;
 
     private double lastMousePosX;
     private double lastMousePosY;
     private double scale = 1;
 
-    public void start(Stage primaryStage, String filename) throws Exception {
+    public void start(Stage primaryStage) throws Exception {
         stage = primaryStage;
     	URL resource = getClass().getResource("ImageViewer.fxml");
 		FXMLLoader loader = new FXMLLoader(resource);
     	loader.setController(this);
     	Parent root = loader.load();
 
-    	String uri = new File(filename).toURI().toString();
-        image = new Image(uri);
-        imageView.setImage(image);
-
-        adjustRectangleScale();
-
-        // 4 circles to define points of image crop
-        circles = createCircles(image.getWidth(), image.getHeight());
+    	// 4 circles to define points of image crop
+        circles = createCircles();
         imagePane.getChildren().addAll(circles.values());
-        adjustPolygonBoundaries();
 
         // Saving mouse position when the button was pressed
         imagePane.setOnMousePressed(e -> {
@@ -104,6 +106,10 @@ public class ImageViewer {
             handleMoveViaKeyboard(e);
         });
 
+        filesListView.getSelectionModel().selectedItemProperty().addListener(event -> {
+            handleSelectFile();
+        });
+
         // Rendering the form
         Scene scene = new Scene(root);
         primaryStage.setMaximized(true);
@@ -111,17 +117,17 @@ public class ImageViewer {
         primaryStage.show();
     }
 
-	private Map<String, ExtCircle> createCircles(double width, double height) {
+	private Map<String, ExtCircle> createCircles() {
         Map<String, ExtCircle> circles = new LinkedHashMap<>();
-        circles.put(CIRCLE_NAME_TOP_LEFT, createCircle(CIRCLE_NAME_TOP_LEFT, 0, 0));
-        circles.put(CIRCLE_NAME_TOP_RIGHT, createCircle(CIRCLE_NAME_TOP_RIGHT, width, 0));
-        circles.put(CIRCLE_NAME_BOTTOM_RIGHT, createCircle(CIRCLE_NAME_BOTTOM_RIGHT, width, height));
-        circles.put(CIRCLE_NAME_BOTTOM_LEFT, createCircle(CIRCLE_NAME_BOTTOM_LEFT, 0, height));
+        circles.put(CIRCLE_NAME_TOP_LEFT, createCircle(CIRCLE_NAME_TOP_LEFT));
+        circles.put(CIRCLE_NAME_TOP_RIGHT, createCircle(CIRCLE_NAME_TOP_RIGHT));
+        circles.put(CIRCLE_NAME_BOTTOM_RIGHT, createCircle(CIRCLE_NAME_BOTTOM_RIGHT));
+        circles.put(CIRCLE_NAME_BOTTOM_LEFT, createCircle(CIRCLE_NAME_BOTTOM_LEFT));
         return circles;
     }
 
-    private ExtCircle createCircle(String name, double x, double y) {
-        ExtCircle circle = new ExtCircle(name, x, y, CIRCLE_RADIUS);
+    private ExtCircle createCircle(String name) {
+        ExtCircle circle = new ExtCircle(name, 0, 0, CIRCLE_RADIUS);
         circle.setFill(null);
         circle.setStroke(CIRCLE_COLOR);
         circle.setStrokeWidth(3);
@@ -359,6 +365,31 @@ public class ImageViewer {
             return;
         }
 
-        openFolderTextField.setText(selectedFolder.getAbsolutePath());
+        currentFolderPath = selectedFolder.getAbsolutePath();
+        refreshFileList(selectedFolder);
+    }
+
+    private void refreshFileList(File selectedFolder) {
+        openFolderTextField.setText(currentFolderPath);
+        String[] filenames = selectedFolder.list();
+        ObservableList<String> items = FXCollections.observableArrayList(filenames);
+        filesListView.setItems(items);
+    }
+
+    private void handleSelectFile() {
+        String selectedFilename = filesListView.getSelectionModel().getSelectedItem();
+        String uri = new File(currentFolderPath, selectedFilename).toURI().toString();
+        image = new Image(uri);
+        imageView.setImage(image);
+
+        adjustRectangleScale();
+        adjustCirclePositions();
+    }
+
+    private void adjustCirclePositions() {
+        circles.get(CIRCLE_NAME_TOP_LEFT).setCenter(0, 0);
+        circles.get(CIRCLE_NAME_TOP_RIGHT).setCenter(image.getWidth(), 0);
+        circles.get(CIRCLE_NAME_BOTTOM_RIGHT).setCenter(image.getWidth(), image.getHeight());
+        circles.get(CIRCLE_NAME_BOTTOM_LEFT).setCenter(0, image.getHeight());
     }
 }
