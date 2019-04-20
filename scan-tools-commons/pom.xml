@@ -8,13 +8,6 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>page-rotate</artifactId>
-
-    <dependencies>
-        <dependency>
-            <groupId>sunrisecoder</groupId>
-            <artifactId>scan-tools-commons</artifactId>
-        </dependency>
-    </dependencies>
+    <artifactId>scan-tools-commons</artifactId>
 
 </project>
