@@ -29,7 +29,7 @@
                         <Button onAction="#startChooseFolder" text="Open" HBox.hgrow="NEVER" />
                     </children>
                 </HBox>
-                <ListView prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                <ListView fx:id="filesListView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
                 <Button mnemonicParsing="false" text="Save" VBox.vgrow="NEVER" />
             </children>
         </VBox>
