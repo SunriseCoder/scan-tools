@@ -10,4 +10,11 @@
 
     <artifactId>page-crop</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>sunrisecoder</groupId>
+            <artifactId>scan-tools-commons</artifactId>
+        </dependency>
+    </dependencies>
+
 </project>

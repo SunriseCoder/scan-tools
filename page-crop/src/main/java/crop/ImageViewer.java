@@ -2,12 +2,15 @@ package crop;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import javax.imageio.ImageIO;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -31,6 +34,7 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import utils.FileUtils;
 import utils.MathUtils;
 
 public class ImageViewer {
@@ -44,7 +48,7 @@ public class ImageViewer {
     private static final String CIRCLE_NAME_TOP_LEFT = "TopLeft";
 
     private Map<String, ExtCircle> circles;
-    private String currentFolderPath;
+    private File currentFolder;
     private String currentImageFilename;
 
     private Stage stage;
@@ -362,26 +366,32 @@ public class ImageViewer {
     private void startChooseFolder() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Open Folder with Images");
-        File selectedFolder = directoryChooser.showDialog(stage);
+        File newFolder = directoryChooser.showDialog(stage);
 
-        if (selectedFolder == null) {
+        if (newFolder == null) {
             return;
         }
 
-        currentFolderPath = selectedFolder.getAbsolutePath();
-        refreshFileList(selectedFolder);
+        currentFolder = newFolder;
+        refreshFileList();
     }
 
-    private void refreshFileList(File selectedFolder) {
-        openFolderTextField.setText(currentFolderPath);
-        String[] filenames = selectedFolder.list();
+    private void refreshFileList() {
+        openFolderTextField.setText(currentFolder.getAbsolutePath());
+        String[] filenames = currentFolder.list();
         ObservableList<String> items = FXCollections.observableArrayList(filenames);
         filesListView.setItems(items);
     }
 
     private void handleSelectFile() {
         currentImageFilename = filesListView.getSelectionModel().getSelectedItem();
-        String uri = new File(currentFolderPath, currentImageFilename).toURI().toString();
+
+        // fileListView selection could be empty due to refresh
+        if (currentImageFilename == null) {
+            return;
+        }
+
+        String uri = new File(currentFolder, currentImageFilename).toURI().toString();
         image = new Image(uri);
         imageView.setImage(image);
 
@@ -397,7 +407,7 @@ public class ImageViewer {
     }
 
     @FXML
-    private void saveImage() {
+    private void saveImage() throws IOException {
         // Process Image
         ImageProcessor processor = new ImageProcessor();
         processor.setImage(image);
@@ -405,12 +415,16 @@ public class ImageViewer {
 
         BufferedImage processedBufferedImage = processor.process();
 
-        // TODO Save image to _crop file
-        // ImageIO.write(processedBufferedImage, formatName, output)
+        // Saving Image to _crop file
+        String formatName = FileUtils.getFileExtension(currentImageFilename);
+        String newImageFilename = FileUtils.getFileName(currentImageFilename) + "_crop." + formatName;
+        ImageIO.write(processedBufferedImage, formatName , new File(currentFolder, newImageFilename));
 
-        // TODO Refresh file list on the GUI
+        // Refresh file list on the GUI
+        refreshFileList();
 
-        // TODO select new file in the file tree
+        // Select new file in the file tree
+        filesListView.getSelectionModel().select(newImageFilename);
     }
 
     private List<Point2D> extractBoundaries() {
