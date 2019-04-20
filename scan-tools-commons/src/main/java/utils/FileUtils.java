@@ -7,4 +7,10 @@ public class FileUtils {
         String format = filename.substring(positionOfLastDot + 1);
         return format;
     }
+
+    public static String getFileName(String filename) {
+        int positionOfLastDot = filename.lastIndexOf(".");
+        String name = filename.substring(0, positionOfLastDot);
+        return name;
+    }
 }
