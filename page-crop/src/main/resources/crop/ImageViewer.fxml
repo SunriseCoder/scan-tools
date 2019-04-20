@@ -30,7 +30,7 @@
                     </children>
                 </HBox>
                 <ListView fx:id="filesListView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
-                <Button mnemonicParsing="false" text="Save" VBox.vgrow="NEVER" />
+                <Button onAction="#saveImage" text="Save" VBox.vgrow="NEVER" />
             </children>
         </VBox>
     </items>

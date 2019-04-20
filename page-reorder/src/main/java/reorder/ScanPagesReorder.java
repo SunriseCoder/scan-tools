@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ScanPagesReorder {
+
     public List<Integer> getReorderedList(int amountOfPages) {
         ArrayList<Integer> reorderedList = new ArrayList<Integer>();
 

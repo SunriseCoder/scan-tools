@@ -1,12 +1,10 @@
 package processing;
 
 import java.awt.Color;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -19,6 +17,7 @@ import processing.cleaning.preset.Preset;
 import processing.cleaning.preset.Range;
 import processing.cleaning.preset.Replacement;
 
+@SuppressWarnings(value = { "all" })
 public class ProcessingApp {
 
     public static void main(String[] args) throws IOException {

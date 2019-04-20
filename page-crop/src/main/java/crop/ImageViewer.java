@@ -1,18 +1,20 @@
 package crop;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ListView;
@@ -43,6 +45,7 @@ public class ImageViewer {
 
     private Map<String, ExtCircle> circles;
     private String currentFolderPath;
+    private String currentImageFilename;
 
     private Stage stage;
     private Image image;
@@ -69,12 +72,12 @@ public class ImageViewer {
 
     public void start(Stage primaryStage) throws Exception {
         stage = primaryStage;
-    	URL resource = getClass().getResource("ImageViewer.fxml");
-		FXMLLoader loader = new FXMLLoader(resource);
-    	loader.setController(this);
-    	Parent root = loader.load();
+        URL resource = getClass().getResource("ImageViewer.fxml");
+        FXMLLoader loader = new FXMLLoader(resource);
+        loader.setController(this);
+        Parent root = loader.load();
 
-    	// 4 circles to define points of image crop
+        // 4 circles to define points of image crop
         circles = createCircles();
         imagePane.getChildren().addAll(circles.values());
 
@@ -117,7 +120,7 @@ public class ImageViewer {
         primaryStage.show();
     }
 
-	private Map<String, ExtCircle> createCircles() {
+    private Map<String, ExtCircle> createCircles() {
         Map<String, ExtCircle> circles = new LinkedHashMap<>();
         circles.put(CIRCLE_NAME_TOP_LEFT, createCircle(CIRCLE_NAME_TOP_LEFT));
         circles.put(CIRCLE_NAME_TOP_RIGHT, createCircle(CIRCLE_NAME_TOP_RIGHT));
@@ -267,25 +270,25 @@ public class ImageViewer {
     }
 
     private void handleMoveViaKeyboard(KeyEvent e) {
-		switch (e.getCode()) {
-		    case RIGHT:
-		        imagePane.setTranslateX(imagePane.getTranslateX() + 10);
-		        break;
-		    case LEFT:
-		    	imagePane.setTranslateX(imagePane.getTranslateX() - 10);
-		        break;
-		    case UP:
-		    	imagePane.setTranslateY(imagePane.getTranslateY() - 10);
-		        break;
-		    case DOWN:
-		    	imagePane.setTranslateY(imagePane.getTranslateY() + 10);
-		        break;
-		    default:
-		        // Ignore unsupported KeyCode
-		}
-	}
+        switch (e.getCode()) {
+            case RIGHT:
+                imagePane.setTranslateX(imagePane.getTranslateX() + 10);
+                break;
+            case LEFT:
+                imagePane.setTranslateX(imagePane.getTranslateX() - 10);
+                break;
+            case UP:
+                imagePane.setTranslateY(imagePane.getTranslateY() - 10);
+                break;
+            case DOWN:
+                imagePane.setTranslateY(imagePane.getTranslateY() + 10);
+                break;
+            default:
+                // Ignore unsupported KeyCode
+        }
+    }
 
-	private double getImageCoordinateX(double screenCoordinate) {
+    private double getImageCoordinateX(double screenCoordinate) {
         double sceneOffset = imagePane.getBoundsInParent().getMinX();
         double rectangleOffset = imagePane.getBoundsInLocal().getMinX();
         double result = screenCoordinate / scale - sceneOffset / scale + rectangleOffset;
@@ -356,7 +359,7 @@ public class ImageViewer {
     }
 
     @FXML
-    public void startChooseFolder() {
+    private void startChooseFolder() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Open Folder with Images");
         File selectedFolder = directoryChooser.showDialog(stage);
@@ -377,8 +380,8 @@ public class ImageViewer {
     }
 
     private void handleSelectFile() {
-        String selectedFilename = filesListView.getSelectionModel().getSelectedItem();
-        String uri = new File(currentFolderPath, selectedFilename).toURI().toString();
+        currentImageFilename = filesListView.getSelectionModel().getSelectedItem();
+        String uri = new File(currentFolderPath, currentImageFilename).toURI().toString();
         image = new Image(uri);
         imageView.setImage(image);
 
@@ -391,5 +394,28 @@ public class ImageViewer {
         circles.get(CIRCLE_NAME_TOP_RIGHT).setCenter(image.getWidth(), 0);
         circles.get(CIRCLE_NAME_BOTTOM_RIGHT).setCenter(image.getWidth(), image.getHeight());
         circles.get(CIRCLE_NAME_BOTTOM_LEFT).setCenter(0, image.getHeight());
+    }
+
+    @FXML
+    private void saveImage() {
+        // Process Image
+        ImageProcessor processor = new ImageProcessor();
+        processor.setImage(image);
+        processor.setBoundaries(extractBoundaries());
+
+        BufferedImage processedBufferedImage = processor.process();
+
+        // TODO Save image to _crop file
+        // ImageIO.write(processedBufferedImage, formatName, output)
+
+        // TODO Refresh file list on the GUI
+
+        // TODO select new file in the file tree
+    }
+
+    private List<Point2D> extractBoundaries() {
+        List<Point2D> extractedPoints = circles.values().stream()
+                .map(circle -> new Point2D(circle.getCenterX(), circle.getCenterY())).collect(Collectors.toList());
+        return extractedPoints;
     }
 }
