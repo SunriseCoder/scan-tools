@@ -235,6 +235,11 @@ public class ImageViewer {
     }
 
     private void handleCircleDrag(MouseEvent mouseEvent) {
+        // If image is not initialized yet
+        if (image == null) {
+            return;
+        }
+
         double currentMousePosX = mouseEvent.getSceneX();
         double currentMousePosY = mouseEvent.getSceneY();
 
@@ -408,10 +413,16 @@ public class ImageViewer {
 
     @FXML
     private void saveImage() throws IOException {
+        // TODO Rewrite it with button disabled and enabled when needed
+        // I.e. by default disabled, by select image enabled, by refresh file list disabled
+        if (image == null) {
+            return;
+        }
+
         // Process Image
         ImageProcessor processor = new ImageProcessor();
         processor.setImage(image);
-        processor.setBoundaries(extractBoundaries());
+        processor.setSelectionBoundaries(extractBoundaries());
 
         BufferedImage processedBufferedImage = processor.process();
 
@@ -425,6 +436,8 @@ public class ImageViewer {
 
         // Select new file in the file tree
         filesListView.getSelectionModel().select(newImageFilename);
+
+        // TODO Save boundaries for the Image to the log file
     }
 
     private List<Point2D> extractBoundaries() {
