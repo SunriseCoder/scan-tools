@@ -13,7 +13,7 @@ public class BilinearFilter extends AbstractImageFilter {
         int ceilX = MathUtils.ceilToInt(x);
         int ceilY = MathUtils.ceilToInt(y);
         ceilX = floorX == ceilX ? ceilX + 1 : ceilX;
-        ceilY = floorY == ceilY ? ceilY +1 : ceilX;
+        ceilY = floorY == ceilY ? ceilY + 1 : ceilY;
 
         int colorTopLeft = getRGBFromImage(floorX, floorY);
         int colorTopRight = getRGBFromImage(ceilX, floorY);

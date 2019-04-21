@@ -39,7 +39,7 @@ public class ImageProcessor {
         // Step 3 - Creating empty new Image
         BufferedImage sourceImage = SwingFXUtils.fromFXImage(image, null);
         BufferedImage newImage = new BufferedImage(newImageBoundaries.width, newImageBoundaries.height,
-                sourceImage.getType());
+                BufferedImage.TYPE_INT_RGB);
 
         // Step 4 - Copying all pixels to the newImage
         filter.setImage(sourceImage);

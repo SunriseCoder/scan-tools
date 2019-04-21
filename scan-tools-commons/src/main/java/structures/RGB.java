@@ -21,4 +21,9 @@ public class RGB {
         g += rgb.g;
         b += rgb.b;
     }
+
+    @Override
+    public String toString() {
+        return RGB.class.getSimpleName() + "[r=" + r + ", g=" + g + ", b=" + b + "]";
+    }
 }
