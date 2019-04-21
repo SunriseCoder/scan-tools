@@ -3,6 +3,9 @@ package crop;
 import javafx.scene.shape.Circle;
 
 public class ExtCircle extends Circle {
+    public ExtCircle previous;
+    public ExtCircle next;
+
     private String name;
 
     public ExtCircle(String name) {
@@ -20,7 +23,7 @@ public class ExtCircle extends Circle {
         return name;
     }
 
-    // TODO Review all calls of this method, maybe possible to replace some with #moveBy 
+    // TODO Review all calls of this method, maybe possible to replace some with #moveBy
     public void setCenter(double x, double y) {
         setCenterX(x);
         setCenterY(y);
