@@ -39,7 +39,8 @@ import utils.FileUtils;
 import utils.MathUtils;
 
 public class ImageViewer {
-    private static final Color CIRCLE_COLOR = Color.RED;
+    private static final Color CIRCLE_COLOR_ACTIVE = Color.RED;
+    private static final Color CIRCLE_COLOR_PASSIVE = Color.BLUE;
     private static final double CIRCLE_RADIUS = 40;
 
     // Circle names
@@ -135,17 +136,35 @@ public class ImageViewer {
         circles.put(CIRCLE_NAME_TOP_RIGHT, createCircle(CIRCLE_NAME_TOP_RIGHT));
         circles.put(CIRCLE_NAME_BOTTOM_RIGHT, createCircle(CIRCLE_NAME_BOTTOM_RIGHT));
         circles.put(CIRCLE_NAME_BOTTOM_LEFT, createCircle(CIRCLE_NAME_BOTTOM_LEFT));
+
+        linkCircles(circles);
         return circles;
     }
 
     private ExtCircle createCircle(String name) {
         ExtCircle circle = new ExtCircle(name, 0, 0, CIRCLE_RADIUS);
         circle.setFill(null);
-        circle.setStroke(CIRCLE_COLOR);
+        circle.setStroke(CIRCLE_COLOR_PASSIVE);
         circle.setStrokeWidth(3);
         circle.centerXProperty().addListener(e -> adjustPolygonBoundaries());
         circle.centerYProperty().addListener(e -> adjustPolygonBoundaries());
         return circle;
+    }
+
+    private void linkCircles(Map<String, ExtCircle> circles) {
+        List<ExtCircle> list = new ArrayList<>(circles.values());
+        ExtCircle firstCircle = list.get(0);
+        ExtCircle lastCircle = null;
+        for (int i = 0; i < list.size(); i++) {
+            ExtCircle currentCircle = list.get(i);
+            if (lastCircle != null) {
+                currentCircle.previous = lastCircle;
+                lastCircle.next = currentCircle;
+            }
+            lastCircle = currentCircle;
+        }
+        firstCircle.previous = lastCircle;
+        lastCircle.next = firstCircle;
     }
 
     private ExtCircle findCircle(double x, double y) {
@@ -235,7 +254,7 @@ public class ImageViewer {
         ExtCircle foundCircle = findCircle(posOnImageX, posOnImageY);
 
         if (foundCircle != null) {
-            currentCircle = foundCircle;
+            changeCircle(foundCircle);
         }
     }
 
@@ -325,11 +344,11 @@ public class ImageViewer {
                 break;
             case Q:
             case NUMPAD4:
-                // TODO Previous circle
+                changeCircle(currentCircle.previous);
                 break;
             case E:
             case NUMPAD6:
-                // TODO Next circle
+                changeCircle(currentCircle.next);
                 break;
             case ENTER:
                 saveImage();
@@ -337,6 +356,14 @@ public class ImageViewer {
             default:
                 // Ignore unsupported KeyCode
         }
+    }
+
+    private void changeCircle(ExtCircle next) {
+        if (currentCircle != null) {
+            currentCircle.setStroke(CIRCLE_COLOR_PASSIVE);
+        }
+        next.setStroke(CIRCLE_COLOR_ACTIVE);
+        currentCircle = next;
     }
 
     private double getImageCoordinateX(double screenCoordinate) {
