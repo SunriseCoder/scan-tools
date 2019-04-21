@@ -447,16 +447,17 @@ public class ImageViewer {
         // Saving Image to _crop file
         String formatName = FileUtils.getFileExtension(currentImageFilename);
         String newImageFilename = FileUtils.getFileName(currentImageFilename) + "_crop." + formatName;
+        // TODO ImageIO.write returns false if couldn't save, so be careful, need to inform user
         ImageIO.write(processedBufferedImage, formatName , new File(currentFolder, newImageFilename));
+
+        // Save boundaries for the Image to the log file
+        saveBoundaries(selectionBoundaries);
 
         // Refresh file list on the GUI
         refreshFileList();
 
         // Select new file in the file tree
         filesListView.getSelectionModel().select(newImageFilename);
-
-        // Save boundaries for the Image to the log file
-        saveBoundaries(selectionBoundaries);
     }
 
     private List<Point2D> extractBoundaries() {
