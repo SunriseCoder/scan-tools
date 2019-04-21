@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 
+import crop.filters.RoughFilter;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -438,6 +439,8 @@ public class ImageViewer {
         processor.setImage(image);
         List<Point2D> selectionBoundaries = extractBoundaries();
         processor.setSelectionBoundaries(selectionBoundaries);
+        // TODO This should be rewritten to bilinear interpolation
+        processor.setFilter(new RoughFilter());
 
         BufferedImage processedBufferedImage = processor.process();
 
