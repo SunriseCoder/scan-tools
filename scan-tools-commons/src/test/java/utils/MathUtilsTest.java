@@ -29,4 +29,11 @@ public class MathUtilsTest {
         assertEquals(5, MathUtils.roundToInt((double) 5.3));
         assertEquals(5, MathUtils.roundToInt((double) 4.5));
     }
+
+    @Test
+    public void testAdjustValue() {
+        assertEquals(10, MathUtils.adjustValue(10, 1, 100));
+        assertEquals(10, MathUtils.adjustValue(1, 10, 100));
+        assertEquals(100, MathUtils.adjustValue(150, 1, 100));
+    }
 }

@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 
-import crop.filters.RoughFilter;
+import crop.filters.BilinearFilter;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -71,6 +71,8 @@ public class ImageViewer {
     @FXML
     private ListView<String> filesListView;
 
+    private ExtCircle currentCircle;
+
     private double lastMousePosX;
     private double lastMousePosY;
     private double scale = 1;
@@ -88,7 +90,9 @@ public class ImageViewer {
 
         // Saving mouse position when the button was pressed
         imagePane.setOnMousePressed(e -> {
+            imagePane.requestFocus();
             saveMouseClickPosition(e);
+            setCurrentCircle();
         });
 
         // Handling dragging event when mouse moved after the button is pressed
@@ -145,7 +149,6 @@ public class ImageViewer {
     }
 
     private ExtCircle findCircle(double x, double y) {
-        double foundRange = Double.MAX_VALUE;
         for (ExtCircle circle : circles.values()) {
             double circleCenterX = circle.getCenterX();
             double circleCenterY = circle.getCenterY();
@@ -153,7 +156,7 @@ public class ImageViewer {
             double currentRange = MathUtils.calculateDistance(x - circleCenterX, y - circleCenterY);
             double visibleRadius = circle.getRadius() / scale;
 
-            if (currentRange <= visibleRadius && currentRange < foundRange) {
+            if (currentRange <= visibleRadius) {
                 return circle;
             }
         }
@@ -225,6 +228,17 @@ public class ImageViewer {
         lastMousePosY = mouseEvent.getSceneY();
     }
 
+    private void setCurrentCircle() {
+        double posOnImageX = getImageCoordinateX(lastMousePosX);
+        double posOnImageY = getImageCoordinateY(lastMousePosY);
+
+        ExtCircle foundCircle = findCircle(posOnImageX, posOnImageY);
+
+        if (foundCircle != null) {
+            currentCircle = foundCircle;
+        }
+    }
+
     private void handleImageDrag(MouseEvent mouseEvent) {
         double currentMousePosX = mouseEvent.getSceneX();
         double currentMousePosY = mouseEvent.getSceneY();
@@ -280,18 +294,45 @@ public class ImageViewer {
     }
 
     private void handleMoveViaKeyboard(KeyEvent e) {
+        e.consume();
+
+        if (currentCircle == null) {
+            return;
+        }
+
+        int step = (int) Math.round(1 / scale);
+        step = MathUtils.adjustValue(step, 1, 100);
         switch (e.getCode()) {
             case RIGHT:
-                imagePane.setTranslateX(imagePane.getTranslateX() + 10);
+            case D:
+            case NUMPAD3:
+                currentCircle.moveByX(step);
                 break;
             case LEFT:
-                imagePane.setTranslateX(imagePane.getTranslateX() - 10);
+            case A:
+            case NUMPAD1:
+                currentCircle.moveByX(-step);
                 break;
             case UP:
-                imagePane.setTranslateY(imagePane.getTranslateY() - 10);
+            case W:
+            case NUMPAD5:
+                currentCircle.moveByY(-step);
                 break;
             case DOWN:
-                imagePane.setTranslateY(imagePane.getTranslateY() + 10);
+            case S:
+            case NUMPAD2:
+                currentCircle.moveByY(step);
+                break;
+            case Q:
+            case NUMPAD4:
+                // TODO Previous circle
+                break;
+            case E:
+            case NUMPAD6:
+                // TODO Next circle
+                break;
+            case ENTER:
+                saveImage();
                 break;
             default:
                 // Ignore unsupported KeyCode
@@ -414,9 +455,7 @@ public class ImageViewer {
         adjustCirclesScale();
         adjustCirclePositions();
 
-        // TODO Investigate, why alignment to center of the parent component does not work
-        imagePane.setTranslateX(imagePane.getTranslateX() - imagePane.getBoundsInParent().getMinX() - CIRCLE_RADIUS);
-        imagePane.setTranslateY(imagePane.getTranslateY() - imagePane.getBoundsInParent().getMinY() - CIRCLE_RADIUS);
+        centerImage();
     }
 
     private void adjustCirclePositions() {
@@ -427,9 +466,26 @@ public class ImageViewer {
     }
 
     @FXML
-    private void saveImage() throws IOException {
-        // TODO Rewrite it with button disabled and enabled when needed
-        // I.e. by default disabled, by select image enabled, by refresh file list disabled
+    private void centerImage() {
+        // TODO Investigate, why alignment to center of the parent component does not work
+        imagePane.setTranslateX(imagePane.getTranslateX() - imagePane.getBoundsInParent().getMinX() - CIRCLE_RADIUS);
+        imagePane.setTranslateY(imagePane.getTranslateY() - imagePane.getBoundsInParent().getMinY() - CIRCLE_RADIUS);
+    }
+
+    @FXML
+    private void saveImage() {
+        try {
+            trySaveImage();
+            // TODO Rewrite it with button disabled and enabled when needed
+            // I.e. by default disabled, by select image enabled, by refresh file list disabled
+            // Be aware to enable button due to exception
+        } catch (IOException e) {
+            // TODO Rewrite to show error message to user
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void trySaveImage() throws IOException {
         if (image == null) {
             return;
         }
@@ -439,8 +495,7 @@ public class ImageViewer {
         processor.setImage(image);
         List<Point2D> selectionBoundaries = extractBoundaries();
         processor.setSelectionBoundaries(selectionBoundaries);
-        // TODO This should be rewritten to bilinear interpolation
-        processor.setFilter(new RoughFilter());
+        processor.setFilter(new BilinearFilter());
 
         BufferedImage processedBufferedImage = processor.process();
 

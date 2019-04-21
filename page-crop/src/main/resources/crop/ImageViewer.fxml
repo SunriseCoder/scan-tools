@@ -14,10 +14,10 @@
 <SplitPane dividerPositions="0.8" prefHeight="768.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1">
     <items>
         <!-- Left working area -->
-        <Pane fx:id="imagePane">
+        <Pane fx:id="imagePane" focusTraversable="true">
             <children>
                 <Rectangle fx:id="rectangle" fill="TRANSPARENT" />
-                <ImageView fx:id="imageView" focusTraversable="true" />
+                <ImageView fx:id="imageView" />
                 <Polygon fx:id="polygon" fill="GREEN" opacity="0.5" strokeWidth="0" />
             </children>
         </Pane>
@@ -31,6 +31,7 @@
                 </HBox>
                 <ListView fx:id="filesListView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
                 <Button onAction="#saveImage" text="Save" VBox.vgrow="NEVER" />
+                <Button onAction="#centerImage" text="Center" VBox.vgrow="NEVER" />
             </children>
         </VBox>
     </items>
