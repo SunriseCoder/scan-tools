@@ -5,4 +5,19 @@ public class MathUtils {
 	public static double calculateDistance(double a, double b) {
 		return Math.sqrt(a * a + b * b);
 	}
+
+	public static int ceilToInt(double value) {
+	    long result = Math.round(Math.ceil(value));
+        return (int) result;
+	}
+
+	public static int floorToInt(double value) {
+	    long result = Math.round(Math.floor(value));
+        return (int) result;
+	}
+
+    public static int roundToInt(double value) {
+        long result = Math.round(value);
+        return (int) result;
+    }
 }

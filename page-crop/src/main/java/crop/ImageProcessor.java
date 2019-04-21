@@ -6,26 +6,27 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import crop.filters.ImageFilter;
-import crop.filters.RoughImageFilter;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Point2D;
 import javafx.scene.image.Image;
 
 public class ImageProcessor {
     private Image image;
-    private ImageFilter filter;
     private List<Point2D> selectionBoundaries;
+    private ImageFilter filter;
 
     private double rotationAngle;
 
     public void setImage(Image image) {
         this.image = image;
-        // TODO This should be rewritten to bilinear interpolation
-        this.filter = new RoughImageFilter();
     }
 
     public void setSelectionBoundaries(List<Point2D> boundaries) {
         this.selectionBoundaries = boundaries;
+    }
+
+    public void setFilter(ImageFilter filter) {
+        this.filter = filter;
     }
 
     public BufferedImage process() {
@@ -101,7 +102,7 @@ public class ImageProcessor {
                 // Applying newImage offset before rotation
                 Point2D sourcePoint = new Point2D(x + newImageBoundaries.minX, y + newImageBoundaries.minY);
                 sourcePoint = rotatePoint(sourcePoint, rotationAngle);
-                int color = filter.getColor(sourcePoint);
+                int color = filter.getRGB(sourcePoint);
                 try {
                     newImage.setRGB(x, y, color);
                 } catch (Exception e) {
