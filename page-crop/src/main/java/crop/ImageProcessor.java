@@ -68,9 +68,9 @@ public class ImageProcessor {
 
         List<Point2D> sourceImageBoundaries = new ArrayList<>();
         sourceImageBoundaries.add(new Point2D(0, 0));
-        sourceImageBoundaries.add(new Point2D(0, image.getWidth()));
-        sourceImageBoundaries.add(new Point2D(image.getHeight(), image.getWidth()));
-        sourceImageBoundaries.add(new Point2D(image.getHeight(), 0));
+        sourceImageBoundaries.add(new Point2D(image.getWidth(), 0));
+        sourceImageBoundaries.add(new Point2D(image.getWidth(), image.getHeight()));
+        sourceImageBoundaries.add(new Point2D(0, image.getHeight()));
 
         List<Point2D> rotatedImageBoundaries = rotatePoints(sourceImageBoundaries, -rotationAngle);
 

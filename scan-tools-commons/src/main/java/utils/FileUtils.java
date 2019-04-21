@@ -1,6 +1,7 @@
 package utils;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -20,7 +21,8 @@ public class FileUtils {
 
     public static void printLine(File folder, String filename, String text) throws IOException {
         File file = new File(folder, filename);
-        PrintWriter printWriter = new PrintWriter(file);
+        FileWriter fileWriter = new FileWriter(file, true);
+        PrintWriter printWriter = new PrintWriter(fileWriter);
         printWriter.println(text);
         printWriter.close();
     }
