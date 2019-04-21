@@ -20,4 +20,11 @@ public class MathUtils {
         long result = Math.round(value);
         return (int) result;
     }
+
+    public static int adjustValue(int value, int min, int max) {
+        int result = value;
+        result = result < min ? min : result;
+        result = result > max ? max : result;
+        return result;
+    }
 }
