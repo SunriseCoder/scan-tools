@@ -400,8 +400,22 @@ public class ImageViewer {
         image = new Image(uri);
         imageView.setImage(image);
 
+        // Scale image to fit into the window
+        double parentWidth = imagePane.getParent().getBoundsInLocal().getWidth() - CIRCLE_RADIUS * 2;
+        double parentHeight = imagePane.getParent().getBoundsInLocal().getHeight() - CIRCLE_RADIUS * 2;
+        double horizontalRatio = parentWidth / image.getWidth();
+        double verticalRatio = parentHeight / image.getHeight();
+        scale = Math.min(horizontalRatio, verticalRatio);
+        imagePane.setScaleX(scale);
+        imagePane.setScaleY(scale);
+
         adjustRectangleScale();
+        adjustCirclesScale();
         adjustCirclePositions();
+
+        // TODO Investigate, why alignment to center of the parent component does not work
+        imagePane.setTranslateX(imagePane.getTranslateX() - imagePane.getBoundsInParent().getMinX() - CIRCLE_RADIUS);
+        imagePane.setTranslateY(imagePane.getTranslateY() - imagePane.getBoundsInParent().getMinY() - CIRCLE_RADIUS);
     }
 
     private void adjustCirclePositions() {
@@ -422,7 +436,8 @@ public class ImageViewer {
         // Process Image
         ImageProcessor processor = new ImageProcessor();
         processor.setImage(image);
-        processor.setSelectionBoundaries(extractBoundaries());
+        List<Point2D> selectionBoundaries = extractBoundaries();
+        processor.setSelectionBoundaries(selectionBoundaries);
 
         BufferedImage processedBufferedImage = processor.process();
 
@@ -437,12 +452,27 @@ public class ImageViewer {
         // Select new file in the file tree
         filesListView.getSelectionModel().select(newImageFilename);
 
-        // TODO Save boundaries for the Image to the log file
+        // Save boundaries for the Image to the log file
+        saveBoundaries(selectionBoundaries);
     }
 
     private List<Point2D> extractBoundaries() {
         List<Point2D> extractedPoints = circles.values().stream()
                 .map(circle -> new Point2D(circle.getCenterX(), circle.getCenterY())).collect(Collectors.toList());
         return extractedPoints;
+    }
+
+    private void saveBoundaries(List<Point2D> selectionBoundaries) {
+        String logLine = currentImageFilename;
+        String pointsLine = selectionBoundaries.stream()
+                .map(point -> ";" + point.getX() + "," + point.getY())
+                .collect(Collectors.joining());
+        logLine += pointsLine;
+
+        try {
+            FileUtils.printLine(currentFolder, "crop.log", logLine);
+        } catch (IOException e) {
+            System.err.println("Error due to write boundaries to log file: " + e.getMessage());
+        }
     }
 }

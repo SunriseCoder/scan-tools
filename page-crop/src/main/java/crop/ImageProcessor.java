@@ -112,9 +112,6 @@ public class ImageProcessor {
         try {
             int x = (int) Math.round(point.getX());
             int y = (int) Math.round(point.getY());
-            if (x == 0 && y == 0) {
-                System.out.println();
-            }
             color = sourceImage.getRGB(x , y);
         } catch (Exception e) {
             // Just using default color if the pixel is out of bounds
