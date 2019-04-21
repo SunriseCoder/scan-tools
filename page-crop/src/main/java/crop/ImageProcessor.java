@@ -5,18 +5,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import crop.filters.ImageFilter;
+import crop.filters.RoughImageFilter;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Point2D;
 import javafx.scene.image.Image;
 
 public class ImageProcessor {
     private Image image;
+    private ImageFilter filter;
     private List<Point2D> selectionBoundaries;
 
     private double rotationAngle;
 
     public void setImage(Image image) {
         this.image = image;
+        // TODO This should be rewritten to bilinear interpolation
+        this.filter = new RoughImageFilter();
     }
 
     public void setSelectionBoundaries(List<Point2D> boundaries) {
@@ -36,7 +41,8 @@ public class ImageProcessor {
                 sourceImage.getType());
 
         // Step 4 - Copying all pixels to the newImage
-        copyRotatedPixels(sourceImage, newImage, rotationAngle, newImageBoundaries);
+        filter.setImage(sourceImage);
+        copyRotatedPixels(newImage, rotationAngle, newImageBoundaries);
 
         // Step 5 - Crop rotated Image
         List<Point2D> cropBoundaries = rotatePoints(selectionBoundaries, -rotationAngle);
@@ -89,14 +95,13 @@ public class ImageProcessor {
         return result;
     }
 
-    private void copyRotatedPixels(BufferedImage sourceImage, BufferedImage newImage, double rotationAngle,
-            NewImageBoundaries newImageBoundaries) {
+    private void copyRotatedPixels(BufferedImage newImage, double rotationAngle, NewImageBoundaries newImageBoundaries) {
         for (int y = 0; y < newImage.getHeight(); y++) {
             for (int x = 0; x < newImage.getWidth(); x++) {
                 // Applying newImage offset before rotation
                 Point2D sourcePoint = new Point2D(x + newImageBoundaries.minX, y + newImageBoundaries.minY);
                 sourcePoint = rotatePoint(sourcePoint, rotationAngle);
-                int color = getColorFromSourceImage(sourceImage, sourcePoint, newImageBoundaries);
+                int color = filter.getColor(sourcePoint);
                 try {
                     newImage.setRGB(x, y, color);
                 } catch (Exception e) {
@@ -104,19 +109,6 @@ public class ImageProcessor {
                 }
             }
         }
-    }
-
-    private int getColorFromSourceImage(BufferedImage sourceImage, Point2D point, NewImageBoundaries newImageBoundaries) {
-        // TODO This should be rewritten to bilinear interpolation
-        int color = 255 * 256 * 256 + 255 * 256 + 255; // White
-        try {
-            int x = (int) Math.round(point.getX());
-            int y = (int) Math.round(point.getY());
-            color = sourceImage.getRGB(x , y);
-        } catch (Exception e) {
-            // Just using default color if the pixel is out of bounds
-        }
-        return color;
     }
 
     private BufferedImage cropImage(BufferedImage newImage, List<Point2D> cropBoundaries) {
