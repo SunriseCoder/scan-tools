@@ -2,6 +2,7 @@ package crop;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -28,8 +29,7 @@ public class MarkupStorage {
         }
 
         try {
-            TypeReference<List<FileEntry>> typeReference = new TypeReference<List<FileEntry>>() {
-            };
+            TypeReference<List<FileEntry>> typeReference = new TypeReference<List<FileEntry>>() {};
             List<FileEntry> data = JSONUtils.loadFromDisk(storageFile, typeReference);
             storage.putAll(data.stream().collect(Collectors.toMap(e -> e.filename, e -> e)));
         } catch (Exception e) {
@@ -49,7 +49,7 @@ public class MarkupStorage {
     }
 
     public void saveInfo(String filename, List<Point> points) {
-        storage.put(filename, new FileEntry(filename, points));
+        storage.put(filename, new FileEntry(filename, points, new Date()));
         saveStorageToDisk();
     }
 
@@ -65,19 +65,22 @@ public class MarkupStorage {
     public static class FileEntry {
         public String filename;
         public List<Point> points;
+        public Date date;
 
         public FileEntry() {
 
         }
 
-        public FileEntry(String filename, List<Point> points) {
+        public FileEntry(String filename, List<Point> points, Date date) {
             this.filename = filename;
             this.points = points;
+            this.date = date;
         }
 
         @Override
         public String toString() {
-            return this.getClass().getSimpleName() + "[filename=" + filename + ", points=" + points + "";
+            return this.getClass().getSimpleName() + "[filename=" + filename +
+                    ", points=" + points + ", date=" + date + "]";
         }
     }
 }
