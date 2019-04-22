@@ -46,6 +46,9 @@ public class ImageViewer {
     private static final Color CIRCLE_COLOR_PASSIVE = Color.BLUE;
     private static final double CIRCLE_RADIUS = 40;
 
+    private static final int MARKUP_MODES = 1;
+    private static final int MARKUP_FACTOR = 15;
+
     // Circle names
     private static final String CIRCLE_NAME_BOTTOM_LEFT = "BottomLeft";
     private static final String CIRCLE_NAME_BOTTOM_RIGHT = "BottomRight";
@@ -303,9 +306,11 @@ public class ImageViewer {
     private void setCurrentCircle() {
         double posOnImageX = getImageCoordinateX(lastMousePosX);
         double posOnImageY = getImageCoordinateY(lastMousePosY);
-
         ExtCircle foundCircle = findCircle(posOnImageX, posOnImageY);
+        setCurrentCircle(foundCircle);
+    }
 
+    private void setCurrentCircle(ExtCircle foundCircle) {
         if (foundCircle != null) {
             changeCircle(foundCircle);
         }
@@ -374,7 +379,7 @@ public class ImageViewer {
 
         int step = (int) Math.round(1 / scale);
         step = MathUtils.adjustValue(step, 1, 100);
-        step *= Math.pow(5, roughMarkupMode);
+        step *= Math.pow(MARKUP_FACTOR, roughMarkupMode);
 
         double newX, newY;
         switch (e.getCode()) {
@@ -402,20 +407,23 @@ public class ImageViewer {
                 newY = adjustNewCirclePositionY(currentCircle, newY);
                 currentCircle.setCenterY(newY);
                 break;
+            case Q:
             case Z:
                 changeCircle(currentCircle.previous);
                 break;
+            case E:
             case X:
                 changeCircle(currentCircle.next);
                 break;
             case ENTER:
+            case F:
                 saveImage();
                 refreshFileList();
                 selectNextFile();
                 break;
             case SHIFT:
                 if (--roughMarkupMode < 0) {
-                    roughMarkupMode = 2;
+                    roughMarkupMode = MARKUP_MODES - 1;
                 }
             default:
                 // Ignore unsupported KeyCode
@@ -575,11 +583,16 @@ public class ImageViewer {
 
         centerImage();
 
-        roughMarkupMode = 2;
+        roughMarkupMode = MARKUP_MODES - 1;
+        setCurrentCircle(circles.get(CIRCLE_NAME_TOP_LEFT));
     }
 
     private void selectNextFile() {
         filesListView.getSelectionModel().selectNext();
+
+        int selectedIndex = filesListView.getSelectionModel().getSelectedIndex();
+        int scrollTo = selectedIndex >= 10 ? selectedIndex - 10 : 0;
+        filesListView.scrollTo(scrollTo);
     }
 
     private void adjustCirclePositions() {
