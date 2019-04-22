@@ -26,7 +26,8 @@
                 <HBox fillHeight="false" VBox.vgrow="NEVER">
                     <children>
                         <TextField fx:id="openFolderTextField" editable="false" HBox.hgrow="ALWAYS" />
-                        <Button onAction="#startChooseFolder" text="Open" HBox.hgrow="NEVER" />
+                        <Button onAction="#selectFolder" text="Open" HBox.hgrow="NEVER" />
+                        <Button onAction="#refreshFileList" text="Refresh" />
                     </children>
                 </HBox>
                 <ListView fx:id="filesListView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />

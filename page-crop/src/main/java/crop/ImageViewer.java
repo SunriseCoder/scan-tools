@@ -1,24 +1,21 @@
 package crop;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.imageio.ImageIO;
-
-import crop.filters.BilinearFilter;
+import crop.dto.Point;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
-import javafx.geometry.Point2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ListView;
@@ -35,7 +32,6 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
-import utils.FileUtils;
 import utils.MathUtils;
 
 public class ImageViewer {
@@ -49,6 +45,7 @@ public class ImageViewer {
     private static final String CIRCLE_NAME_TOP_RIGHT = "TopRight";
     private static final String CIRCLE_NAME_TOP_LEFT = "TopLeft";
 
+    private MarkupStorage markupStorage;
     private Map<String, ExtCircle> circles;
     private File currentFolder;
     private String currentImageFilename;
@@ -315,43 +312,51 @@ public class ImageViewer {
     private void handleMoveViaKeyboard(KeyEvent e) {
         e.consume();
 
-        if (currentCircle == null) {
+        if (currentImageFilename == null || currentCircle == null) {
             return;
         }
 
         int step = (int) Math.round(1 / scale);
         step = MathUtils.adjustValue(step, 1, 100);
+        if (e.isAltDown()) {
+            step *= 10;
+        }
+        double newX, newY;
         switch (e.getCode()) {
             case RIGHT:
             case D:
-            case NUMPAD3:
-                currentCircle.moveByX(step);
+                newX = currentCircle.getCenterX() + step;
+                newX = adjustNewCirclePositionX(currentCircle, newX);
+                currentCircle.setCenterX(newX);
                 break;
             case LEFT:
             case A:
-            case NUMPAD1:
-                currentCircle.moveByX(-step);
+                newX = currentCircle.getCenterX() - step;
+                newX = adjustNewCirclePositionX(currentCircle, newX);
+                currentCircle.setCenterX(newX);
                 break;
             case UP:
             case W:
-            case NUMPAD5:
-                currentCircle.moveByY(-step);
+                newY = currentCircle.getCenterY() - step;
+                newY = adjustNewCirclePositionY(currentCircle, newY);
+                currentCircle.setCenterY(newY);
                 break;
             case DOWN:
             case S:
-            case NUMPAD2:
-                currentCircle.moveByY(step);
+                newY = currentCircle.getCenterY() + step;
+                newY = adjustNewCirclePositionY(currentCircle, newY);
+                currentCircle.setCenterY(newY);
                 break;
             case Q:
-            case NUMPAD4:
                 changeCircle(currentCircle.previous);
                 break;
             case E:
-            case NUMPAD6:
                 changeCircle(currentCircle.next);
                 break;
             case ENTER:
                 saveImage();
+                refreshFileList();
+                selectNextFile();
                 break;
             default:
                 // Ignore unsupported KeyCode
@@ -437,7 +442,7 @@ public class ImageViewer {
     }
 
     @FXML
-    private void startChooseFolder() {
+    private void selectFolder() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Open Folder with Images");
         File newFolder = directoryChooser.showDialog(stage);
@@ -447,10 +452,16 @@ public class ImageViewer {
         }
 
         currentFolder = newFolder;
+        markupStorage = new MarkupStorage(currentFolder);
         refreshFileList();
     }
 
+    @FXML
     private void refreshFileList() {
+        if (currentFolder == null) {
+            return;
+        }
+
         openFolderTextField.setText(currentFolder.getAbsolutePath());
         String[] filenames = currentFolder.list();
         ObservableList<String> items = FXCollections.observableArrayList(filenames);
@@ -458,6 +469,7 @@ public class ImageViewer {
     }
 
     private void handleSelectFile() {
+        saveImage();
         currentImageFilename = filesListView.getSelectionModel().getSelectedItem();
 
         // fileListView selection could be empty due to refresh
@@ -485,11 +497,24 @@ public class ImageViewer {
         centerImage();
     }
 
+    private void selectNextFile() {
+        filesListView.getSelectionModel().selectNext();
+    }
+
     private void adjustCirclePositions() {
-        circles.get(CIRCLE_NAME_TOP_LEFT).setCenter(0, 0);
-        circles.get(CIRCLE_NAME_TOP_RIGHT).setCenter(image.getWidth(), 0);
-        circles.get(CIRCLE_NAME_BOTTOM_RIGHT).setCenter(image.getWidth(), image.getHeight());
-        circles.get(CIRCLE_NAME_BOTTOM_LEFT).setCenter(0, image.getHeight());
+        List<Point> selectionBoundaries = markupStorage.getSelectionBoundaries(currentImageFilename);
+        if (selectionBoundaries == null) {
+            circles.get(CIRCLE_NAME_TOP_LEFT).setCenter(0, 0);
+            circles.get(CIRCLE_NAME_TOP_RIGHT).setCenter(image.getWidth(), 0);
+            circles.get(CIRCLE_NAME_BOTTOM_RIGHT).setCenter(image.getWidth(), image.getHeight());
+            circles.get(CIRCLE_NAME_BOTTOM_LEFT).setCenter(0, image.getHeight());
+        } else {
+            Iterator<Point> iterator = selectionBoundaries.iterator();
+            circles.values().forEach(circle -> {
+                Point point = iterator.next();
+                circle.setCenter(point.x, point.y);
+            });
+        }
     }
 
     @FXML
@@ -517,48 +542,21 @@ public class ImageViewer {
             return;
         }
 
-        // Process Image
-        ImageProcessor processor = new ImageProcessor();
-        processor.setImage(image);
-        List<Point2D> selectionBoundaries = extractBoundaries();
-        processor.setSelectionBoundaries(selectionBoundaries);
-        processor.setFilter(new BilinearFilter());
-
-        BufferedImage processedBufferedImage = processor.process();
-
-        // Saving Image to _crop file
-        String formatName = FileUtils.getFileExtension(currentImageFilename);
-        String newImageFilename = FileUtils.getFileName(currentImageFilename) + "_crop." + formatName;
-        // TODO ImageIO.write returns false if couldn't save, so be careful, need to inform user
-        ImageIO.write(processedBufferedImage, formatName , new File(currentFolder, newImageFilename));
-
         // Save boundaries for the Image to the log file
+        List<Point> selectionBoundaries = extractBoundaries();
         saveBoundaries(selectionBoundaries);
-
-        // Refresh file list on the GUI
-        refreshFileList();
-
-        // Select new file in the file tree
-        filesListView.getSelectionModel().select(newImageFilename);
     }
 
-    private List<Point2D> extractBoundaries() {
-        List<Point2D> extractedPoints = circles.values().stream()
-                .map(circle -> new Point2D(circle.getCenterX(), circle.getCenterY())).collect(Collectors.toList());
+    private List<Point> extractBoundaries() {
+        List<Point> extractedPoints = circles.values().stream()
+                .map(circle -> new Point(circle.getCenterX(), circle.getCenterY()))
+                .collect(Collectors.toList());
         return extractedPoints;
     }
 
-    private void saveBoundaries(List<Point2D> selectionBoundaries) {
-        String logLine = currentImageFilename;
-        String pointsLine = selectionBoundaries.stream()
-                .map(point -> ";" + point.getX() + "," + point.getY())
-                .collect(Collectors.joining());
-        logLine += pointsLine;
-
-        try {
-            FileUtils.printLine(currentFolder, "crop.log", logLine);
-        } catch (IOException e) {
-            System.err.println("Error due to write boundaries to log file: " + e.getMessage());
+    private void saveBoundaries(List<Point> selectionBoundaries) {
+        if (currentImageFilename != null) {
+            markupStorage.saveInfo(currentImageFilename, selectionBoundaries);
         }
     }
 }
