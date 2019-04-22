@@ -29,4 +29,19 @@ public class ColorUtils {
 
         return resultRGB;
     }
+
+    public static int getRed(int color) {
+        int red = color >> 16 & 0xFF;
+        return red;
+    }
+
+    public static int getGreen(int color) {
+        int green = color >> 8 & 0xFF;
+        return green;
+    }
+
+    public static int getBlue(int color) {
+        int blue = color & 0xFF;
+        return blue;
+    }
 }
