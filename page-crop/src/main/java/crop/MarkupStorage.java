@@ -1,6 +1,7 @@
 package crop;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -37,6 +38,10 @@ public class MarkupStorage {
         }
     }
 
+    public List<FileEntry> getAllBoundaries() {
+        return new ArrayList<>(storage.values());
+    }
+
     public List<Point> getSelectionBoundaries(String filename) {
         FileEntry entry = storage.get(filename);
         List<Point> result = entry == null ? null : entry.points;
@@ -57,12 +62,10 @@ public class MarkupStorage {
         }
     }
 
-    private static class FileEntry {
-        @SuppressWarnings("unused")
-        private String filename;
-        private List<Point> points;
+    public static class FileEntry {
+        public String filename;
+        public List<Point> points;
 
-        @SuppressWarnings("unused")
         public FileEntry() {
 
         }
