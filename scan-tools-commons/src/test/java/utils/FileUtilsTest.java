@@ -12,7 +12,22 @@ public class FileUtilsTest {
     }
 
     @Test
+    public void testGetFileExtensionWithNoDot() {
+        assertEquals("filetxt", FileUtils.getFileExtension("filetxt"));
+    }
+
+    @Test
+    public void testGetFileExtensionWithNoName() {
+        assertEquals("filetxt", FileUtils.getFileExtension(".filetxt"));
+    }
+
+    @Test
     public void testGetFileName() {
         assertEquals("file", FileUtils.getFileName("file.txt"));
+    }
+
+    @Test
+    public void testGetFileNameWithNoName() {
+        assertEquals("", FileUtils.getFileName(".txt"));
     }
 }
