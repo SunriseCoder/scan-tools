@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,6 +19,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -32,6 +34,9 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import javafx.util.Callback;
+import storages.IconStorage;
+import storages.IconStorage.Icons;
 import utils.MathUtils;
 
 public class ImageViewer {
@@ -67,13 +72,14 @@ public class ImageViewer {
     @FXML
     private TextField openFolderTextField;
     @FXML
-    private ListView<String> filesListView;
+    private ListView<FileListEntry> filesListView;
 
     private ExtCircle currentCircle;
 
     private double lastMousePosX;
     private double lastMousePosY;
     private double scale = 1;
+    private int roughMarkupMode;
 
     public void start(Stage primaryStage) throws Exception {
         stage = primaryStage;
@@ -114,6 +120,29 @@ public class ImageViewer {
         // Moving image (or circles) with the keyboard
         imagePane.setOnKeyPressed(e -> {
             handleMoveViaKeyboard(e);
+        });
+
+        // TODO Rewrite it better way, maybe extract to nested or new file
+        filesListView.setCellFactory(new Callback<ListView<FileListEntry>, ListCell<FileListEntry>>() {
+            @Override
+            public ListCell<FileListEntry> call(ListView<FileListEntry> param) {
+                return new ListCell<FileListEntry>() {
+                    @Override
+                    protected void updateItem(FileListEntry item, boolean empty) {
+                        super.updateItem(item, empty);
+
+                        if (empty) {
+                            setGraphic(null);
+                            setText(null);
+                        } else {
+                            Icons icon = item != null && item.saved ? Icons.CHECKED_16 : Icons.TRANSPARENT_16;
+                            Image image = IconStorage.getIcon(icon);
+                            setGraphic(new ImageView(image));
+                            setText(item.filename);
+                        }
+                    }
+                };
+            }
         });
 
         filesListView.getSelectionModel().selectedItemProperty().addListener(event -> {
@@ -318,12 +347,8 @@ public class ImageViewer {
 
         int step = (int) Math.round(1 / scale);
         step = MathUtils.adjustValue(step, 1, 100);
-        if (e.isControlDown()) {
-            step *= 50;
-        }
-        if (e.isShiftDown()) {
-            step *= 10;
-        }
+        step *= Math.pow(5, roughMarkupMode);
+
         double newX, newY;
         switch (e.getCode()) {
             case RIGHT:
@@ -350,10 +375,10 @@ public class ImageViewer {
                 newY = adjustNewCirclePositionY(currentCircle, newY);
                 currentCircle.setCenterY(newY);
                 break;
-            case X:
+            case Z:
                 changeCircle(currentCircle.previous);
                 break;
-            case Z:
+            case X:
                 changeCircle(currentCircle.next);
                 break;
             case ENTER:
@@ -361,6 +386,10 @@ public class ImageViewer {
                 refreshFileList();
                 selectNextFile();
                 break;
+            case SHIFT:
+                if (--roughMarkupMode < 0) {
+                    roughMarkupMode = 2;
+                }
             default:
                 // Ignore unsupported KeyCode
         }
@@ -467,19 +496,33 @@ public class ImageViewer {
 
         openFolderTextField.setText(currentFolder.getAbsolutePath());
         String[] filenames = currentFolder.list();
-        ObservableList<String> items = FXCollections.observableArrayList(filenames);
+        List<FileListEntry> fileEntries = Arrays.stream(filenames)
+                .map(filename -> {
+                    boolean saved = markupStorage.getSelectionBoundaries(filename) != null;
+                    FileListEntry fileListEntry = new FileListEntry(filename, saved);
+                    return fileListEntry;
+                }).collect(Collectors.toList());
+        ObservableList<FileListEntry> items = FXCollections.observableArrayList(fileEntries);
+
+        FileListEntry newSelectedItem = items.stream()
+                .filter(item -> item.filename.equals(currentImageFilename))
+                .findFirst().orElse(null);
+
         filesListView.setItems(items);
+        if (newSelectedItem != null) {
+            filesListView.getSelectionModel().select(newSelectedItem);
+        }
     }
 
     private void handleSelectFile() {
-        saveImage();
-        currentImageFilename = filesListView.getSelectionModel().getSelectedItem();
+        FileListEntry selectedItem = filesListView.getSelectionModel().getSelectedItem();
 
         // fileListView selection could be empty due to refresh
-        if (currentImageFilename == null) {
+        if (selectedItem == null) {
             return;
         }
 
+        currentImageFilename = selectedItem.filename;
         String uri = new File(currentFolder, currentImageFilename).toURI().toString();
         image = new Image(uri);
         imageView.setImage(image);
@@ -498,6 +541,8 @@ public class ImageViewer {
         adjustCirclePositions();
 
         centerImage();
+
+        roughMarkupMode = 2;
     }
 
     private void selectNextFile() {
@@ -560,6 +605,16 @@ public class ImageViewer {
     private void saveBoundaries(List<Point> selectionBoundaries) {
         if (currentImageFilename != null) {
             markupStorage.saveInfo(currentImageFilename, selectionBoundaries);
+        }
+    }
+
+    private static class FileListEntry {
+        private String filename;
+        private boolean saved;
+
+        public FileListEntry(String filename, boolean saved) {
+            this.filename = filename;
+            this.saved = saved;
         }
     }
 }
