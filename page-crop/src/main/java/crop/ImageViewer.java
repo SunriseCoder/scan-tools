@@ -22,6 +22,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -62,6 +63,8 @@ public class ImageViewer {
 
     // ImageViewer components
     @FXML
+    private SplitPane splitPane;
+    @FXML
     private Pane imagePane;
     @FXML
     private ImageView imageView;
@@ -86,11 +89,25 @@ public class ImageViewer {
     public void start(Stage primaryStage) throws Exception {
         systemConfiguration = new SystemConfiguration();
 
-        stage = primaryStage;
         URL resource = getClass().getResource("ImageViewer.fxml");
         FXMLLoader loader = new FXMLLoader(resource);
         loader.setController(this);
         Parent root = loader.load();
+
+        stage = primaryStage;
+        stage.showingProperty().addListener(e -> {
+            String positionsString = systemConfiguration.getValue(Parameters.SplitPaneDivider);
+            if (positionsString != null) {
+                double positions = Double.parseDouble(positionsString);
+                splitPane.setDividerPositions(positions);
+            }
+
+            // Adding Listener here due to not overwrite existing value before it would be set
+            splitPane.getDividers().get(0).positionProperty().addListener(e2 -> {
+                Double value = splitPane.getDividerPositions()[0];
+                systemConfiguration.setValue(Parameters.SplitPaneDivider, String.valueOf(value));
+            });
+        });
 
         // 4 circles to define points of image crop
         circles = createCircles();

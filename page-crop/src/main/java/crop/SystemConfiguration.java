@@ -10,6 +10,7 @@ import utils.JSONUtils;
 
 public class SystemConfiguration {
     public enum Parameters {
+        SplitPaneDivider,
         StartFolder
     }
 
