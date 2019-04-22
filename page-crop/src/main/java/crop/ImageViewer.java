@@ -318,7 +318,10 @@ public class ImageViewer {
 
         int step = (int) Math.round(1 / scale);
         step = MathUtils.adjustValue(step, 1, 100);
-        if (e.isAltDown()) {
+        if (e.isControlDown()) {
+            step *= 50;
+        }
+        if (e.isShiftDown()) {
             step *= 10;
         }
         double newX, newY;
@@ -347,10 +350,10 @@ public class ImageViewer {
                 newY = adjustNewCirclePositionY(currentCircle, newY);
                 currentCircle.setCenterY(newY);
                 break;
-            case Q:
+            case X:
                 changeCircle(currentCircle.previous);
                 break;
-            case E:
+            case Z:
                 changeCircle(currentCircle.next);
                 break;
             case ENTER:

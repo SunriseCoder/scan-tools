@@ -7,18 +7,16 @@ import java.util.stream.Collectors;
 
 import crop.dto.Point;
 import crop.filters.ImageFilter;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.image.Image;
 
 public class ImageProcessor {
-    private Image image;
+    private BufferedImage sourceImage;
     private List<Point> selectionBoundaries;
     private ImageFilter filter;
 
     private double rotationAngle;
 
-    public void setImage(Image image) {
-        this.image = image;
+    public void setImage(BufferedImage image) {
+        sourceImage = image;
     }
 
     public void setSelectionBoundaries(List<Point> boundaries) {
@@ -37,7 +35,6 @@ public class ImageProcessor {
         NewImageBoundaries newImageBoundaries = calculateNewImageBoundaries();
 
         // Step 3 - Creating empty new Image
-        BufferedImage sourceImage = SwingFXUtils.fromFXImage(image, null);
         BufferedImage newImage = new BufferedImage(newImageBoundaries.width, newImageBoundaries.height,
                 BufferedImage.TYPE_INT_RGB);
 
@@ -75,9 +72,9 @@ public class ImageProcessor {
 
         List<Point> sourceImageBoundaries = new ArrayList<>();
         sourceImageBoundaries.add(new Point(0, 0));
-        sourceImageBoundaries.add(new Point(image.getWidth(), 0));
-        sourceImageBoundaries.add(new Point(image.getWidth(), image.getHeight()));
-        sourceImageBoundaries.add(new Point(0, image.getHeight()));
+        sourceImageBoundaries.add(new Point(sourceImage.getWidth(), 0));
+        sourceImageBoundaries.add(new Point(sourceImage.getWidth(), sourceImage.getHeight()));
+        sourceImageBoundaries.add(new Point(0, sourceImage.getHeight()));
 
         List<Point> rotatedImageBoundaries = rotatePoints(sourceImageBoundaries, -rotationAngle);
 
