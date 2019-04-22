@@ -17,17 +17,29 @@
 
     <dependencyManagement>
         <dependencies>
+
+            <!-- Local -->
             <dependency>
                 <groupId>sunrisecoder</groupId>
                 <artifactId>scan-tools-commons</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <!-- JSON -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.9.8</version>
+            </dependency>
+
+            <!-- Testing -->
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>4.12</version>
                 <scope>test</scope>
             </dependency>
+
         </dependencies>
     </dependencyManagement>
 

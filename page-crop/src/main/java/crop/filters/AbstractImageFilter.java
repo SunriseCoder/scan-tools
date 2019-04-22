@@ -3,7 +3,7 @@ package crop.filters;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 
-import javafx.geometry.Point2D;
+import crop.dto.Point;
 
 public abstract class AbstractImageFilter implements ImageFilter {
     private BufferedImage image;
@@ -24,8 +24,8 @@ public abstract class AbstractImageFilter implements ImageFilter {
     }
 
     @Override
-    public int getRGB(Point2D point) {
-        return getRGB(point.getX(), point.getY());
+    public int getRGB(Point point) {
+        return getRGB(point.x, point.y);
     }
 
     protected int getRGBFromImage(int x, int y) {

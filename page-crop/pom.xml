@@ -11,14 +11,19 @@
     <artifactId>page-crop</artifactId>
 
     <dependencies>
+
+        <!-- Local -->
         <dependency>
             <groupId>sunrisecoder</groupId>
             <artifactId>scan-tools-commons</artifactId>
         </dependency>
+
+        <!-- Testing -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
+
     </dependencies>
 
 </project>

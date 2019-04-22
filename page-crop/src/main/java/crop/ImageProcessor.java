@@ -5,14 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import crop.dto.Point;
 import crop.filters.ImageFilter;
 import javafx.embed.swing.SwingFXUtils;
-import javafx.geometry.Point2D;
 import javafx.scene.image.Image;
 
 public class ImageProcessor {
     private Image image;
-    private List<Point2D> selectionBoundaries;
+    private List<Point> selectionBoundaries;
     private ImageFilter filter;
 
     private double rotationAngle;
@@ -21,7 +21,7 @@ public class ImageProcessor {
         this.image = image;
     }
 
-    public void setSelectionBoundaries(List<Point2D> boundaries) {
+    public void setSelectionBoundaries(List<Point> boundaries) {
         this.selectionBoundaries = boundaries;
     }
 
@@ -46,10 +46,10 @@ public class ImageProcessor {
         copyRotatedPixels(newImage, rotationAngle, newImageBoundaries);
 
         // Step 5 - Crop rotated Image
-        List<Point2D> cropBoundaries = rotatePoints(selectionBoundaries, -rotationAngle);
+        List<Point> cropBoundaries = rotatePoints(selectionBoundaries, -rotationAngle);
         // Applying offset
         cropBoundaries = cropBoundaries.stream()
-            .map(point -> new Point2D(point.getX() - newImageBoundaries.minX, point.getY() - newImageBoundaries.minY))
+            .map(point -> new Point(point.x - newImageBoundaries.minX, point.y - newImageBoundaries.minY))
             .collect(Collectors.toList());
         newImage = cropImage(newImage, cropBoundaries);
 
@@ -59,11 +59,11 @@ public class ImageProcessor {
     private double calculateRotationAngle() {
         // TODO Currently this method uses only left edge of selection to calculate the angle
         // Maybe it worth to rewrite it, that it compare about top or left edge, and use the longest one
-        Point2D cropPoint1 = selectionBoundaries.get(0);
-        Point2D cropPoint2 = selectionBoundaries.get(3);
+        Point cropPoint1 = selectionBoundaries.get(0);
+        Point cropPoint2 = selectionBoundaries.get(3);
 
-        double cropPointDeltaX = cropPoint2.getX() - cropPoint1.getX();
-        double cropPointDeltaY = cropPoint2.getY() - cropPoint1.getY();
+        double cropPointDeltaX = cropPoint2.x - cropPoint1.x;
+        double cropPointDeltaY = cropPoint2.y - cropPoint1.y;
 
         double tan = cropPointDeltaX / cropPointDeltaY;
         double angle = -Math.atan(tan);
@@ -73,22 +73,22 @@ public class ImageProcessor {
     private NewImageBoundaries calculateNewImageBoundaries() {
         NewImageBoundaries result = new NewImageBoundaries();
 
-        List<Point2D> sourceImageBoundaries = new ArrayList<>();
-        sourceImageBoundaries.add(new Point2D(0, 0));
-        sourceImageBoundaries.add(new Point2D(image.getWidth(), 0));
-        sourceImageBoundaries.add(new Point2D(image.getWidth(), image.getHeight()));
-        sourceImageBoundaries.add(new Point2D(0, image.getHeight()));
+        List<Point> sourceImageBoundaries = new ArrayList<>();
+        sourceImageBoundaries.add(new Point(0, 0));
+        sourceImageBoundaries.add(new Point(image.getWidth(), 0));
+        sourceImageBoundaries.add(new Point(image.getWidth(), image.getHeight()));
+        sourceImageBoundaries.add(new Point(0, image.getHeight()));
 
-        List<Point2D> rotatedImageBoundaries = rotatePoints(sourceImageBoundaries, -rotationAngle);
+        List<Point> rotatedImageBoundaries = rotatePoints(sourceImageBoundaries, -rotationAngle);
 
         result.minX = (int) Math.floor(rotatedImageBoundaries.stream()
-                        .mapToDouble(point -> point.getX()).min().getAsDouble());
+                        .mapToDouble(point -> point.x).min().getAsDouble());
         result.maxX = (int) Math.ceil(rotatedImageBoundaries.stream()
-                .mapToDouble(point -> point.getX()).max().getAsDouble());
+                .mapToDouble(point -> point.x).max().getAsDouble());
         result.minY = (int) Math.floor(rotatedImageBoundaries.stream()
-                .mapToDouble(point -> point.getY()).min().getAsDouble());
+                .mapToDouble(point -> point.y).min().getAsDouble());
         result.maxY = (int) Math.ceil(rotatedImageBoundaries.stream()
-                .mapToDouble(point -> point.getY()).max().getAsDouble());
+                .mapToDouble(point -> point.y).max().getAsDouble());
 
         result.width = result.maxX - result.minX + 1;
         result.height = result.maxY - result.minY + 1;
@@ -100,7 +100,7 @@ public class ImageProcessor {
         for (int y = 0; y < newImage.getHeight(); y++) {
             for (int x = 0; x < newImage.getWidth(); x++) {
                 // Applying newImage offset before rotation
-                Point2D sourcePoint = new Point2D(x + newImageBoundaries.minX, y + newImageBoundaries.minY);
+                Point sourcePoint = new Point(x + newImageBoundaries.minX, y + newImageBoundaries.minY);
                 sourcePoint = rotatePoint(sourcePoint, rotationAngle);
                 int color = filter.getRGB(sourcePoint);
                 try {
@@ -112,11 +112,11 @@ public class ImageProcessor {
         }
     }
 
-    private BufferedImage cropImage(BufferedImage newImage, List<Point2D> cropBoundaries) {
-        int minX = (int) Math.floor(cropBoundaries.stream().mapToDouble(point -> point.getX()).min().getAsDouble());
-        int maxX = (int) Math.ceil(cropBoundaries.stream().mapToDouble(point -> point.getX()).max().getAsDouble());
-        int minY = (int) Math.floor(cropBoundaries.stream().mapToDouble(point -> point.getY()).min().getAsDouble());
-        int maxY = (int) Math.ceil(cropBoundaries.stream().mapToDouble(point -> point.getY()).max().getAsDouble());
+    private BufferedImage cropImage(BufferedImage newImage, List<Point> cropBoundaries) {
+        int minX = (int) Math.floor(cropBoundaries.stream().mapToDouble(point -> point.x).min().getAsDouble());
+        int maxX = (int) Math.ceil(cropBoundaries.stream().mapToDouble(point -> point.x).max().getAsDouble());
+        int minY = (int) Math.floor(cropBoundaries.stream().mapToDouble(point -> point.y).min().getAsDouble());
+        int maxY = (int) Math.ceil(cropBoundaries.stream().mapToDouble(point -> point.y).max().getAsDouble());
 
         int width = maxX - minX + 1;
         int height = maxY - minY + 1;
@@ -132,15 +132,15 @@ public class ImageProcessor {
         return newImage;
     }
 
-    private List<Point2D> rotatePoints(List<Point2D> points, double angle) {
-        List<Point2D> result = points.stream().map(point -> rotatePoint(point, angle)).collect(Collectors.toList());
+    private List<Point> rotatePoints(List<Point> points, double angle) {
+        List<Point> result = points.stream().map(point -> rotatePoint(point, angle)).collect(Collectors.toList());
         return result;
     }
 
-    private Point2D rotatePoint(Point2D point, double angle) {
-        double x = Math.cos(angle) * point.getX() - Math.sin(angle) * point.getY();
-        double y = Math.sin(angle) * point.getX() + Math.cos(angle) * point.getY();
-        Point2D rotatedPoint = new Point2D(x, y);
+    private Point rotatePoint(Point point, double angle) {
+        double x = Math.cos(angle) * point.x - Math.sin(angle) * point.y;
+        double y = Math.sin(angle) * point.x + Math.cos(angle) * point.y;
+        Point rotatedPoint = new Point(x, y);
         return rotatedPoint;
     }
 
