@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import crop.SystemConfiguration.Parameters;
 import crop.dto.Point;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -50,6 +51,7 @@ public class ImageViewer {
     private static final String CIRCLE_NAME_TOP_RIGHT = "TopRight";
     private static final String CIRCLE_NAME_TOP_LEFT = "TopLeft";
 
+    private SystemConfiguration systemConfiguration;
     private MarkupStorage markupStorage;
     private Map<String, ExtCircle> circles;
     private File currentFolder;
@@ -82,6 +84,8 @@ public class ImageViewer {
     private int roughMarkupMode;
 
     public void start(Stage primaryStage) throws Exception {
+        systemConfiguration = new SystemConfiguration();
+
         stage = primaryStage;
         URL resource = getClass().getResource("ImageViewer.fxml");
         FXMLLoader loader = new FXMLLoader(resource);
@@ -148,6 +152,12 @@ public class ImageViewer {
         filesListView.getSelectionModel().selectedItemProperty().addListener(event -> {
             handleSelectFile();
         });
+
+        String startFolder = systemConfiguration.getValue(Parameters.StartFolder);
+        if (startFolder != null) {
+            currentFolder = new File(startFolder);
+            refreshFileList();
+        }
 
         // Rendering the form
         Scene scene = new Scene(root);
@@ -484,7 +494,7 @@ public class ImageViewer {
         }
 
         currentFolder = newFolder;
-        markupStorage = new MarkupStorage(currentFolder);
+        systemConfiguration.setValue(Parameters.StartFolder, currentFolder.getAbsolutePath());
         refreshFileList();
     }
 
@@ -494,7 +504,11 @@ public class ImageViewer {
             return;
         }
 
+        markupStorage = new MarkupStorage(currentFolder);
+
         openFolderTextField.setText(currentFolder.getAbsolutePath());
+
+        // Forming new list of FileListEntry for filesListView
         String[] filenames = currentFolder.list();
         List<FileListEntry> fileEntries = Arrays.stream(filenames)
                 .map(filename -> {
@@ -504,10 +518,12 @@ public class ImageViewer {
                 }).collect(Collectors.toList());
         ObservableList<FileListEntry> items = FXCollections.observableArrayList(fileEntries);
 
+        // Looking for old selected item in the new list
         FileListEntry newSelectedItem = items.stream()
                 .filter(item -> item.filename.equals(currentImageFilename))
                 .findFirst().orElse(null);
 
+        // Restoring the selection of the old file in the new list
         filesListView.setItems(items);
         if (newSelectedItem != null) {
             filesListView.getSelectionModel().select(newSelectedItem);
