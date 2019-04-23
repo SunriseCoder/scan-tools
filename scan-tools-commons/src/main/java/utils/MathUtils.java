@@ -1,5 +1,7 @@
 package utils;
 
+import java.util.Arrays;
+
 public class MathUtils {
 
 	public static double calculateDistance(double a, double b) {
@@ -25,6 +27,12 @@ public class MathUtils {
         int result = value;
         result = result < min ? min : result;
         result = result > max ? max : result;
+        return result;
+    }
+
+    public static double mathMeaning(double... values) {
+        double sum = Arrays.stream(values).sum();
+        double result = sum / values.length;
         return result;
     }
 }

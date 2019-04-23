@@ -36,4 +36,12 @@ public class MathUtilsTest {
         assertEquals(10, MathUtils.adjustValue(1, 10, 100));
         assertEquals(100, MathUtils.adjustValue(150, 1, 100));
     }
+
+    @Test
+    public void testMathMeaning() {
+        assertEquals(1, MathUtils.mathMeaning(1, 1), 0.001);
+        assertEquals(1, MathUtils.mathMeaning(1, 1, 1), 0.001);
+        assertEquals(1, MathUtils.mathMeaning(0, 2), 0.001);
+        assertEquals(2, MathUtils.mathMeaning(-1, 2, 5), 0.001);
+    }
 }

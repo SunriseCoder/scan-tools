@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import crop.dto.Point;
 import crop.filters.ImageFilter;
+import utils.MathUtils;
 
 public class ImageProcessor {
     private BufferedImage sourceImage;
@@ -54,11 +55,31 @@ public class ImageProcessor {
     }
 
     private double calculateRotationAngle() {
-        // TODO Currently this method uses only left edge of selection to calculate the angle
-        // Maybe it worth to rewrite it, that it compare about top or left edge, and use the longest one
         Point cropPoint1 = selectionBoundaries.get(0);
-        Point cropPoint2 = selectionBoundaries.get(3);
+        Point cropPoint2 = selectionBoundaries.get(1);
+        Point cropPoint3 = selectionBoundaries.get(2);
+        Point cropPoint4 = selectionBoundaries.get(3);
 
+        double angle1 = calculateRotationAngleHorizontalEdge(cropPoint1, cropPoint2);
+        double angle2 = calculateRotationAngleVerticalEdge(cropPoint2, cropPoint3);
+        double angle3 = calculateRotationAngleHorizontalEdge(cropPoint3, cropPoint4);
+        double angle4 = calculateRotationAngleVerticalEdge(cropPoint4, cropPoint1);
+
+        double angle = MathUtils.mathMeaning(angle1, angle2, angle3, angle4);
+        return angle;
+    }
+
+    // TODO Refactor these 2 methods to get rid of duplication code
+    private double calculateRotationAngleHorizontalEdge(Point cropPoint1, Point cropPoint2) {
+        double cropPointDeltaX = cropPoint2.x - cropPoint1.x;
+        double cropPointDeltaY = cropPoint2.y - cropPoint1.y;
+
+        double tan = cropPointDeltaY / cropPointDeltaX;
+        double angle = Math.atan(tan);
+        return angle;
+    }
+
+    private double calculateRotationAngleVerticalEdge(Point cropPoint1, Point cropPoint2) {
         double cropPointDeltaX = cropPoint2.x - cropPoint1.x;
         double cropPointDeltaY = cropPoint2.y - cropPoint1.y;
 

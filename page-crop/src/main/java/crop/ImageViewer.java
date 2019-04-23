@@ -418,8 +418,6 @@ public class ImageViewer {
             case ENTER:
             case F:
                 saveImage();
-                refreshFileList();
-                selectNextFile();
                 break;
             case SHIFT:
                 if (--roughMarkupMode < 0) {
@@ -625,6 +623,8 @@ public class ImageViewer {
             // TODO Rewrite it with button disabled and enabled when needed
             // I.e. by default disabled, by select image enabled, by refresh file list disabled
             // Be aware to enable button due to exception
+            refreshFileList();
+            selectNextFile();
         } catch (IOException e) {
             // TODO Rewrite to show error message to user
             throw new RuntimeException(e);
