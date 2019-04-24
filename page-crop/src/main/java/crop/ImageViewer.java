@@ -19,7 +19,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
@@ -35,7 +34,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.Stage;
 import javafx.util.Callback;
 import storages.IconStorage;
 import storages.IconStorage.Icons;
@@ -61,7 +59,6 @@ public class ImageViewer {
     private File currentFolder;
     private String currentImageFilename;
 
-    private Stage stage;
     private Image image;
 
     // ImageViewer components
@@ -89,28 +86,13 @@ public class ImageViewer {
     private double scale = 1;
     private int roughMarkupMode;
 
-    public void start(Stage primaryStage) throws Exception {
+    public Parent init() throws Exception {
         systemConfiguration = new SystemConfiguration();
 
         URL resource = getClass().getResource("ImageViewer.fxml");
         FXMLLoader loader = new FXMLLoader(resource);
         loader.setController(this);
         Parent root = loader.load();
-
-        stage = primaryStage;
-        stage.showingProperty().addListener(e -> {
-            String positionsString = systemConfiguration.getValue(Parameters.SplitPaneDivider);
-            if (positionsString != null) {
-                double positions = Double.parseDouble(positionsString);
-                splitPane.setDividerPositions(positions);
-            }
-
-            // Adding Listener here due to not overwrite existing value before it would be set
-            splitPane.getDividers().get(0).positionProperty().addListener(e2 -> {
-                Double value = splitPane.getDividerPositions()[0];
-                systemConfiguration.setValue(Parameters.SplitPaneDivider, String.valueOf(value));
-            });
-        });
 
         // 4 circles to define points of image crop
         circles = createCircles();
@@ -179,11 +161,20 @@ public class ImageViewer {
             refreshFileList();
         }
 
-        // Rendering the form
-        Scene scene = new Scene(root);
-        primaryStage.setMaximized(true);
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        return root;
+    }
+
+    public void afterStageShown() {
+        String positionsString = systemConfiguration.getValue(Parameters.SplitPaneDivider);
+        if (positionsString != null) {
+            double positions = Double.parseDouble(positionsString);
+            splitPane.setDividerPositions(positions);
+        }
+
+        splitPane.getDividers().get(0).positionProperty().addListener(e -> {
+            Double value = splitPane.getDividerPositions()[0];
+            systemConfiguration.setValue(Parameters.SplitPaneDivider, String.valueOf(value));
+        });
     }
 
     private Map<String, ExtCircle> createCircles() {
@@ -510,7 +501,7 @@ public class ImageViewer {
     private void selectFolder() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Open Folder with Images");
-        File newFolder = directoryChooser.showDialog(stage);
+        File newFolder = directoryChooser.showDialog(null);
 
         if (newFolder == null) {
             return;
@@ -523,7 +514,7 @@ public class ImageViewer {
 
     @FXML
     private void refreshFileList() {
-        if (currentFolder == null) {
+        if (currentFolder == null || !currentFolder.exists() || !currentFolder.isDirectory()) {
             return;
         }
 

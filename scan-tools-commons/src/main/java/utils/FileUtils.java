@@ -4,6 +4,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URL;
+
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 
 public class FileUtils {
 
@@ -25,5 +29,14 @@ public class FileUtils {
         PrintWriter printWriter = new PrintWriter(fileWriter);
         printWriter.println(text);
         printWriter.close();
+    }
+
+    public static Parent loadFXML(Object object) throws IOException {
+        String resourceName = object.getClass().getSimpleName() + ".fxml";
+        URL resource = object.getClass().getResource(resourceName);
+        FXMLLoader loader = new FXMLLoader(resource);
+        loader.setController(object);
+        Parent root = loader.load();
+        return root;
     }
 }
