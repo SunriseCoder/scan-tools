@@ -1,9 +1,9 @@
-package crop.filters;
+package process.filters;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 
-import crop.dto.Point;
+import process.dto.Point;
 
 public interface ImageFilter {
     void setImage(BufferedImage image);

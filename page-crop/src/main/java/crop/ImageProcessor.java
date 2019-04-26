@@ -5,10 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import crop.dto.Point;
-import crop.filters.ImageFilter;
+import process.dto.Point;
+import process.filters.ImageFilter;
 import utils.MathUtils;
 
+// TODO Move all code to process.processing.... and get rid of this file
 public class ImageProcessor {
     private BufferedImage sourceImage;
     private List<Point> selectionBoundaries;

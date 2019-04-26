@@ -8,6 +8,8 @@ import java.awt.image.BufferedImage;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import process.filters.ImageFilter;
+
 public class BaseImageFilterTest {
     protected static BufferedImage image;
     protected ImageFilter filter;

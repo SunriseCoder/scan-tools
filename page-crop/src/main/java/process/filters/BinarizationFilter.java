@@ -1,4 +1,4 @@
-package crop.filters;
+package process.filters;
 
 import java.awt.Color;
 

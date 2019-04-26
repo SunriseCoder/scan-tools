@@ -1,4 +1,4 @@
-package crop;
+package process.components;
 
 import javafx.scene.shape.Circle;
 

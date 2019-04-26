@@ -1,9 +1,8 @@
-package crop;
+package process;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-import crop.filters.BinarizationFilter;
 import javafx.application.Application;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Bounds;
@@ -19,6 +18,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import process.filters.BinarizationFilter;
 
 public class BinarizationExperimentsApp extends Application {
     private static String imageUrl;
@@ -187,6 +187,7 @@ public class BinarizationExperimentsApp extends Application {
 
     private void centerImage() {
         // TODO Investigate, why alignment to center of the parent component does not work
+        // There is an assumption that whether rectangle or circles sizes are affecting
         imagePane.setTranslateX(imagePane.getTranslateX() - imagePane.getBoundsInParent().getMinX());
         imagePane.setTranslateY(imagePane.getTranslateY() - imagePane.getBoundsInParent().getMinY() + 50);
     }
