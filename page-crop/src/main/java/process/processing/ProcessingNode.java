@@ -7,7 +7,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.layout.GridPane;
 import process.ApplicationContext;
-import process.reordering.PageReorderingNode;
+import process.processing.preprocessing.PreprocessingNode;
 import utils.FileUtils;
 
 public class ProcessingNode {
@@ -17,7 +17,7 @@ public class ProcessingNode {
     public Node init(ApplicationContext applicationContext) throws IOException {
         Parent node = FileUtils.loadFXML(this);
 
-        PageReorderingNode reordering = new PageReorderingNode();
+        PreprocessingNode reordering = new PreprocessingNode();
         Node reorderingNode = reordering.init(applicationContext);
         processingTabGridPane.getChildren().add(reorderingNode);
 
