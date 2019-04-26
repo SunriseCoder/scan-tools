@@ -5,6 +5,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -38,5 +40,9 @@ public class FileUtils {
         loader.setController(object);
         Parent root = loader.load();
         return root;
+    }
+
+    public static void copyFiles(File sourceFile, File destinationFile) throws IOException {
+        Files.copy(sourceFile.toPath(), destinationFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 }

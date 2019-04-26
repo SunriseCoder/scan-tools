@@ -1,27 +1,17 @@
-package crop;
+package process.markup;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import crop.SystemConfiguration.Parameters;
-import crop.dto.Point;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.scene.Parent;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -33,16 +23,19 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
-import javafx.stage.DirectoryChooser;
-import javafx.util.Callback;
-import storages.IconStorage;
-import storages.IconStorage.Icons;
+import process.ApplicationContext;
+import process.ApplicationContext.Events;
+import process.components.ExtCircle;
+import process.dto.FileListEntry;
+import process.dto.Point;
+import utils.FileUtils;
 import utils.MathUtils;
 
 public class ImageViewer {
     private static final Color CIRCLE_COLOR_ACTIVE = Color.RED;
     private static final Color CIRCLE_COLOR_PASSIVE = Color.BLUE;
     private static final double CIRCLE_RADIUS = 40;
+    private static final int CIRCLE_STROKE_WIDTH = 3;
 
     private static final int MARKUP_MODES = 1;
     private static final int MARKUP_FACTOR = 15;
@@ -53,8 +46,8 @@ public class ImageViewer {
     private static final String CIRCLE_NAME_TOP_RIGHT = "TopRight";
     private static final String CIRCLE_NAME_TOP_LEFT = "TopLeft";
 
-    private SystemConfiguration systemConfiguration;
-    private MarkupStorage markupStorage;
+    private ApplicationContext applicationContext;
+
     private Map<String, ExtCircle> circles;
     private File currentFolder;
     private String currentImageFilename;
@@ -62,8 +55,6 @@ public class ImageViewer {
     private Image image;
 
     // ImageViewer components
-    @FXML
-    private SplitPane splitPane;
     @FXML
     private Pane imagePane;
     @FXML
@@ -76,8 +67,6 @@ public class ImageViewer {
     // File operations components
     @FXML
     private TextField openFolderTextField;
-    @FXML
-    private ListView<FileListEntry> filesListView;
 
     private ExtCircle currentCircle;
 
@@ -86,13 +75,10 @@ public class ImageViewer {
     private double scale = 1;
     private int roughMarkupMode;
 
-    public Parent init() throws Exception {
-        systemConfiguration = new SystemConfiguration();
+    public Parent init(ApplicationContext applicationContext) throws Exception {
+        this.applicationContext = applicationContext;
 
-        URL resource = getClass().getResource("ImageViewer.fxml");
-        FXMLLoader loader = new FXMLLoader(resource);
-        loader.setController(this);
-        Parent root = loader.load();
+        Parent root = FileUtils.loadFXML(this);
 
         // 4 circles to define points of image crop
         circles = createCircles();
@@ -103,6 +89,7 @@ public class ImageViewer {
             imagePane.requestFocus();
             saveMouseClickPosition(e);
             setCurrentCircle();
+            e.consume();
         });
 
         // Handling dragging event when mouse moved after the button is pressed
@@ -128,53 +115,45 @@ public class ImageViewer {
             handleMoveViaKeyboard(e);
         });
 
-        // TODO Rewrite it better way, maybe extract to nested or new file
-        filesListView.setCellFactory(new Callback<ListView<FileListEntry>, ListCell<FileListEntry>>() {
-            @Override
-            public ListCell<FileListEntry> call(ListView<FileListEntry> param) {
-                return new ListCell<FileListEntry>() {
-                    @Override
-                    protected void updateItem(FileListEntry item, boolean empty) {
-                        super.updateItem(item, empty);
-
-                        if (empty) {
-                            setGraphic(null);
-                            setText(null);
-                        } else {
-                            Icons icon = item != null && item.saved ? Icons.CHECKED_16 : Icons.TRANSPARENT_16;
-                            Image image = IconStorage.getIcon(icon);
-                            setGraphic(new ImageView(image));
-                            setText(item.filename);
-                        }
-                    }
-                };
-            }
-        });
-
-        filesListView.getSelectionModel().selectedItemProperty().addListener(event -> {
-            handleSelectFile();
-        });
-
-        String startFolder = systemConfiguration.getValue(Parameters.StartFolder);
-        if (startFolder != null) {
-            currentFolder = new File(startFolder);
-            refreshFileList();
-        }
+        applicationContext.addEventListener(Events.WorkFolderChanged, value -> handleWorkFolderChanged(value));
+        applicationContext.addEventListener(Events.WorkFileSelected, value -> handleSelectWorkFile(value));
 
         return root;
     }
 
-    public void afterStageShown() {
-        String positionsString = systemConfiguration.getValue(Parameters.SplitPaneDivider);
-        if (positionsString != null) {
-            double positions = Double.parseDouble(positionsString);
-            splitPane.setDividerPositions(positions);
+    private void handleWorkFolderChanged(Object value) {
+        File newFolder = (File) value;
+        currentFolder = newFolder;
+    }
+
+    private void handleSelectWorkFile(Object value) {
+        if (value == null) {
+            return;
         }
 
-        splitPane.getDividers().get(0).positionProperty().addListener(e -> {
-            Double value = splitPane.getDividerPositions()[0];
-            systemConfiguration.setValue(Parameters.SplitPaneDivider, String.valueOf(value));
-        });
+        FileListEntry fileListEntry = (FileListEntry) value;
+        currentImageFilename = fileListEntry.getFilename();
+        String uri = new File(currentFolder, currentImageFilename).toURI().toString();
+        image = new Image(uri);
+        imageView.setImage(image);
+
+        // Scale image to fit into the window
+        double parentWidth = imagePane.getLayoutBounds().getWidth() - CIRCLE_RADIUS * 2 - CIRCLE_STROKE_WIDTH * 2;
+        double parentHeight = imagePane.getLayoutBounds().getHeight() - CIRCLE_RADIUS * 2 - CIRCLE_STROKE_WIDTH * 2;
+        double horizontalRatio = parentWidth / image.getWidth();
+        double verticalRatio = parentHeight / image.getHeight();
+        scale = Math.min(horizontalRatio, verticalRatio);
+        imagePane.setScaleX(scale);
+        imagePane.setScaleY(scale);
+
+        adjustRectangleScale();
+        adjustCirclesScale();
+        adjustCirclePositions();
+
+        centerImage();
+
+        roughMarkupMode = MARKUP_MODES - 1;
+        setCurrentCircle(circles.get(CIRCLE_NAME_TOP_LEFT));
     }
 
     private Map<String, ExtCircle> createCircles() {
@@ -192,7 +171,7 @@ public class ImageViewer {
         ExtCircle circle = new ExtCircle(name, 0, 0, CIRCLE_RADIUS);
         circle.setFill(null);
         circle.setStroke(CIRCLE_COLOR_PASSIVE);
-        circle.setStrokeWidth(3);
+        circle.setStrokeWidth(CIRCLE_STROKE_WIDTH);
         circle.centerXProperty().addListener(e -> adjustPolygonBoundaries());
         circle.centerYProperty().addListener(e -> adjustPolygonBoundaries());
         return circle;
@@ -297,6 +276,7 @@ public class ImageViewer {
     private void setCurrentCircle() {
         double posOnImageX = getImageCoordinateX(lastMousePosX);
         double posOnImageY = getImageCoordinateY(lastMousePosY);
+
         ExtCircle foundCircle = findCircle(posOnImageX, posOnImageY);
         setCurrentCircle(foundCircle);
     }
@@ -497,95 +477,8 @@ public class ImageViewer {
         return newY;
     }
 
-    @FXML
-    private void selectFolder() {
-        DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryChooser.setTitle("Open Folder with Images");
-        File newFolder = directoryChooser.showDialog(null);
-
-        if (newFolder == null) {
-            return;
-        }
-
-        currentFolder = newFolder;
-        systemConfiguration.setValue(Parameters.StartFolder, currentFolder.getAbsolutePath());
-        refreshFileList();
-    }
-
-    @FXML
-    private void refreshFileList() {
-        if (currentFolder == null || !currentFolder.exists() || !currentFolder.isDirectory()) {
-            return;
-        }
-
-        markupStorage = new MarkupStorage(currentFolder);
-
-        openFolderTextField.setText(currentFolder.getAbsolutePath());
-
-        // Forming new list of FileListEntry for filesListView
-        String[] filenames = currentFolder.list();
-        List<FileListEntry> fileEntries = Arrays.stream(filenames)
-                .map(filename -> {
-                    boolean saved = markupStorage.getSelectionBoundaries(filename) != null;
-                    FileListEntry fileListEntry = new FileListEntry(filename, saved);
-                    return fileListEntry;
-                }).collect(Collectors.toList());
-        ObservableList<FileListEntry> items = FXCollections.observableArrayList(fileEntries);
-
-        // Looking for old selected item in the new list
-        FileListEntry newSelectedItem = items.stream()
-                .filter(item -> item.filename.equals(currentImageFilename))
-                .findFirst().orElse(null);
-
-        // Restoring the selection of the old file in the new list
-        filesListView.setItems(items);
-        if (newSelectedItem != null) {
-            filesListView.getSelectionModel().select(newSelectedItem);
-        }
-    }
-
-    private void handleSelectFile() {
-        FileListEntry selectedItem = filesListView.getSelectionModel().getSelectedItem();
-
-        // fileListView selection could be empty due to refresh
-        if (selectedItem == null) {
-            return;
-        }
-
-        currentImageFilename = selectedItem.filename;
-        String uri = new File(currentFolder, currentImageFilename).toURI().toString();
-        image = new Image(uri);
-        imageView.setImage(image);
-
-        // Scale image to fit into the window
-        double parentWidth = imagePane.getParent().getBoundsInLocal().getWidth() - CIRCLE_RADIUS * 2;
-        double parentHeight = imagePane.getParent().getBoundsInLocal().getHeight() - CIRCLE_RADIUS * 2;
-        double horizontalRatio = parentWidth / image.getWidth();
-        double verticalRatio = parentHeight / image.getHeight();
-        scale = Math.min(horizontalRatio, verticalRatio);
-        imagePane.setScaleX(scale);
-        imagePane.setScaleY(scale);
-
-        adjustRectangleScale();
-        adjustCirclesScale();
-        adjustCirclePositions();
-
-        centerImage();
-
-        roughMarkupMode = MARKUP_MODES - 1;
-        setCurrentCircle(circles.get(CIRCLE_NAME_TOP_LEFT));
-    }
-
-    private void selectNextFile() {
-        filesListView.getSelectionModel().selectNext();
-
-        int selectedIndex = filesListView.getSelectionModel().getSelectedIndex();
-        int scrollTo = selectedIndex >= 10 ? selectedIndex - 10 : 0;
-        filesListView.scrollTo(scrollTo);
-    }
-
     private void adjustCirclePositions() {
-        List<Point> selectionBoundaries = markupStorage.getSelectionBoundaries(currentImageFilename);
+        List<Point> selectionBoundaries = applicationContext.getSelectionBoundaries(currentFolder, currentImageFilename);
         if (selectionBoundaries == null) {
             circles.get(CIRCLE_NAME_TOP_LEFT).setCenter(0, 0);
             circles.get(CIRCLE_NAME_TOP_RIGHT).setCenter(image.getWidth(), 0);
@@ -603,8 +496,8 @@ public class ImageViewer {
     @FXML
     private void centerImage() {
         // TODO Investigate, why alignment to center of the parent component does not work
-        imagePane.setTranslateX(imagePane.getTranslateX() - imagePane.getBoundsInParent().getMinX() - CIRCLE_RADIUS);
-        imagePane.setTranslateY(imagePane.getTranslateY() - imagePane.getBoundsInParent().getMinY() - CIRCLE_RADIUS);
+        imagePane.setTranslateX(imagePane.getTranslateX() - imagePane.getBoundsInParent().getMinX() - CIRCLE_RADIUS + CIRCLE_STROKE_WIDTH);
+        imagePane.setTranslateY(imagePane.getTranslateY() - imagePane.getBoundsInParent().getMinY() - CIRCLE_RADIUS + CIRCLE_STROKE_WIDTH);
     }
 
     @FXML
@@ -614,11 +507,10 @@ public class ImageViewer {
             // TODO Rewrite it with button disabled and enabled when needed
             // I.e. by default disabled, by select image enabled, by refresh file list disabled
             // Be aware to enable button due to exception
-            refreshFileList();
-            selectNextFile();
+            applicationContext.fireEvent(Events.WorkFolderRefresh, null);
+            applicationContext.fireEvent(Events.WorkFileSelectNext, null);
         } catch (IOException e) {
-            // TODO Rewrite to show error message to user
-            throw new RuntimeException(e);
+            applicationContext.showError("Error due to save Image", e);
         }
     }
 
@@ -641,17 +533,7 @@ public class ImageViewer {
 
     private void saveBoundaries(List<Point> selectionBoundaries) {
         if (currentImageFilename != null) {
-            markupStorage.saveInfo(currentImageFilename, selectionBoundaries);
-        }
-    }
-
-    private static class FileListEntry {
-        private String filename;
-        private boolean saved;
-
-        public FileListEntry(String filename, boolean saved) {
-            this.filename = filename;
-            this.saved = saved;
+            applicationContext.saveSelectionBoundaries(currentFolder, currentImageFilename, selectionBoundaries);
         }
     }
 }

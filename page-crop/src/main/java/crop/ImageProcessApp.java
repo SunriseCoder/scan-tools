@@ -9,13 +9,15 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import crop.MarkupStorage.FileEntry;
-import crop.filters.BilinearFilter;
-import crop.filters.BinarizationFilter;
-import crop.filters.ImageFilter;
 import filters.FilenameFilterImages;
+import process.MarkupStorage;
+import process.MarkupStorage.FileEntry;
+import process.filters.BilinearFilter;
+import process.filters.BinarizationFilter;
+import process.filters.ImageFilter;
 import utils.FileUtils;
 
+// TODO Get rid of this class after refactoring is finished
 public class ImageProcessApp {
     private static File inputFolder;
     private static File cropFolder;
@@ -39,7 +41,7 @@ public class ImageProcessApp {
         mergedFolder = new File(binarizedFolder, "merged");
         mergedFolder.mkdir();
 
-        MarkupStorage storage = new MarkupStorage(inputFolder);
+        MarkupStorage storage = new MarkupStorage(null, inputFolder);
         List<FileEntry> boundariesList = storage.getAllBoundaries();
 
         System.out.println("Starting process files: " + boundariesList.size());

@@ -1,4 +1,4 @@
-package crop;
+package process;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -10,14 +10,17 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
-import crop.dto.Point;
+import process.dto.Point;
 import utils.JSONUtils;
 
 public class MarkupStorage {
+    private ApplicationContext applicationContext;
+
     private Map<String, FileEntry> storage;
     private File storageFile;
 
-    public MarkupStorage(File folder) {
+    public MarkupStorage(ApplicationContext applicationContext, File folder) {
+        this.applicationContext = applicationContext;
         storageFile = new File(folder, "page-crop.json");
         storage = new TreeMap<>();
         loadData();
@@ -33,8 +36,9 @@ public class MarkupStorage {
             List<FileEntry> data = JSONUtils.loadFromDisk(storageFile, typeReference);
             storage.putAll(data.stream().collect(Collectors.toMap(e -> e.filename, e -> e)));
         } catch (Exception e) {
-            System.out.println("Error due to load data from storage file " + storageFile.getAbsolutePath());
-            e.printStackTrace();
+            if (applicationContext != null) {
+                applicationContext.showError("Error due to load data from storage file " + storageFile.getAbsolutePath(), e);
+            }
         }
     }
 
@@ -48,7 +52,7 @@ public class MarkupStorage {
         return result;
     }
 
-    public void saveInfo(String filename, List<Point> points) {
+    public void saveSelectionBoundaries(String filename, List<Point> points) {
         storage.put(filename, new FileEntry(filename, points, new Date()));
         saveStorageToDisk();
     }
@@ -57,8 +61,7 @@ public class MarkupStorage {
         try {
             JSONUtils.saveToDisk(storage.values(), storageFile);
         } catch (Exception e) {
-            // TODO Show this exception to user
-            throw new RuntimeException(e);
+            applicationContext.showError("Error due to save Markups to the disk", e);
         }
     }
 
@@ -68,7 +71,7 @@ public class MarkupStorage {
         public Date date;
 
         public FileEntry() {
-
+            // Default construction for deserialization
         }
 
         public FileEntry(String filename, List<Point> points, Date date) {
