@@ -48,6 +48,7 @@ public class ImageViewer {
 
     private ApplicationContext applicationContext;
 
+    private boolean sensorControl;
     private Map<String, ExtCircle> circles;
     private File currentFolder;
     private String currentImageFilename;
@@ -114,6 +115,11 @@ public class ImageViewer {
         imagePane.setOnKeyPressed(e -> {
             handleMoveViaKeyboard(e);
         });
+
+        applicationContext.addEventListener(Events.CenterImage, e -> centerImage());
+        applicationContext.addEventListener(Events.SaveImage, e -> saveImage());
+
+        applicationContext.addEventListener(Events.SensorControl, value -> this.sensorControl = (boolean) value);
 
         applicationContext.addEventListener(Events.WorkFolderChanged, value -> handleWorkFolderChanged(value));
         applicationContext.addEventListener(Events.WorkFileSelected, value -> handleSelectWorkFile(value));
@@ -493,14 +499,12 @@ public class ImageViewer {
         }
     }
 
-    @FXML
     private void centerImage() {
         // TODO Investigate, why alignment to center of the parent component does not work
         imagePane.setTranslateX(imagePane.getTranslateX() - imagePane.getBoundsInParent().getMinX() - CIRCLE_RADIUS + CIRCLE_STROKE_WIDTH);
         imagePane.setTranslateY(imagePane.getTranslateY() - imagePane.getBoundsInParent().getMinY() - CIRCLE_RADIUS + CIRCLE_STROKE_WIDTH);
     }
 
-    @FXML
     private void saveImage() {
         try {
             trySaveImage();
