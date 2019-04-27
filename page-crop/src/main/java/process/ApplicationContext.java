@@ -23,6 +23,14 @@ public class ApplicationContext {
     }
 
     public enum Events {
+        // Image
+        CenterImage,
+        SaveImage,
+
+        // Control
+        SensorControl,
+
+        // Files
         WorkFileSelected,
         WorkFileSelectNext,
         WorkFolderChanged,

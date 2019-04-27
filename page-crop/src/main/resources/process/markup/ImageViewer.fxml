@@ -15,7 +15,4 @@
             <Polygon fx:id="polygon" fill="GREEN" opacity="0.5" strokeWidth="0" />
         </children>
     </Pane>
-
-    <Button onAction="#saveImage" text="Save" VBox.vgrow="NEVER" />
-    <Button onAction="#centerImage" text="Center" VBox.vgrow="NEVER" />
 </VBox>
