@@ -1,4 +1,4 @@
-package process.processing.preprocessing;
+package process.processing.prepare;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -20,13 +20,13 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
 import javafx.util.Callback;
 import process.ApplicationContext;
-import process.processing.preprocessing.reordering.AbstractReorderer;
-import process.processing.preprocessing.reordering.Reordering4PagesOn1SheetFromMiddle;
-import process.processing.preprocessing.rotation.AbstractRotator;
-import process.processing.preprocessing.rotation.RotationOdd180Degrees;
+import process.processing.prepare.reordering.AbstractReorderer;
+import process.processing.prepare.reordering.Reordering4PagesOn1SheetFromMiddle;
+import process.processing.prepare.rotation.AbstractRotator;
+import process.processing.prepare.rotation.RotationOdd180Degrees;
 import utils.FileUtils;
 
-public class PreprocessingNode {
+public class PrepareNode {
     private ApplicationContext applicationContext;
 
     @FXML
@@ -70,11 +70,11 @@ public class PreprocessingNode {
 
     @FXML
     private void startProcessing() throws Exception {
-        Thread thread = new Thread(new PreprocessingTask());
+        Thread thread = new Thread(new PrepareTask());
         thread.start();
     }
 
-    private class PreprocessingTask implements Runnable {
+    private class PrepareTask implements Runnable {
 
         @Override
         public void run() {
@@ -82,9 +82,9 @@ public class PreprocessingNode {
                 // TODO Lock Start Button before start and unlock after job finished
                 // TODO Implement Cancel Button (maybe same button, but change caption)
                 runWithExceptions();
-                Platform.runLater(() -> applicationContext.showMessage("Image Preprocessing is done"));
+                Platform.runLater(() -> applicationContext.showMessage("Prepare Images is done"));
             } catch (Exception e) {
-                Platform.runLater(() -> applicationContext.showError("Error due to Preprocessing Images", e));
+                Platform.runLater(() -> applicationContext.showError("Error due to Prepare Images", e));
             }
         }
 
@@ -114,14 +114,14 @@ public class PreprocessingNode {
             outputFolder.mkdir();
 
             File[] files = inputFolder.listFiles(new FilenameFilterImages());
-            int amountOfPages = files.length;
+            int amountOfImages = files.length;
 
-            for (int i = 0; i < amountOfPages; i++) {
+            for (int i = 0; i < amountOfImages; i++) {
                 int sourceIndex = i;
                 int destinationIndex = i;
 
                 if (needReordering) {
-                    sourceIndex = reorderer.getReorderedPageNumber(sourceIndex, amountOfPages);
+                    sourceIndex = reorderer.getReorderedPageNumber(sourceIndex, amountOfImages);
                 }
 
                 File sourceFile = files[sourceIndex];
@@ -136,7 +136,7 @@ public class PreprocessingNode {
                 String formatName = FileUtils.getFileExtension(outputFileName);
                 ImageIO.write(image, formatName, outputFile);
 
-                progress = (double) (i + 1) / amountOfPages;
+                progress = (double) (i + 1) / amountOfImages;
                 Platform.runLater(new UpdateProgressTask());
             }
         }

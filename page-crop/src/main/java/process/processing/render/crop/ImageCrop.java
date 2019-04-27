@@ -1,4 +1,4 @@
-package crop;
+package process.processing.render.crop;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -6,30 +6,26 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import process.dto.Point;
-import process.filters.ImageFilter;
+import process.processing.render.filters.ImageFilter;
 import utils.MathUtils;
 
-// TODO Move all code to process.processing.... and get rid of this file
-public class ImageProcessor {
+public class ImageCrop {
+    private ImageFilter smoothFilter;
+
     private BufferedImage sourceImage;
     private List<Point> selectionBoundaries;
-    private ImageFilter filter;
 
     private double rotationAngle;
 
-    public void setImage(BufferedImage image) {
+    public void setSmoothFilter(ImageFilter smoothFilter) {
+        this.smoothFilter = smoothFilter;
+    }
+
+    public BufferedImage processImage(BufferedImage image, List<Point> boundaries) {
         sourceImage = image;
-    }
+        selectionBoundaries = boundaries;
+        smoothFilter.setImage(sourceImage);
 
-    public void setSelectionBoundaries(List<Point> boundaries) {
-        this.selectionBoundaries = boundaries;
-    }
-
-    public void setFilter(ImageFilter filter) {
-        this.filter = filter;
-    }
-
-    public BufferedImage process() {
         // Step 1 - Calculating rotation angle by the selection
         rotationAngle = calculateRotationAngle();
 
@@ -41,7 +37,6 @@ public class ImageProcessor {
                 BufferedImage.TYPE_INT_RGB);
 
         // Step 4 - Copying all pixels to the newImage
-        filter.setImage(sourceImage);
         copyRotatedPixels(newImage, rotationAngle, newImageBoundaries);
 
         // Step 5 - Crop rotated Image
@@ -121,7 +116,7 @@ public class ImageProcessor {
                 // Applying newImage offset before rotation
                 Point sourcePoint = new Point(x + newImageBoundaries.minX, y + newImageBoundaries.minY);
                 sourcePoint = rotatePoint(sourcePoint, rotationAngle);
-                int color = filter.getRGB(sourcePoint);
+                int color = smoothFilter.getRGB(sourcePoint);
                 try {
                     newImage.setRGB(x, y, color);
                 } catch (Exception e) {

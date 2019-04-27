@@ -11,6 +11,7 @@
     <rowConstraints>
         <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
         <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
         <RowConstraints minHeight="10.0" vgrow="ALWAYS" />
     </rowConstraints>
 </GridPane>

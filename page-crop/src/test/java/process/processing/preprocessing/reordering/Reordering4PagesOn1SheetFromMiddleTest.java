@@ -1,7 +1,6 @@
 package process.processing.preprocessing.reordering;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -12,6 +11,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import process.processing.prepare.reordering.AbstractReorderer;
+import process.processing.prepare.reordering.Reordering4PagesOn1SheetFromMiddle;
+
 @RunWith(Parameterized.class)
 public class Reordering4PagesOn1SheetFromMiddleTest {
 
@@ -20,9 +22,9 @@ public class Reordering4PagesOn1SheetFromMiddleTest {
         return Arrays.asList(new Object[][]{
                 {Arrays.asList(new Integer[]{})},
                 {Arrays.asList(new Integer[] {1, 2, 3, 4})},
-                {Arrays.asList(new Integer[] {3, 4, 5, 6, 1, 2, 7, 8})},
-                {Arrays.asList(new Integer[] {5, 6, 7, 8, 3, 4, 9, 10, 1, 2, 11, 12})},
-                {Arrays.asList(new Integer[] {7, 8, 9, 10, 5, 6, 11, 12, 3, 4, 13, 14, 1, 2, 15, 16})}
+                {Arrays.asList(new Integer[] {5, 6, 1, 2, 3, 4, 7, 8})},
+                {Arrays.asList(new Integer[] {9, 10, 5, 6, 1, 2, 3, 4, 7, 8, 11, 12})},
+                {Arrays.asList(new Integer[] {13, 14, 9, 10, 5, 6, 1, 2, 3, 4, 7, 8, 11, 12, 15, 16})}
         });
     }
 
@@ -35,9 +37,14 @@ public class Reordering4PagesOn1SheetFromMiddleTest {
     }
 
     @Test
-    public void testGetReorderedList() {
+    public void testGetReorderedPageNumber() {
         int amountOfPages = expectedPagesList.size();
-        List<Integer> actualPagesList = reorderer.getReorderedList(amountOfPages);
-        assertThat(actualPagesList, is(expectedPagesList));
+
+        for (int i = 0; i < amountOfPages; i++) {
+            int expected = expectedPagesList.get(i);
+            int actual = reorderer.getReorderedPageNumber(i, amountOfPages) + 1;
+
+            assertEquals(expected, actual);
+        }
     }
 }
