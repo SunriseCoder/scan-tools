@@ -21,7 +21,7 @@ public class MarkupStorage {
 
     public MarkupStorage(ApplicationContext applicationContext, File folder) {
         this.applicationContext = applicationContext;
-        storageFile = new File(folder, "page-crop.json");
+        storageFile = new File(folder, "markups.json");
         storage = new TreeMap<>();
         loadData();
     }

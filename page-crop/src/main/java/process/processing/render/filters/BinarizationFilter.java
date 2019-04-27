@@ -1,11 +1,11 @@
-package process.filters;
+package process.processing.render.filters;
 
 import java.awt.Color;
 
 import utils.ColorUtils;
 
 public class BinarizationFilter extends AbstractImageFilter {
-    private double threshold = 500 * 1000;
+    private double threshold = 85 * 5 * 1000;
     private double rw = 3;
     private double gw = 1;
     private double bw = 1;

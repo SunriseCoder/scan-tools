@@ -8,7 +8,8 @@ import javafx.scene.Parent;
 import javafx.scene.layout.GridPane;
 import process.ApplicationContext;
 import process.processing.actions.ActionsNode;
-import process.processing.preprocessing.PreprocessingNode;
+import process.processing.prepare.PrepareNode;
+import process.processing.render.RenderNode;
 import utils.FileUtils;
 
 public class ProcessingNode {
@@ -22,10 +23,15 @@ public class ProcessingNode {
         Node actionsNode = actions.init(applicationContext);
         processingTabGridPane.getChildren().add(actionsNode);
 
-        PreprocessingNode reordering = new PreprocessingNode();
-        Node reorderingNode = reordering.init(applicationContext);
-        GridPane.setRowIndex(reorderingNode, 1);
-        processingTabGridPane.getChildren().add(reorderingNode);
+        PrepareNode reorder = new PrepareNode();
+        Node reorderNode = reorder.init(applicationContext);
+        GridPane.setRowIndex(reorderNode, 1);
+        processingTabGridPane.getChildren().add(reorderNode);
+
+        RenderNode render = new RenderNode();
+        Node renderNode = render.init(applicationContext);
+        GridPane.setRowIndex(renderNode, 2);
+        processingTabGridPane.getChildren().add(renderNode);
 
         return node;
     }

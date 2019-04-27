@@ -8,7 +8,7 @@ import java.awt.image.BufferedImage;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import process.filters.ImageFilter;
+import process.processing.render.filters.ImageFilter;
 
 public class BaseImageFilterTest {
     protected static BufferedImage image;

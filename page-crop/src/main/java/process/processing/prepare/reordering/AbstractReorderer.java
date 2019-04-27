@@ -1,7 +1,6 @@
-package process.processing.preprocessing.reordering;
+package process.processing.prepare.reordering;
 
 import java.io.IOException;
-import java.util.List;
 
 import process.ApplicationContext;
 
@@ -25,7 +24,5 @@ public abstract class AbstractReorderer {
 
     }
 
-    // TODO Get rid of List method, because they work opposite way, be careful
-    public abstract List<Integer> getReorderedList(int amountOfPages);
     public abstract int getReorderedPageNumber(int index, int amountOfPages);
 }

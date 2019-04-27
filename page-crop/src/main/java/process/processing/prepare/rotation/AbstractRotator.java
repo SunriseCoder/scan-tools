@@ -1,4 +1,4 @@
-package process.processing.preprocessing.rotation;
+package process.processing.prepare.rotation;
 
 import java.awt.image.BufferedImage;
 

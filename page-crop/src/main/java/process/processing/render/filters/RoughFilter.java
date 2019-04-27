@@ -1,4 +1,4 @@
-package process.filters;
+package process.processing.render.filters;
 
 import utils.MathUtils;
 

@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-import process.filters.RoughFilter;
+import process.processing.render.filters.RoughFilter;
 
 public class RoughFilterTest extends BaseImageFilterTest {
 

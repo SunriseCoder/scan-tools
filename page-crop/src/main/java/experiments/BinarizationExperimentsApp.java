@@ -18,7 +18,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import process.filters.BinarizationFilter;
+import process.processing.render.filters.BinarizationFilter;
 
 public class BinarizationExperimentsApp extends Application {
     private static String imageUrl;

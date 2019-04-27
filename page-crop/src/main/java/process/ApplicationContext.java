@@ -90,11 +90,14 @@ public class ApplicationContext {
         }
     }
 
+    public void reloadSelectionBoundaries(File folder) {
+        createMarkupStorage(folder);
+    }
+
     public List<Point> getSelectionBoundaries(File folder, String filename) {
         MarkupStorage markupStorage = markupStorages.get(folder);
         if (markupStorage == null) {
-            markupStorage = new MarkupStorage(this, folder);
-            markupStorages.put(folder, markupStorage);
+            markupStorage = createMarkupStorage(folder);
         }
 
         List<Point> selectionBoundaries = markupStorage.getSelectionBoundaries(filename);
@@ -104,11 +107,16 @@ public class ApplicationContext {
     public void saveSelectionBoundaries(File folder, String filename, List<Point> selectionBoundaries) {
         MarkupStorage markupStorage = markupStorages.get(folder);
         if (markupStorage == null) {
-            markupStorage = new MarkupStorage(this, folder);
-            markupStorages.put(folder, markupStorage);
+            markupStorage = createMarkupStorage(folder);
         }
 
         markupStorage.saveSelectionBoundaries(filename, selectionBoundaries);
+    }
+
+    private MarkupStorage createMarkupStorage(File folder) {
+        MarkupStorage markupStorage = new MarkupStorage(this, folder);
+        markupStorages.put(folder, markupStorage);
+        return markupStorage;
     }
 
     public void addEventListener(Events event, EventListener listener) {
@@ -144,31 +152,27 @@ public class ApplicationContext {
     }
 
     public void showMessage(String message) {
-        showMessage(AlertType.INFORMATION, message);
+        showMessage(AlertType.INFORMATION, message, null);
+    }
+
+    public void showError(String message, Exception e) {
+        showMessage(AlertType.ERROR, message, e);
+    }
+
+    public void showWarning(String message, Exception e) {
+        showMessage(AlertType.WARNING, message, e);
     }
 
     // TODO Improve this method to be able to see stacktrace somehow (log or on UI)
-    public void showError(String message, Exception e) {
-        showMessage(AlertType.ERROR, message + ": " + e.getMessage());
-        e.printStackTrace();
+    private void showMessage(AlertType alertType, String message, Exception e) {
+        if (e != null) {
+            message += ": " + e.getMessage();
+            e.printStackTrace();
+        }
+        showMessageOnUI(alertType, message);
     }
 
-    private void showMessage(AlertType alertType, String message) {
-        Platform.runLater(new ShowMessage(alertType, message));
-    }
-
-    private class ShowMessage implements Runnable {
-        private AlertType alertType;
-        private String message;
-
-        public ShowMessage(AlertType alertType, String message) {
-            this.alertType = alertType;
-            this.message = message;
-        }
-
-        @Override
-        public void run() {
-            new Alert(alertType, message).show();
-        }
+    private void showMessageOnUI(AlertType alertType, String message) {
+        Platform.runLater(() -> new Alert(alertType, message).show());
     }
 }

@@ -39,6 +39,7 @@ public class ScanProcessorApp extends Application {
         // Main Scene
         Scene scene = new Scene(root);
         primaryStage.setScene(scene);
+        primaryStage.setTitle("Scan Processor");
         primaryStage.setMaximized(true);
         primaryStage.show();
 
@@ -47,7 +48,7 @@ public class ScanProcessorApp extends Application {
         Node imageViewerRoot = imageViewer.init(applicationContext);
         splitPane.getItems().add(imageViewerRoot);
 
-        // Image Processing
+        // Processing
         ProcessingNode processing = new ProcessingNode();
         Node processingNode = processing.init(applicationContext);
         splitPane.getItems().add(processingNode);
