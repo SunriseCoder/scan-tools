@@ -14,6 +14,8 @@ import process.dto.Point;
 import utils.JSONUtils;
 
 public class MarkupStorage {
+    private static final String MARKUP_STORAGE_FILENAME = "markups.json";
+
     private ApplicationContext applicationContext;
 
     private Map<String, FileEntry> storage;
@@ -21,7 +23,7 @@ public class MarkupStorage {
 
     public MarkupStorage(ApplicationContext applicationContext, File folder) {
         this.applicationContext = applicationContext;
-        storageFile = new File(folder, "markups.json");
+        storageFile = new File(folder, MARKUP_STORAGE_FILENAME);
         storage = new TreeMap<>();
         loadData();
     }

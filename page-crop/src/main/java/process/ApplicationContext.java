@@ -17,6 +17,8 @@ import process.dto.Point;
 import utils.JSONUtils;
 
 public class ApplicationContext {
+    private static final String APPLICATION_CONTEXT_CONFIG_FILENAME = "scan-processor-config.json";
+
     public enum Parameters {
         SplitPaneDivider,
         StartFolder
@@ -46,7 +48,7 @@ public class ApplicationContext {
     private File workFolder;
 
     public ApplicationContext() {
-        configurationFile = new File("page-crop-config.json");
+        configurationFile = new File(APPLICATION_CONTEXT_CONFIG_FILENAME);
         storage = new HashMap<>();
         markupStorages = new HashMap<>();
         eventListeners = new HashMap<>();
