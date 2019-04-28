@@ -5,19 +5,31 @@ import java.io.IOException;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import process.ApplicationContext;
+import process.ApplicationContext.Events;
 import process.processing.actions.ActionsNode;
 import process.processing.prepare.PrepareNode;
 import process.processing.render.RenderNode;
 import utils.FileUtils;
+import utils.ThreadUtils;
 
 public class ProcessingNode {
+    private ApplicationContext applicationContext;
+
     @FXML
     private GridPane processingTabGridPane;
 
+    @FXML
+    private Button saveButton;
+
     public Node init(ApplicationContext applicationContext) throws IOException {
+        this.applicationContext = applicationContext;
+
         Parent node = FileUtils.loadFXML(this);
+
+        applicationContext.addEventListener(Events.SensorControl, value -> saveButton.setVisible((boolean) value));
 
         ActionsNode actions = new ActionsNode();
         Node actionsNode = actions.init(applicationContext);
@@ -34,5 +46,12 @@ public class ProcessingNode {
         processingTabGridPane.getChildren().add(renderNode);
 
         return node;
+    }
+
+    @FXML
+    private void handleSave() {
+        saveButton.setDisable(true);
+        applicationContext.fireEvent(Events.SaveImage, null);
+        ThreadUtils.runLaterAfterSleep(3000, () -> saveButton.setDisable(false));
     }
 }
