@@ -5,13 +5,18 @@ import java.io.IOException;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.control.Button;
 import javafx.scene.control.ToggleButton;
 import process.ApplicationContext;
 import process.ApplicationContext.Events;
 import utils.FileUtils;
+import utils.ThreadUtils;
 
 public class ActionsNode {
     private ApplicationContext applicationContext;
+
+    @FXML
+    private Button saveButton;
 
     @FXML
     private ToggleButton sensorToggleButton;
@@ -29,7 +34,9 @@ public class ActionsNode {
 
     @FXML
     private void handleSaveImage() {
+        saveButton.setDisable(true);
         applicationContext.fireEvent(Events.SaveImage, null);
+        ThreadUtils.runLaterAfterSleep(3000, () -> saveButton.setDisable(false));
     }
 
     @FXML

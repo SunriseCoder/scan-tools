@@ -19,6 +19,8 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
+import javafx.scene.input.TouchEvent;
+import javafx.scene.input.TouchPoint;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
@@ -86,16 +88,14 @@ public class ImageViewer {
         imagePane.getChildren().addAll(circles.values());
 
         // Saving mouse position when the button was pressed
-        imagePane.setOnMousePressed(e -> {
-            imagePane.requestFocus();
-            saveMouseClickPosition(e);
-            setCurrentCircle();
-            e.consume();
-        });
+        imagePane.setOnMousePressed(e -> handleMousePressedEvent(e));
+
+        // Saving mouse position when Sensor was touched
+        imagePane.setOnTouchPressed(e -> handleTouchPressedEvent(e));
 
         // Handling dragging event when mouse moved after the button is pressed
         imagePane.setOnMouseDragged(e -> {
-            if (e.getButton().equals(MouseButton.PRIMARY)) {
+            if (!sensorControl && e.getButton().equals(MouseButton.PRIMARY)) {
                 handleImageDrag(e);
             }
 
@@ -103,18 +103,17 @@ public class ImageViewer {
                 handleCircleDrag(e);
             }
 
-            saveMouseClickPosition(e);
+            handleClickEvent(e.getSceneX(), e.getSceneY());
         });
+
+        // Handling dragging event by Sensor Touch
+        imagePane.setOnTouchMoved(e -> handleCircleDrag(e));
 
         // Handle scaling event
-        imagePane.setOnScroll(e -> {
-            handleImageScale(e);
-        });
+        imagePane.setOnScroll(e -> handleImageScale(e));
 
         // Moving image (or circles) with the keyboard
-        imagePane.setOnKeyPressed(e -> {
-            handleMoveViaKeyboard(e);
-        });
+        imagePane.setOnKeyPressed(e -> handleMoveViaKeyboard(e));
 
         applicationContext.addEventListener(Events.CenterImage, e -> centerImage());
         applicationContext.addEventListener(Events.SaveImage, e -> saveImage());
@@ -125,6 +124,22 @@ public class ImageViewer {
         applicationContext.addEventListener(Events.WorkFileSelected, value -> handleSelectWorkFile(value));
 
         return root;
+    }
+
+    private void handleTouchPressedEvent(TouchEvent e) {
+        TouchPoint point = e.getTouchPoint();
+        handleClickEvent(point.getSceneX(), point.getSceneY());
+    }
+
+    private void handleMousePressedEvent(MouseEvent e) {
+        handleClickEvent(e.getSceneX(), e.getSceneY());
+    }
+
+    private void handleClickEvent(double x, double y) {
+        lastMousePosX = x;
+        lastMousePosY = y;
+        imagePane.requestFocus();
+        setCurrentCircle();
     }
 
     private void handleWorkFolderChanged(Object value) {
@@ -274,11 +289,6 @@ public class ImageViewer {
         polygon.getPoints().addAll(points);
     }
 
-    private void saveMouseClickPosition(MouseEvent mouseEvent) {
-        lastMousePosX = mouseEvent.getSceneX();
-        lastMousePosY = mouseEvent.getSceneY();
-    }
-
     private void setCurrentCircle() {
         double posOnImageX = getImageCoordinateX(lastMousePosX);
         double posOnImageY = getImageCoordinateY(lastMousePosY);
@@ -303,14 +313,20 @@ public class ImageViewer {
         imagePane.setTranslateY(imagePane.getTranslateY() + mouseDeltaY);
     }
 
-    private void handleCircleDrag(MouseEvent mouseEvent) {
+    private void handleCircleDrag(MouseEvent event) {
+        handleCircleDrag(event.getSceneX(), event.getSceneY());
+    }
+
+    private void handleCircleDrag(TouchEvent event) {
+        TouchPoint point = event.getTouchPoint();
+        handleCircleDrag(point.getSceneX(), point.getSceneY());
+    }
+
+    private void handleCircleDrag(double currentMousePosX, double currentMousePosY) {
         // If image is not initialized yet
         if (image == null) {
             return;
         }
-
-        double currentMousePosX = mouseEvent.getSceneX();
-        double currentMousePosY = mouseEvent.getSceneY();
 
         // Calculating position of the Circle on the Image
         double posOnImageX = getImageCoordinateX(lastMousePosX);
@@ -336,7 +352,12 @@ public class ImageViewer {
         circle.setCenterY(newPositionY);
     }
 
+    // TODO Adjust for use by mouse and sensor image scale
     private void handleImageScale(ScrollEvent scrollEvent) {
+        if (sensorControl) {
+            return;
+        }
+
         double delta = 1.2;
         double oldScale = scale;
         scale = scrollEvent.getDeltaY() < 0 ? oldScale / delta : oldScale * delta;

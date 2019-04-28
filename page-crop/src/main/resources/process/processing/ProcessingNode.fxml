@@ -3,6 +3,7 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.control.Button?>
 
 <GridPane fx:id="processingTabGridPane" xmlns:fx="http://javafx.com/fxml/1">
     <columnConstraints>
@@ -14,4 +15,8 @@
         <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
         <RowConstraints minHeight="10.0" vgrow="ALWAYS" />
     </rowConstraints>
+    <children>
+        <Button fx:id="saveButton" focusTraversable="false" GridPane.rowIndex="3" maxHeight="1E308" maxWidth="1E308" onAction="#handleSave" text="Save"
+            visible="false" />
+    </children>
 </GridPane>
