@@ -508,7 +508,7 @@ public class ImageViewer {
     private double adjustNewCirclePositionX(ExtCircle circle, double newX) {
         // Checking that position X is not outside the Image width
         double imageWidth = image.getWidth();
-        newX = newX >= imageWidth ? imageWidth : newX;
+        newX = newX >= imageWidth ? imageWidth - 1 : newX;
         newX = newX < 0 ? 0 : newX;
 
         switch (circle.getName()) {
@@ -536,7 +536,7 @@ public class ImageViewer {
     private double adjustNewCirclePositionY(ExtCircle circle, double newY) {
         // Checking that position Y is not outside the Image height
         double imageHeight = image.getHeight();
-        newY = newY >= imageHeight ? imageHeight : newY;
+        newY = newY >= imageHeight ? imageHeight - 1 : newY;
         newY = newY < 0 ? 0 : newY;
 
         switch (circle.getName()) {

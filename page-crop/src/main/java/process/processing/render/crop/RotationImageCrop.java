@@ -6,21 +6,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import process.dto.Point;
-import process.processing.render.filters.ImageFilter;
 import utils.MathUtils;
 
-public class ImageCrop {
-    private ImageFilter smoothFilter;
-
+public class RotationImageCrop extends AbstractImageCrop {
     private BufferedImage sourceImage;
     private List<Point> selectionBoundaries;
 
     private double rotationAngle;
 
-    public void setSmoothFilter(ImageFilter smoothFilter) {
-        this.smoothFilter = smoothFilter;
-    }
-
+    @Override
     public BufferedImage processImage(BufferedImage image, List<Point> boundaries) {
         sourceImage = image;
         selectionBoundaries = boundaries;
@@ -158,7 +152,7 @@ public class ImageCrop {
         return rotatedPoint;
     }
 
-    private static class NewImageBoundaries {
+    static class NewImageBoundaries {
         public int width;
         public int height;
 

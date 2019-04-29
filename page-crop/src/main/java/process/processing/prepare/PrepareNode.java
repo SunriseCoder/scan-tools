@@ -8,25 +8,22 @@ import javax.imageio.ImageIO;
 
 import filters.FilenameFilterImages;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
-import javafx.util.Callback;
 import process.ApplicationContext;
+import process.processing.AbstractNode;
 import process.processing.prepare.reordering.AbstractReorderer;
 import process.processing.prepare.reordering.Reordering4PagesOn1SheetFromMiddle;
 import process.processing.prepare.rotation.AbstractRotator;
 import process.processing.prepare.rotation.RotationOdd180Degrees;
 import utils.FileUtils;
 
-public class PrepareNode {
+public class PrepareNode extends AbstractNode {
     private ApplicationContext applicationContext;
 
     @FXML
@@ -50,22 +47,9 @@ public class PrepareNode {
         return rootNode;
     }
 
-    public void initialize() {
-        reorderingComboBox.setCellFactory(new ReorderingMethodCellFactory());
-        reorderingComboBox.setButtonCell(new ReorderingMethodsListCell());
-
-        ReorderingMethods[] reorderingMethods = ReorderingMethods.values();
-        ObservableList<ReorderingMethods> reorderingItems = FXCollections.observableArrayList(reorderingMethods);
-        reorderingComboBox.setItems(reorderingItems);
-        reorderingComboBox.getSelectionModel().selectFirst();
-
-        rotationComboBox.setCellFactory(new RotationMethodCellFactory());
-        rotationComboBox.setButtonCell(new RotationMethodsListCell());
-
-        RotationMethods[] rotationMethods = RotationMethods.values();
-        ObservableList<RotationMethods> rotationItems = FXCollections.observableArrayList(rotationMethods);
-        rotationComboBox.setItems(rotationItems);
-        rotationComboBox.getSelectionModel().selectFirst();
+    public void initialize() throws Exception {
+        initComboBox(reorderingComboBox, ReorderingMethodsListCell.class, ReorderingMethods.values());
+        initComboBox(rotationComboBox, RotationMethodsListCell.class, RotationMethods.values());
     }
 
     @FXML
@@ -182,15 +166,7 @@ public class PrepareNode {
         }
     }
 
-    private static class ReorderingMethodCellFactory
-            implements Callback<ListView<ReorderingMethods>, ListCell<ReorderingMethods>> {
-        @Override
-        public ListCell<ReorderingMethods> call(ListView<ReorderingMethods> param) {
-            return new ReorderingMethodsListCell();
-        }
-    }
-
-    private static class ReorderingMethodsListCell extends ListCell<ReorderingMethods> {
+    public static class ReorderingMethodsListCell extends ListCell<ReorderingMethods> {
         @Override
         protected void updateItem(ReorderingMethods item, boolean empty) {
             super.updateItem(item, empty);
@@ -198,15 +174,7 @@ public class PrepareNode {
         }
     }
 
-    private static class RotationMethodCellFactory
-            implements Callback<ListView<RotationMethods>, ListCell<RotationMethods>> {
-        @Override
-        public ListCell<RotationMethods> call(ListView<RotationMethods> param) {
-            return new RotationMethodsListCell();
-        }
-    }
-
-    private static class RotationMethodsListCell extends ListCell<RotationMethods> {
+    public static class RotationMethodsListCell extends ListCell<RotationMethods> {
         @Override
         protected void updateItem(RotationMethods item, boolean empty) {
             super.updateItem(item, empty);

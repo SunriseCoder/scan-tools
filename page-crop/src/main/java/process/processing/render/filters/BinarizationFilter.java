@@ -28,15 +28,15 @@ public class BinarizationFilter extends AbstractImageFilter {
         this.threshold = threshold;
     }
 
-    public void setRw(double rw) {
+    public void setWeightRed(double rw) {
         this.rw = rw;
     }
 
-    public void setGw(double gw) {
+    public void setWeightGreen(double gw) {
         this.gw = gw;
     }
 
-    public void setBw(double bw) {
+    public void setWeightBlue(double bw) {
         this.bw = bw;
     }
 }
