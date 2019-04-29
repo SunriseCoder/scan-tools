@@ -16,7 +16,7 @@
         <GridPane hgap="5.0" vgap="5.0">
             <columnConstraints>
                 <ColumnConstraints hgrow="NEVER" minWidth="10.0" />
-                <ColumnConstraints hgrow="ALWAYS" minWidth="150.0" />
+                <ColumnConstraints hgrow="ALWAYS" minWidth="100.0" />
                 <ColumnConstraints hgrow="NEVER" minWidth="10.0" />
             </columnConstraints>
             <rowConstraints>
@@ -42,7 +42,7 @@
                 </CheckBox>
                 <ComboBox fx:id="rotationComboBox" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1" HBox.hgrow="ALWAYS" />
 
-                <!-- Progress Bar and Run Button -->
+                <!-- Progress Bar and Process Button -->
                 <ProgressBar fx:id="progressBar" maxWidth="1.7976931348623157E308" prefHeight="22.0" progress="0.0" GridPane.columnSpan="2" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.vgrow="ALWAYS" />
                 <Button mnemonicParsing="false" onAction="#startProcessing" text="Process" GridPane.columnIndex="2" GridPane.rowIndex="2">
                <font>

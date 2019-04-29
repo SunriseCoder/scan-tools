@@ -124,9 +124,9 @@ public class BinarizationExperimentsApp extends Application {
         double gw = Double.parseDouble(gField.getText());
         double bw = Double.parseDouble(bField.getText());
         threshold *= rw + gw + bw;
-        filter.setRw(rw);
-        filter.setGw(gw);
-        filter.setBw(bw);
+        filter.setWeightRed(rw);
+        filter.setWeightGreen(gw);
+        filter.setWeightBlue(bw);
         filter.setThreshold(threshold);
 
         for (int y = 0; y < newImage.getHeight(); y++) {

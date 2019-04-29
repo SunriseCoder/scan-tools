@@ -6,15 +6,25 @@ import process.processing.render.filters.ImageFilter;
 
 public class ImageResize {
     private ImageFilter smoothFilter;
+    private int sourceDPI;
+    private int targetDPI;
 
     public void setSmoothFilter(ImageFilter smoothFilter) {
         this.smoothFilter = smoothFilter;
     }
 
-    public BufferedImage processImage(BufferedImage srcImage, int sourceDPI, int targetDPI) {
+    public void setSourceDPI(int sourceDPI) {
+        this.sourceDPI = sourceDPI;
+    }
+
+    public void setTargetDPI(int targetDPI) {
+        this.targetDPI = targetDPI;
+    }
+
+    public BufferedImage processImage(BufferedImage srcImage) {
         smoothFilter.setImage(srcImage);
 
-        double factor = 400.0 / 600.0;
+        double factor = (double) sourceDPI / targetDPI;
         int newWidth = (int) Math.round(srcImage.getWidth() * factor);
         int newHeight = (int) Math.round(srcImage.getHeight() * factor);
         BufferedImage newImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);

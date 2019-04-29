@@ -3,10 +3,20 @@ package process.processing.render.merge;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 
+import process.processing.render.RenderNode.ImageMergeMethods;
 import utils.ImageUtils;
 
 public class ImageMerge {
     private Color defaultColor = Color.WHITE;
+    private ImageMergeMethods mergeMethod;
+
+    public ImageMergeMethods getMergeMethod() {
+        return mergeMethod;
+    }
+
+    public void setMergeMethod(ImageMergeMethods mergeMethod) {
+        this.mergeMethod = mergeMethod;
+    }
 
     public BufferedImage mergeImages(BufferedImage image1, BufferedImage image2) {
         if (image1 == null) {
