@@ -33,6 +33,7 @@ import process.processing.render.filters.RoughFilter;
 import process.processing.render.merge.ImageMerge;
 import process.processing.render.resize.ImageResize;
 import utils.FileUtils;
+import utils.ThreadUtils;
 
 public class RenderNode extends AbstractNode {
     private static final String DEFAULT_RESIZE_SOURCE_DPI = "600";
@@ -162,14 +163,15 @@ public class RenderNode extends AbstractNode {
             ImageBinarization binarization = null;
             if (needBinarization) {
                 BinarizationFilter binarizationFilter = new BinarizationFilter();
-                double threshold = Double.parseDouble(thresholdTextField.getText());
-                binarizationFilter.setThreshold(threshold);
                 double weightRed = Double.parseDouble(weightRedTextField.getText());
                 binarizationFilter.setWeightRed(weightRed);
                 double weightGreen = Double.parseDouble(weightGreenTextField.getText());
                 binarizationFilter.setWeightGreen(weightGreen);
                 double weightBlue = Double.parseDouble(weightBlueTextField.getText());
                 binarizationFilter.setWeightBlue(weightBlue);
+                double threshold = Double.parseDouble(thresholdTextField.getText());
+                threshold *= weightRed + weightGreen + weightBlue;
+                binarizationFilter.setThreshold(threshold);
 
                 binarization = new ImageBinarization();
                 binarization.setColorFilter(binarizationFilter);
@@ -193,6 +195,8 @@ public class RenderNode extends AbstractNode {
             int mergeCounter = 1;
             String fileNameBase = createFileNameBase(files[0].getName());
             boolean sentNoBoundariesWarning = false;
+            progress = 0;
+            ThreadUtils.runLater(new UpdateProgressTask());
             for (int i = 0; i < amountOfImages; i++) {
                 File inputFile = files[i];
                 BufferedImage image = ImageIO.read(inputFile);
@@ -251,7 +255,7 @@ public class RenderNode extends AbstractNode {
 
                 // Update Progress
                 progress = (double) (i + 1) / amountOfImages;
-                Platform.runLater(new UpdateProgressTask());
+                ThreadUtils.runLater(new UpdateProgressTask());
             }
 
             if (needMerge && previousImage != null) {

@@ -6,17 +6,17 @@ import utils.ColorUtils;
 
 public class BinarizationFilter extends AbstractImageFilter {
     private double threshold = 85 * 5 * 1000;
-    private double rw = 3;
-    private double gw = 1;
-    private double bw = 1;
+    private double weightRed = 3;
+    private double weightGreen = 1;
+    private double weightBlue = 1;
 
     @Override
     public int getRGB(double x, double y) {
         int sourceColor = getRGBFromImage((int) x, (int) y);
 
-        double r = ColorUtils.getRed(sourceColor) * rw;
-        double g = ColorUtils.getGreen(sourceColor) * gw;
-        double b = ColorUtils.getBlue(sourceColor) * bw;
+        double r = ColorUtils.getRed(sourceColor) * weightRed;
+        double g = ColorUtils.getGreen(sourceColor) * weightGreen;
+        double b = ColorUtils.getBlue(sourceColor) * weightBlue;
         double rgb = r * r + g * g + b * b;
 
         Color color = rgb >= threshold ? Color.WHITE : Color.BLACK;
@@ -28,15 +28,15 @@ public class BinarizationFilter extends AbstractImageFilter {
         this.threshold = threshold;
     }
 
-    public void setWeightRed(double rw) {
-        this.rw = rw;
+    public void setWeightRed(double weightRed) {
+        this.weightRed = weightRed;
     }
 
-    public void setWeightGreen(double gw) {
-        this.gw = gw;
+    public void setWeightGreen(double weightGreen) {
+        this.weightGreen = weightGreen;
     }
 
-    public void setWeightBlue(double bw) {
-        this.bw = bw;
+    public void setWeightBlue(double weightBlue) {
+        this.weightBlue = weightBlue;
     }
 }
