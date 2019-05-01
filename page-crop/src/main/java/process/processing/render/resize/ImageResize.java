@@ -24,7 +24,7 @@ public class ImageResize {
     public BufferedImage processImage(BufferedImage srcImage) {
         smoothFilter.setImage(srcImage);
 
-        double factor = (double) sourceDPI / targetDPI;
+        double factor = (double) targetDPI / sourceDPI;
         int newWidth = (int) Math.round(srcImage.getWidth() * factor);
         int newHeight = (int) Math.round(srcImage.getHeight() * factor);
         BufferedImage newImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
