@@ -27,6 +27,7 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import process.ApplicationContext;
 import process.ApplicationContext.Events;
+import process.ApplicationContext.Parameters;
 import process.components.ExtCircle;
 import process.dto.FileListEntry;
 import process.dto.Point;
@@ -39,8 +40,6 @@ public class ImageViewer {
     private static final double CIRCLE_RADIUS = 40;
     private static final int CIRCLE_STROKE_WIDTH = 3;
 
-    private static final int MARKUP_MODES = 1;
-    private static final int MARKUP_FACTOR = 15;
 
     // Circle names
     private static final String CIRCLE_NAME_BOTTOM_LEFT = "BottomLeft";
@@ -50,6 +49,8 @@ public class ImageViewer {
 
     private ApplicationContext applicationContext;
 
+    private int MarkupRoughFactor = 10;
+    private int MarkupRoughModes = 2;
     private boolean sensorControl;
     private Map<String, ExtCircle> circles;
     private File currentFolder;
@@ -136,6 +137,15 @@ public class ImageViewer {
         return root;
     }
 
+    public void initialize() {
+        String markupRoughModesString = applicationContext.getParameterValue(Parameters.MarkupRoughModes);
+        if (markupRoughModesString == null) {
+            applicationContext.setParameterValue(Parameters.MarkupRoughModes, String.valueOf(MarkupRoughModes));
+        } else {
+            MarkupRoughModes = Integer.parseInt(markupRoughModesString);
+        }
+    }
+
     private void handleTouchPressedEvent(TouchEvent e) {
         if (touchTrace) {
             System.out.println(e);
@@ -195,7 +205,7 @@ public class ImageViewer {
 
         centerImage();
 
-        roughMarkupMode = MARKUP_MODES - 1;
+        roughMarkupMode = MarkupRoughModes - 1;
         setCurrentCircle(circles.get(CIRCLE_NAME_TOP_LEFT));
     }
 
@@ -434,7 +444,7 @@ public class ImageViewer {
 
         int step = (int) Math.round(1 / scale);
         step = MathUtils.adjustValue(step, 1, 100);
-        step *= Math.pow(MARKUP_FACTOR, roughMarkupMode);
+        step *= Math.pow(MarkupRoughFactor, roughMarkupMode);
 
         double newX, newY;
         switch (e.getCode()) {
@@ -474,9 +484,10 @@ public class ImageViewer {
             case F:
                 saveImage();
                 break;
+            case R:
             case SHIFT:
                 if (--roughMarkupMode < 0) {
-                    roughMarkupMode = MARKUP_MODES - 1;
+                    roughMarkupMode = MarkupRoughModes - 1;
                 }
             default:
                 // Ignore unsupported KeyCode
