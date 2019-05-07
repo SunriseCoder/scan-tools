@@ -21,8 +21,9 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import process.ApplicationContext;
-import process.ApplicationContext.Events;
+import process.context.ApplicationContext;
+import process.context.ApplicationEvents;
+import process.context.ApplicationParameters;
 import process.dto.FileListEntry;
 import process.filelist.FileListNode;
 import process.processing.render.filters.BinarizationFilter;
@@ -74,15 +75,8 @@ public class BinarizationExperimentsApp extends Application {
         Node fileListNode = fileList.init(applicationContext);
         splitPane.getItems().add(fileListNode);
 
-        applicationContext.addEventListener(Events.WorkFolderChanged, value -> handleWorkFolderChanged(value));
-        applicationContext.addEventListener(Events.WorkFileSelected, value -> handleSelectWorkFile(value));
-
-        // Image
-        //Image image = new Image(imageUrl);
-        //sourceImage = new BufferedImage((int) image.getWidth(), (int) image.getHeight(), BufferedImage.TYPE_INT_RGB);
-        //SwingFXUtils.fromFXImage(image, sourceImage);
-
-        // ImageViews
+        applicationContext.addEventListener(ApplicationEvents.WorkFolderChanged, value -> handleWorkFolderChanged(value));
+        applicationContext.addEventListener(ApplicationEvents.WorkFileSelected, value -> handleSelectWorkFile(value));
 
         imagePane.setScaleX(scale);
         imagePane.setScaleY(scale);
@@ -145,7 +139,7 @@ public class BinarizationExperimentsApp extends Application {
     }
 
     private void restoreComponent() {
-        String positionsString = applicationContext.getParameterValue(ApplicationContext.Parameters.SplitPaneDivider);
+        String positionsString = applicationContext.getParameterValue(ApplicationParameters.SplitPaneDivider);
         if (positionsString != null) {
             double[] positions = Arrays.stream(positionsString.split(";"))
                     .mapToDouble(s -> Double.parseDouble(s)).toArray();
@@ -159,16 +153,16 @@ public class BinarizationExperimentsApp extends Application {
                 String dividerPositionsString = Arrays.stream(dividerPositions).boxed()
                         .map(d -> String.valueOf(d))
                         .collect(Collectors.joining(";"));
-                applicationContext.setParameterValue(ApplicationContext.Parameters.SplitPaneDivider, dividerPositionsString);
+                applicationContext.setParameterValue(ApplicationParameters.SplitPaneDivider, dividerPositionsString);
             });
         });
 
         // Restore Working Folder
-        String startFolderPath = applicationContext.getParameterValue(ApplicationContext.Parameters.StartFolder);
+        String startFolderPath = applicationContext.getParameterValue(ApplicationParameters.StartFolder);
         if (startFolderPath != null) {
             File startFolder = new File(startFolderPath);
             if (startFolder.exists() && startFolder.isDirectory()) {
-                applicationContext.fireEvent(Events.WorkFolderChanged, startFolder);
+                applicationContext.fireEvent(ApplicationEvents.WorkFolderChanged, startFolder);
             }
         }
     }

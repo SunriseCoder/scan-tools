@@ -25,10 +25,10 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
-import process.ApplicationContext;
-import process.ApplicationContext.Events;
-import process.ApplicationContext.Parameters;
 import process.components.ExtCircle;
+import process.context.ApplicationContext;
+import process.context.ApplicationEvents;
+import process.context.ApplicationParameters;
 import process.dto.FileListEntry;
 import process.dto.Point;
 import utils.FileUtils;
@@ -39,7 +39,6 @@ public class ImageViewer {
     private static final Color CIRCLE_COLOR_PASSIVE = Color.BLUE;
     private static final double CIRCLE_RADIUS = 40;
     private static final int CIRCLE_STROKE_WIDTH = 3;
-
 
     // Circle names
     private static final String CIRCLE_NAME_BOTTOM_LEFT = "BottomLeft";
@@ -126,21 +125,21 @@ public class ImageViewer {
         // Moving image (or circles) with the keyboard
         imagePane.setOnKeyPressed(e -> handleMoveViaKeyboard(e));
 
-        applicationContext.addEventListener(Events.CenterImage, e -> centerImage());
-        applicationContext.addEventListener(Events.SaveImage, e -> saveImage());
+        applicationContext.addEventListener(ApplicationEvents.CenterImage, e -> centerImage());
+        applicationContext.addEventListener(ApplicationEvents.SaveImage, e -> saveImage());
 
-        applicationContext.addEventListener(Events.SensorControl, value -> this.sensorControl = (boolean) value);
+        applicationContext.addEventListener(ApplicationEvents.SensorControl, value -> this.sensorControl = (boolean) value);
 
-        applicationContext.addEventListener(Events.WorkFolderChanged, value -> handleWorkFolderChanged(value));
-        applicationContext.addEventListener(Events.WorkFileSelected, value -> handleSelectWorkFile(value));
+        applicationContext.addEventListener(ApplicationEvents.WorkFolderChanged, value -> handleWorkFolderChanged(value));
+        applicationContext.addEventListener(ApplicationEvents.WorkFileSelected, value -> handleSelectWorkFile(value));
 
         return root;
     }
 
     public void initialize() {
-        String markupRoughModesString = applicationContext.getParameterValue(Parameters.MarkupRoughModes);
+        String markupRoughModesString = applicationContext.getParameterValue(ApplicationParameters.MarkupRoughModes);
         if (markupRoughModesString == null) {
-            applicationContext.setParameterValue(Parameters.MarkupRoughModes, String.valueOf(MarkupRoughModes));
+            applicationContext.setParameterValue(ApplicationParameters.MarkupRoughModes, String.valueOf(MarkupRoughModes));
         } else {
             MarkupRoughModes = Integer.parseInt(markupRoughModesString);
         }
@@ -600,8 +599,8 @@ public class ImageViewer {
             // TODO Rewrite it with button disabled and enabled when needed
             // I.e. by default disabled, by select image enabled, by refresh file list disabled
             // Be aware to enable button due to exception
-            applicationContext.fireEvent(Events.WorkFolderRefresh, null);
-            applicationContext.fireEvent(Events.WorkFileSelectNext, null);
+            applicationContext.fireEvent(ApplicationEvents.WorkFolderRefresh, null);
+            applicationContext.fireEvent(ApplicationEvents.WorkFileSelectNext, null);
         } catch (IOException e) {
             applicationContext.showError("Error due to save Image", e);
         }

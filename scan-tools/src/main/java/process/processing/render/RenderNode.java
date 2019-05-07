@@ -18,7 +18,7 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
-import process.ApplicationContext;
+import process.context.ApplicationContext;
 import process.dto.Point;
 import process.processing.AbstractNode;
 import process.processing.render.binarization.ImageBinarization;

@@ -2,7 +2,7 @@ package process.processing.prepare.reordering;
 
 import java.io.IOException;
 
-import process.ApplicationContext;
+import process.context.ApplicationContext;
 
 public abstract class AbstractReorderer {
     private ApplicationContext applicationContext;

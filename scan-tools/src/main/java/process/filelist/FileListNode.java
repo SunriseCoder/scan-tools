@@ -18,9 +18,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.DirectoryChooser;
-import process.ApplicationContext;
-import process.ApplicationContext.Events;
-import process.ApplicationContext.Parameters;
+import process.context.ApplicationContext;
+import process.context.ApplicationEvents;
+import process.context.ApplicationParameters;
 import process.dto.FileListEntry;
 import storages.IconStorage;
 import storages.IconStorage.Icons;
@@ -45,13 +45,13 @@ public class FileListNode {
         filesListView.setCellFactory((c) -> new FileListCell());
 
         filesListView.getSelectionModel().selectedItemProperty().addListener(event -> {
-            applicationContext.fireEvent(Events.WorkFileSelected, filesListView.getSelectionModel().getSelectedItem());
+            applicationContext.fireEvent(ApplicationEvents.WorkFileSelected, filesListView.getSelectionModel().getSelectedItem());
         });
 
-        applicationContext.addEventListener(Events.WorkFolderChanged, newFolder -> handleChangeWorkFolder(newFolder));
-        applicationContext.addEventListener(Events.WorkFolderRefresh, e -> handleRefreshFileList());
-        applicationContext.addEventListener(Events.WorkFileSelected, value -> handleSelectFile(value));
-        applicationContext.addEventListener(Events.WorkFileSelectNext, e -> handleSelectNextFile());
+        applicationContext.addEventListener(ApplicationEvents.WorkFolderChanged, newFolder -> handleChangeWorkFolder(newFolder));
+        applicationContext.addEventListener(ApplicationEvents.WorkFolderRefresh, e -> handleRefreshFileList());
+        applicationContext.addEventListener(ApplicationEvents.WorkFileSelected, value -> handleSelectFile(value));
+        applicationContext.addEventListener(ApplicationEvents.WorkFileSelectNext, e -> handleSelectNextFile());
 
         return node;
     }
@@ -66,14 +66,14 @@ public class FileListNode {
         File newFolder = directoryChooser.showDialog(null);
 
         if (newFolder != null && newFolder.exists() && newFolder.isDirectory()) {
-            applicationContext.fireEvent(Events.WorkFolderChanged, newFolder);
+            applicationContext.fireEvent(ApplicationEvents.WorkFolderChanged, newFolder);
         }
     }
 
     private void handleChangeWorkFolder(Object value) {
         File newFolder = (File) value;
         currentFolder = newFolder;
-        applicationContext.setParameterValue(Parameters.StartFolder, currentFolder.getAbsolutePath());
+        applicationContext.setParameterValue(ApplicationParameters.StartFolder, currentFolder.getAbsolutePath());
         handleRefreshFileList();
     }
 

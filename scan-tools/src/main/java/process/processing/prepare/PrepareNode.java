@@ -15,7 +15,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ProgressBar;
-import process.ApplicationContext;
+import process.context.ApplicationContext;
 import process.processing.AbstractNode;
 import process.processing.prepare.reordering.AbstractReorderer;
 import process.processing.prepare.reordering.Reordering4PagesOn1SheetFromMiddle;

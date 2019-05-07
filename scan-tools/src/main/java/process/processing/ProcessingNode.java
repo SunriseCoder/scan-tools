@@ -7,8 +7,8 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
-import process.ApplicationContext;
-import process.ApplicationContext.Events;
+import process.context.ApplicationContext;
+import process.context.ApplicationEvents;
 import process.processing.actions.ActionsNode;
 import process.processing.prepare.PrepareNode;
 import process.processing.render.RenderNode;
@@ -29,7 +29,7 @@ public class ProcessingNode {
 
         Parent node = FileUtils.loadFXML(this);
 
-        applicationContext.addEventListener(Events.SensorControl, value -> saveButton.setVisible((boolean) value));
+        applicationContext.addEventListener(ApplicationEvents.SensorControl, value -> saveButton.setVisible((boolean) value));
 
         ActionsNode actions = new ActionsNode();
         Node actionsNode = actions.init(applicationContext);
@@ -51,7 +51,7 @@ public class ProcessingNode {
     @FXML
     private void handleSave() {
         saveButton.setDisable(true);
-        applicationContext.fireEvent(Events.SaveImage, null);
+        applicationContext.fireEvent(ApplicationEvents.SaveImage, null);
         ThreadUtils.runLaterAfterSleep(3000, () -> saveButton.setDisable(false));
     }
 }

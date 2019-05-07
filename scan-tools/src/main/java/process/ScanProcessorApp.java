@@ -11,7 +11,9 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.SplitPane;
 import javafx.stage.Stage;
-import process.ApplicationContext.Events;
+import process.context.ApplicationContext;
+import process.context.ApplicationEvents;
+import process.context.ApplicationParameters;
 import process.filelist.FileListNode;
 import process.markup.ImageViewer;
 import process.processing.ProcessingNode;
@@ -65,7 +67,7 @@ public class ScanProcessorApp extends Application {
 
     private void restoreComponent() {
         // Restore SplitPane Dividers
-        String positionsString = applicationContext.getParameterValue(ApplicationContext.Parameters.SplitPaneDivider);
+        String positionsString = applicationContext.getParameterValue(ApplicationParameters.SplitPaneDivider);
         if (positionsString != null) {
             double[] positions = Arrays.stream(positionsString.split(";"))
                     .mapToDouble(s -> Double.parseDouble(s)).toArray();
@@ -79,16 +81,16 @@ public class ScanProcessorApp extends Application {
                 String dividerPositionsString = Arrays.stream(dividerPositions).boxed()
                         .map(d -> String.valueOf(d))
                         .collect(Collectors.joining(";"));
-                applicationContext.setParameterValue(ApplicationContext.Parameters.SplitPaneDivider, dividerPositionsString);
+                applicationContext.setParameterValue(ApplicationParameters.SplitPaneDivider, dividerPositionsString);
             });
         });
 
         // Restore Working Folder
-        String startFolderPath = applicationContext.getParameterValue(ApplicationContext.Parameters.StartFolder);
+        String startFolderPath = applicationContext.getParameterValue(ApplicationParameters.StartFolder);
         if (startFolderPath != null) {
             File startFolder = new File(startFolderPath);
             if (startFolder.exists() && startFolder.isDirectory()) {
-                applicationContext.fireEvent(Events.WorkFolderChanged, startFolder);
+                applicationContext.fireEvent(ApplicationEvents.WorkFolderChanged, startFolder);
             }
         }
     }
