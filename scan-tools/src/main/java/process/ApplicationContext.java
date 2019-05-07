@@ -17,11 +17,14 @@ import process.dto.Point;
 import utils.JSONUtils;
 
 public class ApplicationContext {
-    private static final String APPLICATION_CONTEXT_CONFIG_FILENAME = "scan-processor-config.json";
 
     public enum Parameters {
+        // General
         SplitPaneDivider,
-        StartFolder
+        StartFolder,
+
+        // Markup
+        MarkupRoughModes
     }
 
     public enum Events {
@@ -47,8 +50,8 @@ public class ApplicationContext {
 
     private File workFolder;
 
-    public ApplicationContext() {
-        configurationFile = new File(APPLICATION_CONTEXT_CONFIG_FILENAME);
+    public ApplicationContext(String configFileName) {
+        configurationFile = new File(configFileName);
         storage = new HashMap<>();
         markupStorages = new HashMap<>();
         eventListeners = new HashMap<>();

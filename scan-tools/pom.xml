@@ -4,18 +4,18 @@
 
     <parent>
         <groupId>sunrisecoder</groupId>
-        <artifactId>scan-tools</artifactId>
+        <artifactId>processing-tools</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>scan-tools-commons</artifactId>
+    <artifactId>scan-tools</artifactId>
 
     <dependencies>
 
-        <!-- JSON -->
+        <!-- Local -->
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
+            <groupId>sunrisecoder</groupId>
+            <artifactId>common-utils</artifactId>
         </dependency>
 
         <!-- Testing -->

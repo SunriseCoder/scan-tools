@@ -2,90 +2,87 @@ package experiments;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import javafx.application.Application;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import process.ApplicationContext;
+import process.ApplicationContext.Events;
+import process.dto.FileListEntry;
+import process.filelist.FileListNode;
 import process.processing.render.filters.BinarizationFilter;
+import utils.FileUtils;
 
 public class BinarizationExperimentsApp extends Application {
-    private static String imageUrl;
+    private static final String APPLICATION_CONTEXT_CONFIG_FILENAME = "binarization-experiments-config.json";
 
     public static void main(String[] args) {
-        if (args.length < 1) {
-            System.out.println("Usage: " + BinarizationExperimentsApp.class.getSimpleName() + " <folder>");
-            System.exit(-1);
-        }
-        imageUrl = new File(args[0]).toURI().toString();
         launch(args);
     }
+
+    private ApplicationContext applicationContext;
+
+    @FXML
+    private TextField thresholdField;
+    @FXML
+    private TextField redField;
+    @FXML
+    private TextField greenField;
+    @FXML
+    private TextField blueField;
+    @FXML
+    private Button renderButton;
+
+    @FXML
+    private SplitPane splitPane;
+    @FXML
+    private Pane imagePane;
+    @FXML
+    private ImageView imageView1;
+    @FXML
+    private ImageView imageView2;
+
+    private File currentFolder;
+    private BufferedImage sourceImage;
 
     private double lastMousePosX;
     private double lastMousePosY;
     private double scale = 0.2;
-    private TextField thresholdField;
-    private BufferedImage sourceImage;
-    private TextField rField;
-    private TextField gField;
-    private TextField bField;
-    private Button renderButton;
-    private ImageView imageView1;
-    private ImageView imageView2;
-    private Pane imagePane;
+
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        VBox root = new VBox();
+        Parent root = FileUtils.loadFXML(this);
 
-        HBox hBox = new HBox();
-        root.getChildren().add(hBox);
+        FileListNode fileList = new FileListNode();
+        applicationContext = new ApplicationContext(APPLICATION_CONTEXT_CONFIG_FILENAME);
+        Node fileListNode = fileList.init(applicationContext);
+        splitPane.getItems().add(fileListNode);
 
-        Button centerButton = new Button("Center");
-        centerButton.setOnAction(e -> centerImage());
-        hBox.getChildren().add(centerButton);
-
-        // Threshold
-        thresholdField = new TextField("1");
-        thresholdField.setOnAction(e -> renderImage());
-        hBox.getChildren().addAll(new Label("Threshold"), thresholdField);
-
-        // RGB
-        rField = new TextField("1");
-        rField.setOnAction(e -> renderImage());
-        gField = new TextField("1");
-        gField.setOnAction(e -> renderImage());
-        bField = new TextField("1");
-        bField.setOnAction(e -> renderImage());
-        hBox.getChildren().addAll(new Label("RGB"), rField, gField, bField);
-
-        // Render
-        renderButton = new Button("Render");
-        renderButton.setOnAction(e -> renderImage());
-        hBox.getChildren().add(renderButton);
+        applicationContext.addEventListener(Events.WorkFolderChanged, value -> handleWorkFolderChanged(value));
+        applicationContext.addEventListener(Events.WorkFileSelected, value -> handleSelectWorkFile(value));
 
         // Image
-        Image image = new Image(imageUrl);
-        sourceImage = new BufferedImage((int) image.getWidth(), (int) image.getHeight(), BufferedImage.TYPE_INT_RGB);
-        SwingFXUtils.fromFXImage(image, sourceImage);
+        //Image image = new Image(imageUrl);
+        //sourceImage = new BufferedImage((int) image.getWidth(), (int) image.getHeight(), BufferedImage.TYPE_INT_RGB);
+        //SwingFXUtils.fromFXImage(image, sourceImage);
 
         // ImageViews
-        imageView1 = new ImageView(image);
-        imageView2 = new ImageView(image);
-        imagePane = new HBox();
-        root.getChildren().add(imagePane);
-        imagePane.getChildren().addAll(imageView1, imageView2);
 
         imagePane.setScaleX(scale);
         imagePane.setScaleY(scale);
@@ -110,9 +107,73 @@ public class BinarizationExperimentsApp extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 
+        restoreComponent();
         centerImage();
     }
 
+    private void handleWorkFolderChanged(Object value) {
+        File newFolder = (File) value;
+        currentFolder = newFolder;
+    }
+
+    private void handleSelectWorkFile(Object value) {
+        if (value == null) {
+            return;
+        }
+
+        FileListEntry fileListEntry = (FileListEntry) value;
+        String currentImageFilename = fileListEntry.getFilename();
+        String uri = new File(currentFolder, currentImageFilename).toURI().toString();
+        Image image = new Image(uri);
+        imageView1.setImage(image);
+        imageView2.setImage(image);
+
+        sourceImage = new BufferedImage((int) image.getWidth(), (int) image.getHeight(), BufferedImage.TYPE_INT_RGB);
+        SwingFXUtils.fromFXImage(image, sourceImage);
+
+        // Scale image to fit into the window
+        double parentWidth = imagePane.getLayoutBounds().getWidth();
+        double parentHeight = imagePane.getLayoutBounds().getHeight();
+        double horizontalRatio = parentWidth / image.getWidth();
+        double verticalRatio = parentHeight / image.getHeight();
+        scale = Math.min(horizontalRatio, verticalRatio);
+        imagePane.setScaleX(scale);
+        imagePane.setScaleY(scale);
+
+        centerImage();
+
+    }
+
+    private void restoreComponent() {
+        String positionsString = applicationContext.getParameterValue(ApplicationContext.Parameters.SplitPaneDivider);
+        if (positionsString != null) {
+            double[] positions = Arrays.stream(positionsString.split(";"))
+                    .mapToDouble(s -> Double.parseDouble(s)).toArray();
+            splitPane.setDividerPositions(positions);
+        }
+
+        // Listener to Save SplitPane Dividers on SplitPane Dividers change
+        splitPane.getDividers().forEach(div -> {
+            div.positionProperty().addListener(e -> {
+                double[] dividerPositions = splitPane.getDividerPositions();
+                String dividerPositionsString = Arrays.stream(dividerPositions).boxed()
+                        .map(d -> String.valueOf(d))
+                        .collect(Collectors.joining(";"));
+                applicationContext.setParameterValue(ApplicationContext.Parameters.SplitPaneDivider, dividerPositionsString);
+            });
+        });
+
+        // Restore Working Folder
+        String startFolderPath = applicationContext.getParameterValue(ApplicationContext.Parameters.StartFolder);
+        if (startFolderPath != null) {
+            File startFolder = new File(startFolderPath);
+            if (startFolder.exists() && startFolder.isDirectory()) {
+                applicationContext.fireEvent(Events.WorkFolderChanged, startFolder);
+            }
+        }
+    }
+
+    @FXML
     private void renderImage() {
         renderButton.setDisable(true);
         BufferedImage newImage = new BufferedImage(sourceImage.getWidth(), sourceImage.getHeight(), BufferedImage.TYPE_INT_RGB);
@@ -120,9 +181,9 @@ public class BinarizationExperimentsApp extends Application {
         BinarizationFilter filter = new BinarizationFilter();
         filter.setImage(sourceImage);
         double threshold = Double.parseDouble(thresholdField.getText());
-        double rw = Double.parseDouble(rField.getText());
-        double gw = Double.parseDouble(gField.getText());
-        double bw = Double.parseDouble(bField.getText());
+        double rw = Double.parseDouble(redField.getText());
+        double gw = Double.parseDouble(greenField.getText());
+        double bw = Double.parseDouble(blueField.getText());
         threshold *= rw + gw + bw;
         filter.setWeightRed(rw);
         filter.setWeightGreen(gw);
@@ -185,10 +246,11 @@ public class BinarizationExperimentsApp extends Application {
         lastMousePosY = mouseEvent.getSceneY();
     }
 
+    @FXML
     private void centerImage() {
         // TODO Investigate, why alignment to center of the parent component does not work
         // There is an assumption that whether rectangle or circles sizes are affecting
         imagePane.setTranslateX(imagePane.getTranslateX() - imagePane.getBoundsInParent().getMinX());
-        imagePane.setTranslateY(imagePane.getTranslateY() - imagePane.getBoundsInParent().getMinY() + 50);
+        imagePane.setTranslateY(imagePane.getTranslateY() - imagePane.getBoundsInParent().getMinY());
     }
 }

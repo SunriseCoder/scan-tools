@@ -18,6 +18,7 @@ import process.processing.ProcessingNode;
 import utils.FileUtils;
 
 public class ScanProcessorApp extends Application {
+    private static final String APPLICATION_CONTEXT_CONFIG_FILENAME = "scan-processor-config.json";
 
     public static void main(String[] args) {
         launch(args);
@@ -31,7 +32,7 @@ public class ScanProcessorApp extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         // Application Context
-        applicationContext = new ApplicationContext();
+        applicationContext = new ApplicationContext(APPLICATION_CONTEXT_CONFIG_FILENAME);
 
         // Root UI Node
         Parent root = FileUtils.loadFXML(this);

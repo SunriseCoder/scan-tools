@@ -4,15 +4,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>sunrisecoder</groupId>
-    <artifactId>scan-tools</artifactId>
+    <artifactId>processing-tools</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
-        <module>scan-tools-commons</module>
-        <module>page-reorder</module>
-        <module>page-rotate</module>
-        <module>page-crop</module>
+        <module>scan-tools</module>
+        <module>common-utils</module>
     </modules>
 
     <dependencyManagement>
@@ -21,7 +19,7 @@
             <!-- Local -->
             <dependency>
                 <groupId>sunrisecoder</groupId>
-                <artifactId>scan-tools-commons</artifactId>
+                <artifactId>common-utils</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
