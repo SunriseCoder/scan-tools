@@ -1,4 +1,4 @@
-package app.integrations.audio;
+package process.tools;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,14 +11,15 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-import app.integrations.audio.api.FrameInputStream;
-import app.integrations.audio.api.FrameOutputStream;
-import app.integrations.audio.api.FrameStreamProcessor;
-import app.integrations.audio.wav.WaveInputStream;
-import app.integrations.audio.wav.WaveOutputStream;
-import app.integrations.utils.AudioFormatHelper;
-import app.integrations.utils.FileHelper;
-import app.integrations.utils.ProgressPrinter;
+import audio.api.FrameInputStream;
+import audio.api.FrameOutputStream;
+import audio.api.FrameStreamProcessor;
+import audio.wav.WaveInputStream;
+import audio.wav.WaveOutputStream;
+import process.dto.ChannelOperation;
+import process.utils.AudioFormatHelper;
+import process.utils.ProgressPrinter;
+import utils.FileUtils;
 
 public class FileScanner {
     private File inputFile;
@@ -27,12 +28,12 @@ public class FileScanner {
     private FrameOutputStream outputStream;
 
     public void open(String inputFileName) throws IOException, UnsupportedAudioFileException {
-        File file = FileHelper.checkAndGetFile(inputFileName);
+        File file = FileUtils.checkAndGetFile(inputFileName);
         setInputFile(file);
     }
 
     public void open(String foldername, String filename) throws IOException, UnsupportedAudioFileException {
-        File file = FileHelper.checkAndGetFile(foldername, filename);
+        File file = FileUtils.checkAndGetFile(foldername, filename);
         setInputFile(file);
     }
 
@@ -49,7 +50,7 @@ public class FileScanner {
     }
 
     public void setOutput(String outputFileName, AudioFormat outputFormat) throws IOException, UnsupportedAudioFileException {
-        this.outputFile = FileHelper.createFile(outputFileName, true);
+        this.outputFile = FileUtils.createFile(outputFileName, true);
         this.outputStream = new WaveOutputStream(outputFile, outputFormat);
         this.outputStream.writeHeader();
     }
@@ -60,7 +61,7 @@ public class FileScanner {
     }
 
     public void setOutput(String foldername, String outputname, AudioFormat outputFormat) throws IOException, UnsupportedAudioFileException {
-        this.outputFile = FileHelper.createFile(foldername, outputname, true);
+        this.outputFile = FileUtils.createFile(foldername, outputname, true);
         this.outputStream = new WaveOutputStream(outputFile, outputFormat);
         this.outputStream.writeHeader();
     }

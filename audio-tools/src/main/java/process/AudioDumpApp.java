@@ -1,4 +1,4 @@
-package app.integrations;
+package process;
 
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
@@ -6,10 +6,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import app.integrations.audio.FileScanner;
-import app.integrations.utils.ImageHelper;
+import process.tools.FileScanner;
+import process.utils.ImageHelper;
 
-public class AudioDump {
+public class AudioDumpApp {
 
     public static void main(String[] args) throws Exception {
         if (args.length < 2) {
@@ -59,7 +59,7 @@ public class AudioDump {
     }
 
     private static void printUsage() {
-        System.out.println("Usage: " + AudioDump.class.getSimpleName() + " <input file> <output file> [options]");
+        System.out.println("Usage: " + AudioDumpApp.class.getSimpleName() + " <input file> <output file> [options]");
         System.out.println("Options (comma-separated):");
         System.out.println("    m - Calculate Math Meanings");
         System.out.println("    d - Calculate Deltas");

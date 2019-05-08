@@ -1,4 +1,4 @@
-package app.integrations.audio;
+package process.tools;
 
 public class StatsCalculator {
     private long[] statistics;

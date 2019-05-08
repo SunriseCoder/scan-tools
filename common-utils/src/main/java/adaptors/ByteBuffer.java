@@ -1,7 +1,7 @@
-package app.integrations.utils;
+package adaptors;
 
-public class FrameBuffer {
-    private int[] localBuffer = new int[1024];
+public class ByteBuffer {
+    private byte[] localBuffer = new byte[1024];
     private int positionOfFirst;
     private int positionOfNext;
 
@@ -9,12 +9,12 @@ public class FrameBuffer {
         return positionOfNext - positionOfFirst;
     }
 
-    public int read() {
-        int value = localBuffer[positionOfFirst++];
+    public byte read() {
+        byte value = localBuffer[positionOfFirst++];
         return value;
     }
 
-    public int read(int[] buffer) {
+    public int read(byte[] buffer) {
         normalizeIfNeeded();
         int length = Math.min(positionOfNext, buffer.length);
         if (length == 0) {
@@ -22,17 +22,16 @@ public class FrameBuffer {
         }
 
         System.arraycopy(localBuffer, 0, buffer, 0, length);
-        System.arraycopy(localBuffer, length, localBuffer, 0, positionOfNext - length);
         positionOfNext -= length;
         return length;
     }
 
-    public void push(int value) {
+    public void push(byte value) {
         increaseIfNeeded(1);
         localBuffer[positionOfNext++] = value;
     }
 
-    public void push(int[] buffer) {
+    public void push(byte[] buffer) {
         increaseIfNeeded(buffer.length);
         System.arraycopy(buffer, 0, localBuffer, positionOfNext, buffer.length);
         positionOfNext += buffer.length;
@@ -42,9 +41,9 @@ public class FrameBuffer {
         normalizeIfNeeded();
         int requiredLength = positionOfNext + length;
         if (localBuffer.length < requiredLength) {
-            int[] oldBuffer = localBuffer;
+            byte[] oldBuffer = localBuffer;
             int newLength = calculateNewLength(requiredLength);
-            localBuffer = new int[newLength];
+            localBuffer = new byte[newLength];
             System.arraycopy(oldBuffer, 0, localBuffer, 0, oldBuffer.length);
         }
     }

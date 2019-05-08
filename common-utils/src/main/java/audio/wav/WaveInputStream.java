@@ -1,4 +1,4 @@
-package app.integrations.audio.wav;
+package audio.wav;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,9 +8,9 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-import app.integrations.audio.api.FrameInputStream;
-import app.integrations.utils.FrameBuffer;
-import app.integrations.utils.Primitives;
+import adaptors.FrameBuffer;
+import audio.api.FrameInputStream;
+import utils.PrimitiveUtils;
 
 public class WaveInputStream implements FrameInputStream {
     private static final int PARSE_DATA_CHUNK_SIZE = 4096;
@@ -122,7 +122,7 @@ public class WaveInputStream implements FrameInputStream {
                 continue;
             }
             int position = readPosition + ch * sampleSize;
-            int value = Primitives.littleEndianByteArrayToInt(parseDataBuffer, position, sampleSize);
+            int value = PrimitiveUtils.littleEndianByteArrayToInt(parseDataBuffer, position, sampleSize);
             FrameBuffer frameBuffer = frameBuffers[ch];
             frameBuffer.push(value);
         }

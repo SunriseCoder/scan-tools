@@ -1,6 +1,6 @@
-package app.integrations.utils;
+package utils;
 
-public class Primitives {
+public class PrimitiveUtils {
 
     public static int littleEndianByteArrayToInt(byte[] buffer, int position, int size) {
         int value = 0;

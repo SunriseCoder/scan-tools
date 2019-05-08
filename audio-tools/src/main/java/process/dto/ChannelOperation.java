@@ -1,4 +1,4 @@
-package app.integrations.audio;
+package process.dto;
 
 public class ChannelOperation {
     private int inputChannel;

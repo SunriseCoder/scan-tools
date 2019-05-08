@@ -1,8 +1,8 @@
-package app.integrations;
+package process;
 
-import app.integrations.utils.ImageHelper;
+import process.utils.ImageHelper;
 
-public class CombineImages {
+public class CombineImagesApp {
 
     public static void main(String[] args) throws Exception {
         if (args.length < 3) {
@@ -23,6 +23,6 @@ public class CombineImages {
     }
 
     private static void printUsage() {
-        System.out.println("Usage: " + CombineImages.class.getSimpleName() + " <input file 1> <input file 2> <output file>");
+        System.out.println("Usage: " + CombineImagesApp.class.getSimpleName() + " <input file 1> <input file 2> <output file>");
     }
 }

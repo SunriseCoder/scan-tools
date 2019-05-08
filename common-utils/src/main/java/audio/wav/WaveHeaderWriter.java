@@ -1,4 +1,4 @@
-package app.integrations.audio.wav;
+package audio.wav;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -6,7 +6,7 @@ import java.io.RandomAccessFile;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-import app.integrations.utils.Primitives;
+import utils.PrimitiveUtils;
 
 public class WaveHeaderWriter {
     private static final int RIFF_TEXT_OFFSET = 0;
@@ -63,7 +63,7 @@ public class WaveHeaderWriter {
 
     private void writeFileSize(int dataSize) throws IOException {
         int fileSize = HEADER_SIZE + dataSize - 8;
-        byte[] buffer = Primitives.intToLittleEndianByteArray(fileSize, 4);
+        byte[] buffer = PrimitiveUtils.intToLittleEndianByteArray(fileSize, 4);
         outputFile.seek(FILE_SIZE_OFFSET);
         outputFile.write(buffer);
     }
@@ -76,27 +76,27 @@ public class WaveHeaderWriter {
 
     private void writeFrameSize() throws IOException {
         int frameSize = format.getSampleSizeInBits();
-        byte[] buffer = Primitives.intToLittleEndianByteArray(frameSize, 4);
+        byte[] buffer = PrimitiveUtils.intToLittleEndianByteArray(frameSize, 4);
         outputFile.seek(FRAME_SIZE_OFFSET);
         outputFile.write(buffer);
     }
 
     private void writeFormatType() throws IOException {
-        byte[] buffer = Primitives.intToLittleEndianByteArray(FORMAT_TYPE, 2);
+        byte[] buffer = PrimitiveUtils.intToLittleEndianByteArray(FORMAT_TYPE, 2);
         outputFile.seek(FORMAT_TYPE_OFFSET);
         outputFile.write(buffer);
     }
 
     private void writeNumberOfChannels() throws IOException {
         int numberOfChannels = format.getChannels();
-        byte[] buffer = Primitives.intToLittleEndianByteArray(numberOfChannels, 2);
+        byte[] buffer = PrimitiveUtils.intToLittleEndianByteArray(numberOfChannels, 2);
         outputFile.seek(NUMBER_OF_CHANNELS_OFFSET);
         outputFile.write(buffer);
     }
 
     private void writeSampleRate() throws IOException {
         int sampleRate = Math.round(format.getFrameRate());
-        byte[] buffer = Primitives.intToLittleEndianByteArray(sampleRate, 4);
+        byte[] buffer = PrimitiveUtils.intToLittleEndianByteArray(sampleRate, 4);
         outputFile.seek(SAMPLE_RATE_OFFSET);
         outputFile.write(buffer);
     }
@@ -105,7 +105,7 @@ public class WaveHeaderWriter {
         int sampleRate = Math.round(format.getFrameRate());
         int sampleSize = format.getFrameSize();
         int bitRate = sampleRate * sampleSize;
-        byte[] buffer = Primitives.intToLittleEndianByteArray(bitRate, 4);
+        byte[] buffer = PrimitiveUtils.intToLittleEndianByteArray(bitRate, 4);
         outputFile.seek(BIT_RATE_OFFSET);
         outputFile.write(buffer);
     }
@@ -114,14 +114,14 @@ public class WaveHeaderWriter {
         int bitsPerSample = format.getSampleSizeInBits();
         int numberOfChannels = format.getChannels();
         int bytesPerSampleTotal = bitsPerSample * numberOfChannels / 8;
-        byte[] buffer = Primitives.intToLittleEndianByteArray(bytesPerSampleTotal, 2);
+        byte[] buffer = PrimitiveUtils.intToLittleEndianByteArray(bytesPerSampleTotal, 2);
         outputFile.seek(BYTES_PER_SAMPLE_OFFSET);
         outputFile.write(buffer);
     }
 
     private void writeBitsPerSample() throws IOException {
         int bitsPerSample = format.getSampleSizeInBits();
-        byte[] buffer = Primitives.intToLittleEndianByteArray(bitsPerSample, 2);
+        byte[] buffer = PrimitiveUtils.intToLittleEndianByteArray(bitsPerSample, 2);
         outputFile.seek(BITS_PER_SAMPLE_OFFSET);
         outputFile.write(buffer);
     }
@@ -133,7 +133,7 @@ public class WaveHeaderWriter {
     }
 
     private void writeDataSize(int dataSize) throws IOException {
-        byte[] buffer = Primitives.intToLittleEndianByteArray(dataSize, 4);
+        byte[] buffer = PrimitiveUtils.intToLittleEndianByteArray(dataSize, 4);
         outputFile.seek(DATA_SIZE_OFFSET);
         outputFile.write(buffer);
     }

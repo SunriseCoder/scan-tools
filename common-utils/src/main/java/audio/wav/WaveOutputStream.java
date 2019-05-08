@@ -1,4 +1,4 @@
-package app.integrations.audio.wav;
+package audio.wav;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,10 +7,10 @@ import java.io.RandomAccessFile;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-import app.integrations.audio.api.FrameOutputStream;
-import app.integrations.utils.ByteBuffer;
-import app.integrations.utils.FrameBuffer;
-import app.integrations.utils.Primitives;
+import adaptors.ByteBuffer;
+import adaptors.FrameBuffer;
+import audio.api.FrameOutputStream;
+import utils.PrimitiveUtils;
 
 public class WaveOutputStream implements FrameOutputStream {
     private static final int WRITE_BUFFER_SIZE = 1048576;
@@ -109,9 +109,9 @@ public class WaveOutputStream implements FrameOutputStream {
         byte[] buffer;
         boolean isBigEndian = format.isBigEndian();
         if (isBigEndian) {
-            buffer = Primitives.intToBigEndianByteArray(value, sampleSize);
+            buffer = PrimitiveUtils.intToBigEndianByteArray(value, sampleSize);
         } else {
-            buffer = Primitives.intToLittleEndianByteArray(value, sampleSize);
+            buffer = PrimitiveUtils.intToLittleEndianByteArray(value, sampleSize);
         }
         return buffer;
     }

@@ -10,6 +10,7 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import process.context.ApplicationContext;
 import utils.FileUtils;
@@ -85,9 +86,13 @@ public class SubtitlesProcessorApp extends Application {
     private void selectMediaFile() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Folder with Images");
+        ExtensionFilter filter = new ExtensionFilter("Wave files (*.wav)", "*.wav");
+        fileChooser.getExtensionFilters().add(filter);
+
         if (currentMediaFile != null) {
             fileChooser.setInitialDirectory(currentMediaFile.getParentFile());
         }
+
         File newFolder = fileChooser.showOpenDialog(null);
 
         if (newFolder != null && newFolder.exists() && !newFolder.isDirectory()) {

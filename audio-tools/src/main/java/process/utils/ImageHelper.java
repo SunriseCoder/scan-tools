@@ -1,4 +1,4 @@
-package app.integrations.utils;
+package process.utils;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -12,6 +12,9 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import utils.FileUtils;
+
+// TODO Move this class completely to common-utils module
 public class ImageHelper {
     private static final int SPEECH_MAX_DELTA = 1600;
     private static final int CHANNEL_IMAGE_HEIGHT = 400;
@@ -68,7 +71,7 @@ public class ImageHelper {
     }
 
     public static BufferedImage loadImage(String folder, String fileName) throws IOException {
-        File file = FileHelper.checkAndGetFile(folder, fileName);
+        File file = FileUtils.checkAndGetFile(folder, fileName);
         BufferedImage image = ImageIO.read(file);
         return image;
     }
@@ -133,7 +136,7 @@ public class ImageHelper {
     }
 
     public static void saveImage(String folderName, String fileName, BufferedImage image) throws IOException {
-        File file = FileHelper.createFile(folderName, fileName, true);
+        File file = FileUtils.createFile(folderName, fileName, true);
         saveImage(image, file);
     }
 

@@ -11,6 +11,12 @@
     <artifactId>audio-tools</artifactId>
 
     <dependencies>
+    
+        <!-- Local -->
+        <dependency>
+            <groupId>sunrisecoder</groupId>
+            <artifactId>common-utils</artifactId>
+        </dependency>
 
         <!-- Testing -->
         <dependency>

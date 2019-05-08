@@ -1,4 +1,4 @@
-package app.integrations.utils;
+package process.utils;
 
 import javax.sound.sampled.AudioFormat;
 

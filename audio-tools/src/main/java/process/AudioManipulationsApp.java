@@ -1,12 +1,12 @@
-package app.integrations;
+package process;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import app.integrations.audio.ChannelOperation;
-import app.integrations.audio.FileScanner;
+import process.dto.ChannelOperation;
+import process.tools.FileScanner;
 
-public class AudioManipulations {
+public class AudioManipulationsApp {
 
     public static void main(String[] args) throws Exception {
         if (args.length < 3) {
@@ -72,7 +72,7 @@ public class AudioManipulations {
     }
 
     private static void printUsage() {
-        System.out.println("Usage: " + AudioManipulations.class.getSimpleName() + " <input file> <output file> <options>");
+        System.out.println("Usage: " + AudioManipulationsApp.class.getSimpleName() + " <input file> <output file> <options>");
         System.out.println("Options:");
         System.out.println("    c - copy audio channel as-is");
         System.out.println("    a - adjust (normalize) audio channel");

@@ -1,4 +1,4 @@
-package app.integrations.audio;
+package process.tools;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -6,9 +6,9 @@ import java.util.Map;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-import app.integrations.audio.api.FrameInputStream;
-import app.integrations.audio.api.FrameOutputStream;
-import app.integrations.audio.api.FrameStreamProcessor;
+import audio.api.FrameInputStream;
+import audio.api.FrameOutputStream;
+import audio.api.FrameStreamProcessor;
 
 public class FrameStreamAdjuster implements FrameStreamProcessor {
     private static final int SPEECH_NORMAL_MEANING = 4000;
