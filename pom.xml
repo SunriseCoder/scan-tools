@@ -9,6 +9,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>audio-tools</module>
         <module>scan-tools</module>
         <module>subtitles-tools</module>
         <module>common-utils</module>
