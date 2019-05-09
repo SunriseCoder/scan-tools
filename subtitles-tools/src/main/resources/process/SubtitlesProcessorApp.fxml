@@ -7,6 +7,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.shape.Line?>
@@ -17,7 +18,7 @@
     <items>
         <SplitPane dividerPositions="0.6340508806262231" prefHeight="160.0" prefWidth="200.0">
             <items>
-                <StackPane prefHeight="150.0" prefWidth="200.0">
+                <StackPane fx:id="textEditorPane" prefHeight="150.0" prefWidth="200.0">
                     <children>
                         <TextArea fx:id="textEditor">
                             <font>
@@ -35,15 +36,25 @@
                         <ColumnConstraints hgrow="NEVER" />
                     </columnConstraints>
                     <rowConstraints>
+                        <RowConstraints vgrow="NEVER" />
                         <RowConstraints vgrow="ALWAYS" />
                         <RowConstraints vgrow="NEVER" />
                     </rowConstraints>
                     <children>
-                        <ListView fx:id="subtitlesListView" GridPane.columnSpan="4" />
-                        <TextField GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="NEVER" />
-                        <Button mnemonicParsing="false" text="Open" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                        <Button mnemonicParsing="false" text="Refresh" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                        <Button mnemonicParsing="false" text="Save" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                        <HBox GridPane.columnSpan="4">
+                            <children>
+                                <Button mnemonicParsing="false" onAction="#handleAddSubtitlePressed" text="Add" />
+                                <Button mnemonicParsing="false" onAction="#handleEditSubtitlePressed" text="Edit" />
+                                <Button mnemonicParsing="false" onAction="#handleDeleteSubtitlesPressed" text="Delete" />
+                                <Button mnemonicParsing="false" onAction="#handleSortSubtitlesPressed" text="Sort" />
+                            </children>
+                        </HBox>
+                        <ListView fx:id="subtitlesListView" GridPane.columnSpan="4" GridPane.rowIndex="1" />
+                        <TextField GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.vgrow="NEVER" />
+                        <Button mnemonicParsing="false" onAction="#handleSubtitlesOpenFile" text="Open" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <Button mnemonicParsing="false" onAction="#handleSubtitlesRefreshFromFile" text="Refresh" GridPane.columnIndex="2"
+                            GridPane.rowIndex="2" />
+                        <Button mnemonicParsing="false" onAction="#handleSubtitlesSaveToFile" text="Save" GridPane.columnIndex="3" GridPane.rowIndex="2" />
                     </children>
                 </GridPane>
             </items>

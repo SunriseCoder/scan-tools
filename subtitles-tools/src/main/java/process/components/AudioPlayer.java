@@ -94,7 +94,7 @@ public class AudioPlayer {
         if (e.getButton().equals(MouseButton.PRIMARY)) {
             int samplePosition = getSamplePosition((int) e.getX());
             setCursorOnSample(samplePosition);
-            selectionInterval = null;
+            resetSelectionInterval();
         }
 
         render();
@@ -381,7 +381,7 @@ public class AudioPlayer {
         }
     }
 
-    private static class SelectionInterval {
+    public static class SelectionInterval {
         private long start;
         private long end;
 
@@ -389,5 +389,28 @@ public class AudioPlayer {
             this.start = start;
             this.end = end;
         }
+
+        public long getStart() {
+            return start;
+        }
+
+        public long getEnd() {
+            return end;
+        }
+    }
+
+    public SelectionInterval getSelectionInterval() {
+        return selectionInterval;
+    }
+
+    public void setSelectionInterval(SelectionInterval selectionInterval) {
+        // TODO Add checks that both boundaries of interval are in inside the Samples Area
+        this.selectionInterval = selectionInterval;
+        render();
+    }
+
+    public void resetSelectionInterval() {
+        selectionInterval = null;
+        render();
     }
 }

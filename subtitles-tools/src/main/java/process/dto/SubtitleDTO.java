@@ -43,4 +43,26 @@ public class SubtitleDTO {
         String string = start.getAsString() + " --> " + end.getAsString();
         return string;
     }
+
+    public void parseTime(String time) {
+        String[] timeParts = time.split(" --> ");
+        start = parseSingleTime(timeParts[0]);
+        end = parseSingleTime(timeParts[1]);
+    }
+
+    private SubtitleTimeDTO parseSingleTime(String timePart) {
+        SubtitleTimeDTO subtitleTime = new SubtitleTimeDTO();
+
+        String[] parts = timePart.split(":");
+        subtitleTime.setHour(Integer.parseInt(parts[0]));
+
+        subtitleTime.setMinute(Integer.parseInt(parts[1]));
+
+        parts = parts[2].split(",");
+        subtitleTime.setSecond(Integer.parseInt(parts[0]));
+
+        subtitleTime.setMillisecond(Integer.parseInt(parts[1]));
+
+        return subtitleTime;
+    }
 }

@@ -48,17 +48,25 @@ public class FileUtils {
         Files.copy(sourceFile.toPath(), destinationFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
-    public static File createFile(String absoluteFileName, boolean overwrite) throws IOException {
-        File file = new File(new File("."), absoluteFileName);
+    public static File createFile(String absoluteFilePath, boolean overwrite) throws IOException {
+        File file = new File(absoluteFilePath);
+
+        createFile(file, overwrite);
+
+        return file;
+    }
+    public static void createFile(File file, boolean overwrite) throws IOException {
         file.getParentFile().mkdirs();
+
         if (!overwrite && file.exists()) {
-            throw new FileAlreadyExistsException(absoluteFileName);
+            throw new FileAlreadyExistsException(file.getAbsolutePath());
         }
+
         if (overwrite && file.exists()) {
             file.delete();
         }
+
         file.createNewFile();
-        return file;
     }
 
     public static File createFile(String foldername, String filename, boolean overwrite) throws IOException {
