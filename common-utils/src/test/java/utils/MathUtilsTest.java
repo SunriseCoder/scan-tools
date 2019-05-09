@@ -31,6 +31,13 @@ public class MathUtilsTest {
     }
 
     @Test
+    public void testRoundToLong() {
+        assertEquals(5L, MathUtils.roundToLong((double) 5));
+        assertEquals(5L, MathUtils.roundToLong((double) 5.3));
+        assertEquals(5L, MathUtils.roundToLong((double) 4.5));
+    }
+
+    @Test
     public void testAdjustValue() {
         assertEquals(10, MathUtils.adjustValue(10, 1, 100));
         assertEquals(10, MathUtils.adjustValue(1, 10, 100));

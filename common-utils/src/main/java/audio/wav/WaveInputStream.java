@@ -79,6 +79,11 @@ public class WaveInputStream implements FrameInputStream {
     }
 
     @Override
+    public AudioFormat getFormat() {
+        return format;
+    }
+
+    @Override
     public int readFrames(int[] frames) throws IOException {
         if (channel == -1) {
             throw new IllegalStateException("Default channel was not set");

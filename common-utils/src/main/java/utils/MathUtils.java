@@ -19,8 +19,13 @@ public class MathUtils {
 	}
 
     public static int roundToInt(double value) {
-        long result = Math.round(value);
+        long result = roundToLong(value);
         return (int) result;
+    }
+
+    public static long roundToLong(double value) {
+        long result = Math.round(value);
+        return result;
     }
 
     public static int adjustValue(int value, int min, int max) {

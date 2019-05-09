@@ -4,15 +4,15 @@ import java.io.File;
 
 import javafx.application.Application;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.SplitPane;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
-import javafx.stage.FileChooser;
-import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
+import process.components.AudioPlayer;
 import process.context.ApplicationContext;
+import process.context.ApplicationEvents;
+import process.context.ApplicationParameters;
 import utils.FileUtils;
 
 public class SubtitlesProcessorApp extends Application {
@@ -27,9 +27,11 @@ public class SubtitlesProcessorApp extends Application {
     @FXML
     private SplitPane splitPane;
 
-    private MediaPlayer mediaPleer;
+    private AudioPlayer audioPlayer;
 
-    private File currentMediaFile;
+    public SubtitlesProcessorApp() {
+        audioPlayer = new AudioPlayer();
+    }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -38,6 +40,9 @@ public class SubtitlesProcessorApp extends Application {
 
         // Root UI Node
         Parent root = FileUtils.loadFXML(this);
+
+        Node audioPlayerNode = audioPlayer.createUI(applicationContext);
+        splitPane.getItems().add(0, audioPlayerNode);
 
         // Main Scene
         Scene scene = new Scene(root);
@@ -48,13 +53,13 @@ public class SubtitlesProcessorApp extends Application {
 
         // Restore sizes of Visual Components (Panes, Windows, etc)
         // TODO Fix for both SplitPanes
-        //restoreComponent();
+        restoreComponent();
     }
 
     // TODO Fix for both SplitPanes
-    /*private void restoreComponent() {
+    private void restoreComponent() {
         // Restore SplitPane Dividers
-        String positionsString = applicationContext.getParameterValue(ApplicationParameters.SplitPaneDivider);
+        /*String positionsString = applicationContext.getParameterValue(ApplicationParameters.SplitPaneDivider);
         if (positionsString != null) {
             double[] positions = Arrays.stream(positionsString.split(";"))
                     .mapToDouble(s -> Double.parseDouble(s)).toArray();
@@ -70,53 +75,15 @@ public class SubtitlesProcessorApp extends Application {
                         .collect(Collectors.joining(";"));
                 applicationContext.setParameterValue(ApplicationParameters.SplitPaneDivider, dividerPositionsString);
             });
-        });
+        });*/
 
         // Restore Working Folder
-        String startFolderPath = applicationContext.getParameterValue(ApplicationParameters.StartFolder);
+        String startFolderPath = applicationContext.getParameterValue(ApplicationParameters.WorkMediaFile);
         if (startFolderPath != null) {
-            File startFolder = new File(startFolderPath);
-            if (startFolder.exists() && startFolder.isDirectory()) {
-                applicationContext.fireEvent(ApplicationEvents.WorkFolderChanged, startFolder);
+            File startFile = new File(startFolderPath);
+            if (startFile.exists() && !startFile.isDirectory()) {
+                applicationContext.fireEvent(ApplicationEvents.WorkMediaFileChanged, startFile);
             }
-        }
-    }*/
-
-    @FXML
-    private void selectMediaFile() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Open Folder with Images");
-        ExtensionFilter filter = new ExtensionFilter("Wave files (*.wav)", "*.wav");
-        fileChooser.getExtensionFilters().add(filter);
-
-        if (currentMediaFile != null) {
-            fileChooser.setInitialDirectory(currentMediaFile.getParentFile());
-        }
-
-        File newFolder = fileChooser.showOpenDialog(null);
-
-        if (newFolder != null && newFolder.exists() && !newFolder.isDirectory()) {
-            handleChangeMediaFile(newFolder);
-        }
-    }
-
-    private void handleChangeMediaFile(File file) {
-        currentMediaFile = file;
-        Media media = new Media(file.toURI().toString());
-        mediaPleer = new MediaPlayer(media);
-    }
-
-    @FXML
-    private void handlePlay() {
-        if (mediaPleer != null) {
-            mediaPleer.play();
-        }
-    }
-
-    @FXML
-    private void handlePause() {
-        if (mediaPleer != null) {
-            mediaPleer.pause();
         }
     }
 }
