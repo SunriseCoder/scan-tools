@@ -17,6 +17,13 @@ public class SubtitleTimeDTO {
         this.millisecond = millisecond;
     }
 
+    public SubtitleTimeDTO(long milliseconds) {
+        hour = (int) (milliseconds / 3600000);
+        minute = (int) (milliseconds / 60000 % 60);
+        second = (int) (milliseconds / 1000 % 60);
+        millisecond = (int) (milliseconds % 1000);
+    }
+
     public int getHour() {
         return hour;
     }
@@ -47,5 +54,15 @@ public class SubtitleTimeDTO {
 
     public void setMillisecond(int millisecond) {
         this.millisecond = millisecond;
+    }
+
+    public String getAsString() {
+        String string = String.format("%02d:%02d:%02d,%03d", hour, minute, second, millisecond);
+        return string;
+    }
+
+    public long getAsMilliseconds() {
+        long milliseconds = 60 * 60 * 1000 * hour + 60 * 1000 * minute + 1000 * second + millisecond;
+        return milliseconds;
     }
 }

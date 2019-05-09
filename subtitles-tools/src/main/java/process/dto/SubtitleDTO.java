@@ -38,4 +38,9 @@ public class SubtitleDTO {
     public void setText(String text) {
         this.text = text;
     }
+
+    public String getTimeAsString() {
+        String string = start.getAsString() + " --> " + end.getAsString();
+        return string;
+    }
 }
