@@ -32,12 +32,14 @@ import utils.FileUtils;
 import utils.MathUtils;
 
 public class AudioPlayer {
+    private static final int MOVE_BY_ARROW_DISTANCE = 15;
     private static final int VERTICAL_SCALE = 16 * 1024;
     private static final int MIN_HORIZONTAL_SCALE = 32;
     private static final int MAX_HORIZONTAL_SCALE = 1024 * 1024;
 
     private ApplicationContext applicationContext;
 
+    private Parent root;
     @FXML
     private Slider volumeSlider;
     @FXML
@@ -48,7 +50,7 @@ public class AudioPlayer {
 
     // Components
     private File currentMediaFile;
-    private MediaPlayer mediaPleer;
+    private MediaPlayer mediaPlayer;
     private ScaledSampleStorage sampleStorage;
 
     // Logic Parameters
@@ -71,11 +73,11 @@ public class AudioPlayer {
         applicationContext.addEventListener(ApplicationEvents.WorkMediaFileChanged,
                 value -> handleStartMediaFileChanged(value));
 
-        Parent node = FileUtils.loadFXML(this);
+        root = FileUtils.loadFXML(this);
 
-        node.setFocusTraversable(true);
-        node.setOnMousePressed(e -> node.requestFocus());
-        node.setOnKeyPressed(e -> handleKeyPressed(e));
+        root.setFocusTraversable(true);
+        root.setOnMousePressed(e -> requestFocus());
+        root.setOnKeyPressed(e -> handleKeyPressed(e));
 
         image = new CanvasPane();
         image.setMinHeight(200);
@@ -90,7 +92,7 @@ public class AudioPlayer {
         image.setOnScroll(e -> handleImageScroll(e));
         image.setOnMouseDragged(e -> handleImageMouseDragged(e));
 
-        return node;
+        return root;
     }
 
     public void restoreComponents() {
@@ -115,15 +117,51 @@ public class AudioPlayer {
     }
 
     private void handleKeyPressed(KeyEvent e) {
-         switch (e.getCode()) {
+        switch (e.getCode()) {
+            // Toggle Play/Pause
             case SPACE:
-                if (mediaPleer != null) {
-                    if (mediaPleer.getStatus().equals(Status.PLAYING)) {
+                if (mediaPlayer != null) {
+                    if (mediaPlayer.getStatus().equals(Status.PLAYING)) {
                         handlePause();
                     } else {
-                        mediaPleer.play();
+                        // TODO MediaPlayer glitch - don't fire Play Events after first press of Play on UI
+                        mediaPlayer.play();
                     }
                 }
+                break;
+
+            // Set Select Start/End
+            case INSERT:
+                handleSetSelectionStart();
+                break;
+            case PAGE_UP:
+                handleSetSelectionEnd();
+                break;
+
+            // Reset Selection
+            case DELETE:
+                selection.reset();
+                render();
+                break;
+
+            // Move to Start/End of Selection or Whole File
+            case HOME:
+                long sample = selection.isStartEmpty() ? 0 : selection.getStart();
+                setPlaybackPosition(sample);
+                break;
+            case END:
+                sample = selection.isEndEmpty() ? sampleStorage.getFrameCount() - 1 : selection.getEnd();
+                setPlaybackPosition(sample);
+                break;
+
+            // Short Cursor Move Forward/Backward
+            case LEFT:
+                sample = currentSamplePosition - MOVE_BY_ARROW_DISTANCE * scale;
+                setPlaybackPosition(sample);
+                break;
+            case RIGHT:
+                sample = currentSamplePosition + MOVE_BY_ARROW_DISTANCE * scale;
+                setPlaybackPosition(sample);
                 break;
             default:
                 break;
@@ -180,14 +218,13 @@ public class AudioPlayer {
             return;
         }
 
+        setMediaPlayerPlaybackPosition(sample);
         setSamplePosition(sample);
-
-        setMediaPlayerPlaybackPosition();
     }
 
-    private void setMediaPlayerPlaybackPosition() {
-        long milliseconds = getSampleToPlayer(currentSamplePosition);
-        mediaPleer.seek(new Duration(milliseconds));
+    private void setMediaPlayerPlaybackPosition(long sample) {
+        long milliseconds = getSampleToPlayer(sample);
+        mediaPlayer.seek(new Duration(milliseconds));
     }
 
     private void render() {
@@ -286,9 +323,9 @@ public class AudioPlayer {
         applicationContext.setParameterValue(ApplicationParameters.WorkMediaFile, file.getAbsolutePath());
 
         Media media = new Media(file.toURI().toString());
-        mediaPleer = new MediaPlayer(media);
-        mediaPleer.currentTimeProperty().addListener((e) -> handleMediaPlayerPlaybackPositionChanged(e));
-        mediaPleer.volumeProperty().bind(volumeSlider.valueProperty());
+        mediaPlayer = new MediaPlayer(media);
+        mediaPlayer.currentTimeProperty().addListener((e) -> handleMediaPlayerPlaybackPositionChanged(e));
+        mediaPlayer.volumeProperty().bind(volumeSlider.valueProperty());
 
         WaveInputStream inputStream = WaveInputStream.create(file, 0);
         sampleStorage = new ScaledSampleStorage(inputStream, MIN_HORIZONTAL_SCALE);
@@ -297,21 +334,21 @@ public class AudioPlayer {
     }
 
     private void handleMediaPlayerPlaybackPositionChanged(Observable e) {
-        if (mediaPleer.getStatus().equals(Status.PAUSED)) {
+        if (mediaPlayer.getStatus().equals(Status.PAUSED)) {
             return;
         }
 
         // Calculating Sample Position
-        long playerPosition = MathUtils.roundToLong(mediaPleer.getCurrentTime().toMillis());
+        long playerPosition = MathUtils.roundToLong(mediaPlayer.getCurrentTime().toMillis());
         long samplePosition = getPLayerToSample(playerPosition);
 
         // Adjusting that Sample Position don't come outside Selected Interval
         if (selection.isEndNotEmpty() && samplePosition > selection.getEnd()) {
             samplePosition = selection.getEnd();
-            mediaPleer.pause();
+            mediaPlayer.pause();
         }
 
-        if (!mediaPleer.getStatus().equals(Status.PLAYING)) {
+        if (!mediaPlayer.getStatus().equals(Status.PLAYING)) {
             return;
         }
 
@@ -319,33 +356,25 @@ public class AudioPlayer {
         playerPosition = getSampleToPlayer(samplePosition);
         applicationContext.fireEvent(ApplicationEvents.AudioPlayerOnPlay, playerPosition);
 
-        // Calculating offset, that the Cursor don't go outside the Window
-        long imagePosition = getSampleToImage(samplePosition);
-        int imageWidth = (int) image.getWidth();
-        if (imagePosition > 0.9 * imageWidth) {
-            imageOffset -= imagePosition - 50;
-        } else if (imagePosition < 50) {
-            imageOffset += 50 - imagePosition;
-        }
-
+        // Setting Sample Position
         setSamplePosition(samplePosition);
     }
 
     @FXML
     public void handlePlay() {
-        if (mediaPleer != null) {
+        if (mediaPlayer != null) {
             if (selection.isStartNotEmpty() && selection.isEndNotEmpty()) {
                 setPlaybackPosition(selection.getStart());
             }
-            mediaPleer.play();
+            mediaPlayer.play();
         }
     }
 
     @FXML
     public void handlePause() {
-        if (mediaPleer != null) {
-            long playerPosition = MathUtils.roundToLong(mediaPleer.getCurrentTime().toMillis());
-            mediaPleer.pause();
+        if (mediaPlayer != null) {
+            long playerPosition = MathUtils.roundToLong(mediaPlayer.getCurrentTime().toMillis());
+            mediaPlayer.pause();
             long samplePosition = getPLayerToSample(playerPosition);
             setSamplePosition(samplePosition);
         }
@@ -373,7 +402,12 @@ public class AudioPlayer {
 
     @FXML
     private void handleSetSelectionEnd() {
-        selection.setEnd(currentSamplePosition);
+        if (selection.isEndNotEmpty() && selection.getEnd().equals(currentSamplePosition)) {
+            selection.setEnd(null);
+        } else {
+            selection.setEnd(currentSamplePosition);
+        }
+
         render();
     }
 
@@ -401,7 +435,19 @@ public class AudioPlayer {
 
     private void setSamplePosition(long position) {
         currentSamplePosition = position;
+        adjustImageOffset();
         render();
+    }
+
+    private void adjustImageOffset() {
+        // Calculating offset, that the Cursor don't go outside the Window
+        long imagePosition = getSampleToImage(currentSamplePosition);
+        int imageWidth = (int) image.getWidth();
+        if (imagePosition > 0.9 * imageWidth) {
+            imageOffset -= imagePosition - 50;
+        } else if (imagePosition < 50) {
+            imageOffset += 50 - imagePosition;
+        }
     }
 
     private void setSelection(Long start, Long end) {
@@ -414,5 +460,9 @@ public class AudioPlayer {
     public void resetSelectionInterval() {
         selection.reset();
         render();
+    }
+
+    public void requestFocus() {
+        root.requestFocus();
     }
 }

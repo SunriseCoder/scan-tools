@@ -208,9 +208,20 @@ public class SubtitlesProcessorApp extends Application {
         }
 
         switch (e.getCode()) {
+            // CTRL+S -> Save
             case S:
                 saveTextEditorText();
                 e.consume();
+                break;
+
+            // CTRL+Up -> Switch to AudioPlayer
+            case UP:
+                audioPlayer.requestFocus();
+                break;
+
+            // CTRL+Right -> Add Subtitle
+            case RIGHT:
+                handleAddSubtitlePressed();
                 break;
             default:
                 break;
@@ -257,11 +268,12 @@ public class SubtitlesProcessorApp extends Application {
     }
 
     @FXML
-    private void handleAddSubtitlePressed() throws IOException {
-        AudioPlayerSelection selectionInterval = audioPlayer.getSelectionInMilliseconds();
+    private void handleAddSubtitlePressed() {
+        AudioPlayerSelection selection = audioPlayer.getSelectionInMilliseconds();
         String selectedText = textEditor.getSelectedText();
 
-        if (selectionInterval == null || selectedText == null || selectedText.isEmpty()) {
+        // Validating AudioPlayer and TextEditor Selections
+        if (selection.isStartEmpty() || selection.isEndEmpty() || selectedText == null || selectedText.isEmpty()) {
             String message = "To Add new Subtitle You have to:\n"
                     + "1. Select Audio Interval on Wave Diagram via Mouse Left Click and Drag\n"
                     + "2. Type and Select Subtitle Text in Text Editor\n"
@@ -270,17 +282,28 @@ public class SubtitlesProcessorApp extends Application {
             applicationContext.showError(message, null);
         }
 
-        SubtitleTimeDTO start = new SubtitleTimeDTO(selectionInterval.getStart());
-        SubtitleTimeDTO end = new SubtitleTimeDTO(selectionInterval.getEnd());
+        // Creating new Subtitle
+        SubtitleTimeDTO start = new SubtitleTimeDTO(selection.getStart());
+        SubtitleTimeDTO end = new SubtitleTimeDTO(selection.getEnd());
         String text = StringUtils.trimEndSymbols(selectedText, "\n");
         SubtitleDTO subtitle = new SubtitleDTO(start, end, text);
 
+        // Adding to the List and Sorting the List
         subtitlesListView.getItems().add(subtitle);
         sortSubtitles();
-        saveSubtitlesToFile();
 
+        // Saving Subtitles File
+        try {
+            saveSubtitlesToFile();
+        } catch (IOException e) {
+            applicationContext.showError("Could not save Subtitles File: " + workSubtitlesFile.getAbsolutePath(), e);
+        }
+
+        // Resetting Selections
         audioPlayer.resetSelectionInterval();
         textEditor.replaceSelection("");
+
+        // Saving TextEditor Text
         saveTextEditorText();
     }
 
@@ -288,8 +311,7 @@ public class SubtitlesProcessorApp extends Application {
     private void handleEditSubtitlePressed() {
         ObservableList<SubtitleDTO> subtitleItems = subtitlesListView.getSelectionModel().getSelectedItems();
 
-        // TODO Implement check that if multiple elements selected, ask User for a
-        // confirmation
+        // TODO Implement check that if multiple elements selected, ask User for a confirmation
 
         String oldText = textEditor.getText();
         StringBuilder stringBuilder = new StringBuilder();
@@ -336,6 +358,7 @@ public class SubtitlesProcessorApp extends Application {
     private void sortSubtitles() {
         subtitlesListView.getItems()
                 .sort((a, b) -> (int) (a.getStart().getAsMilliseconds() - b.getStart().getAsMilliseconds()));
+        // TODO Adjust that Start Time of Next Subtitle was Greater Than End Time of Previous Subtitle
     }
 
     @FXML
