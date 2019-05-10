@@ -1,13 +1,13 @@
 package utils;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-class StringUtilsTest {
+public class StringUtilsTest {
 
     @Test
-    void testTrimEndSymbols() {
+    public void testTrimEndSymbols() {
         assertEquals(null, StringUtils.trimEndSymbols(null, null));
         assertEquals("", StringUtils.trimEndSymbols("", ""));
 
