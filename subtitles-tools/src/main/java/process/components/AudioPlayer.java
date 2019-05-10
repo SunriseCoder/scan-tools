@@ -56,7 +56,12 @@ public class AudioPlayer {
     private int mousePositionOnImage;
     private long samplePosition;
     private int offsetOnImage;
+
     private SelectionInterval selectionInterval;
+
+    public AudioPlayer() {
+        selectionInterval = new SelectionInterval();
+    }
 
     public Node createUI(ApplicationContext applicationContext) throws IOException {
         this.applicationContext = applicationContext;
@@ -66,7 +71,7 @@ public class AudioPlayer {
 
         image = new CanvasPane();
         image.setMinHeight(200);
-        GridPane.setColumnSpan(image, 10);
+        GridPane.setColumnSpan(image, 12);
         GridPane.setVgrow(image, Priority.ALWAYS);
         gridPane.getChildren().add(image);
 
@@ -91,10 +96,11 @@ public class AudioPlayer {
     private void handleImageMousePressed(MouseEvent e) {
         mousePositionOnImage = (int) e.getX();
 
+        long samplePosition = getSamplePosition((int) e.getX());
         if (e.getButton().equals(MouseButton.PRIMARY)) {
-            int samplePosition = getSamplePosition((int) e.getX());
-            setCursorOnSample(samplePosition);
-            resetSelectionInterval();
+            setPlaybackPosition(samplePosition);
+        } else if (e.getButton().equals(MouseButton.SECONDARY)) {
+            setSelectionInterval(samplePosition, 0L);
         }
 
         render();
@@ -120,24 +126,24 @@ public class AudioPlayer {
 
     private void handleImageMouseDragged(MouseEvent e) {
         if (e.getButton().equals(MouseButton.PRIMARY)) {
-            long start = getSamplePosition(mousePositionOnImage);
-            long end = getSamplePosition((int) e.getX());
-            selectionInterval = new SelectionInterval(start, end);
-        } else if (e.getButton().equals(MouseButton.SECONDARY)) {
             int deltaX = (int) (e.getX() - mousePositionOnImage);
             mousePositionOnImage = (int) e.getX();
             offsetOnImage += deltaX;
+        } else if (e.getButton().equals(MouseButton.SECONDARY)) {
+            long start = getSamplePosition(mousePositionOnImage);
+            long end = getSamplePosition((int) e.getX());
+            setSelectionInterval(start, end);
         }
 
         render();
     }
 
-    private void setCursorOnSample(long sample) {
+    private void setPlaybackPosition(long sample) {
         if (sample < 0 || sample >= sampleStorage.getFrameCount()) {
             return;
         }
 
-        samplePosition = sample;
+        setSamplePosition(sample);
 
         setMediaPlayerPlaybackPosition();
     }
@@ -173,12 +179,12 @@ public class AudioPlayer {
         }
 
         // Selected Interval rendering
-        if (selectionInterval != null) {
+        if (selectionInterval.start != null) {
             int start = getPositionOnImage(selectionInterval.start);
-            int end = getPositionOnImage(selectionInterval.end);
+            int end = selectionInterval.end == null ? start : getPositionOnImage(selectionInterval.end);
             graphics.setFill(Color.GREEN);
             graphics.setGlobalAlpha(0.3);
-            graphics.fillRect(start, 0, end - start, height);
+            graphics.fillRect(start, 0, end - start + 1, height);
             graphics.setGlobalAlpha(1);
         }
 
@@ -199,8 +205,8 @@ public class AudioPlayer {
     }
 
     private int getPositionForMediaPlayer(long samplePosition) {
-        int frameRate = MathUtils.roundToInt(sampleStorage.getAudioFormat().getSampleRate());
-        int milliseconds = MathUtils.roundToInt(1000 * samplePosition / frameRate);
+        int sampleRate = MathUtils.roundToInt(sampleStorage.getAudioFormat().getSampleRate());
+        int milliseconds = MathUtils.roundToInt(1000 * samplePosition / sampleRate);
         return milliseconds;
     }
 
@@ -249,11 +255,11 @@ public class AudioPlayer {
     private void handleMediaPlayerPlaybackPositionChanged(Observable e) {
         // Calculating Sample Position
         double milliseconds = mediaPleer.getCurrentTime().toMillis();
-        float sampleRate = sampleStorage.getAudioFormat().getSampleRate();
+        int sampleRate = MathUtils.roundToInt(sampleStorage.getAudioFormat().getSampleRate());
         long newSamplePosition = MathUtils.roundToLong(milliseconds * sampleRate / 1000);
 
         // Adjusting that Sample Position don't come outside Selected Interval
-        if (selectionInterval != null && newSamplePosition > selectionInterval.end) {
+        if (selectionInterval.end != null && newSamplePosition > selectionInterval.end) {
             newSamplePosition = selectionInterval.end;
             mediaPleer.pause();
         }
@@ -262,10 +268,12 @@ public class AudioPlayer {
             return;
         }
 
-        samplePosition = newSamplePosition;
+        // Firing Play Position Change Event
+        long samplePositionInMilliseconds = 1000 * newSamplePosition / sampleRate;
+        applicationContext.fireEvent(ApplicationEvents.AudioPlayerOnPlay, samplePositionInMilliseconds);
 
         // Calculating offset, that the Cursor don't go outside the Window
-        int positionOnImage = getPositionOnImage(samplePosition);
+        int positionOnImage = getPositionOnImage(newSamplePosition);
         int imageWidth = (int) image.getWidth();
         if (positionOnImage > 0.9 * imageWidth) {
             offsetOnImage -= positionOnImage - 50;
@@ -273,32 +281,50 @@ public class AudioPlayer {
             offsetOnImage += 50 - positionOnImage;
         }
 
-        render();
+        setSamplePosition(newSamplePosition);
     }
 
     @FXML
-    private void handlePlay() {
+    public void handlePlay() {
         if (mediaPleer != null) {
-            if (selectionInterval != null) {
-                double startMillis = getPositionForMediaPlayer(selectionInterval.start);
-                mediaPleer.seek(new Duration(startMillis));
+            if (selectionInterval.start != null && selectionInterval.end != null) {
+                setPlaybackPosition(selectionInterval.start);
             }
             mediaPleer.play();
         }
     }
 
     @FXML
-    private void handlePause() {
+    public void handlePause() {
         if (mediaPleer != null) {
             mediaPleer.pause();
         }
     }
 
     @FXML
-    private void handleForward() {
-        if (mediaPleer != null) {
-            System.out.println(mediaPleer.getStatus());
+    private void handleToSelectionStart() {
+        if (selectionInterval.start != null) {
+            setPlaybackPosition(selectionInterval.start);
         }
+    }
+
+    @FXML
+    private void handleToSelectionEnd() {
+        if (selectionInterval.end != null) {
+            setPlaybackPosition(selectionInterval.end);
+        }
+    }
+
+    @FXML
+    private void handleSetSelectionStart() {
+        setSelectionInterval(samplePosition, null);
+        render();
+    }
+
+    @FXML
+    private void handleSetSelectionEnd() {
+        selectionInterval.end = samplePosition;
+        render();
     }
 
     private static class ScaledSampleStorage {
@@ -382,35 +408,66 @@ public class AudioPlayer {
     }
 
     public static class SelectionInterval {
-        private long start;
-        private long end;
+        private Long start;
+        private Long end;
 
-        public SelectionInterval(long start, long end) {
+        public SelectionInterval() {
+            // Default Constructor
+        }
+
+        public SelectionInterval(Long start, Long end) {
             this.start = start;
             this.end = end;
         }
 
-        public long getStart() {
+        public Long getStart() {
             return start;
         }
 
-        public long getEnd() {
+        public Long getEnd() {
             return end;
         }
     }
 
-    public SelectionInterval getSelectionInterval() {
-        return selectionInterval;
+    public SelectionInterval getSelectionIntervalInMilliseconds() {
+        if (selectionInterval.start == null || selectionInterval.end == null || sampleStorage == null) {
+            return null;
+        }
+
+        int sampleRate = MathUtils.roundToInt(sampleStorage.getAudioFormat().getSampleRate());
+        long start = 1000 * selectionInterval.start / sampleRate;
+        long end = 1000 * selectionInterval.end / sampleRate;
+        SelectionInterval inMilliseconds = new SelectionInterval(start, end);
+        return inMilliseconds;
     }
 
-    public void setSelectionInterval(SelectionInterval selectionInterval) {
+    public void setSelectionIntervalInMilliseconds(SelectionInterval inMilliseconds) {
+        if (sampleStorage == null) {
+            return;
+        }
+
+        int sampleRate = MathUtils.roundToInt(sampleStorage.getAudioFormat().getSampleRate());
+        long start = inMilliseconds.start * sampleRate / 1000;
+        long end = inMilliseconds.end * sampleRate / 1000;
+
+        setSelectionInterval(start, end);
+    }
+
+    private void setSamplePosition(long position) {
+        samplePosition = position;
+        render();
+    }
+
+    private void setSelectionInterval(Long start, Long end) {
         // TODO Add checks that both boundaries of interval are in inside the Samples Area
-        this.selectionInterval = selectionInterval;
+        selectionInterval.start = start;
+        selectionInterval.end = end;
         render();
     }
 
     public void resetSelectionInterval() {
-        selectionInterval = null;
+        selectionInterval.start = null;
+        selectionInterval.end = null;
         render();
     }
 }

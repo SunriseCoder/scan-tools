@@ -15,6 +15,8 @@
         <ColumnConstraints hgrow="NEVER" />
         <ColumnConstraints hgrow="NEVER" />
         <ColumnConstraints hgrow="NEVER" />
+        <ColumnConstraints hgrow="NEVER" />
+        <ColumnConstraints hgrow="NEVER" />
         <ColumnConstraints hgrow="ALWAYS" minWidth="50.0" />
         <ColumnConstraints hgrow="ALWAYS" minWidth="200.0" />
         <ColumnConstraints hgrow="NEVER" minWidth="50.0" />
@@ -25,14 +27,16 @@
     </rowConstraints>
     <children>
         <Button mnemonicParsing="false" text="|&lt;&lt;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-        <Button mnemonicParsing="false" text="&lt;&lt;" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-        <Button mnemonicParsing="false" onAction="#handlePlay" text="&gt;" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-        <Button mnemonicParsing="false" onAction="#handlePause" text="||" GridPane.columnIndex="4" GridPane.rowIndex="1" />
-        <Button mnemonicParsing="false" onAction="#handleForward" text="&gt;&gt;" GridPane.columnIndex="5" GridPane.rowIndex="1" />
-        <Button mnemonicParsing="false" text="&gt;&gt;|" GridPane.columnIndex="6" GridPane.rowIndex="1" />
-        <TextField fx:id="openMediaFileTextField" editable="false" maxWidth="1E308" GridPane.columnIndex="8" GridPane.hgrow="ALWAYS"
+        <Button mnemonicParsing="false" onAction="#handleSetSelectionStart" text="[" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+        <Button mnemonicParsing="false" onAction="#handleToSelectionStart" text="[&lt;&lt;" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+        <Button mnemonicParsing="false" onAction="#handlePlay" text="&gt;" GridPane.columnIndex="4" GridPane.rowIndex="1" />
+        <Button mnemonicParsing="false" onAction="#handlePause" text="||" GridPane.columnIndex="5" GridPane.rowIndex="1" />
+        <Button mnemonicParsing="false" onAction="#handleToSelectionEnd" text="&gt;&gt;]" GridPane.columnIndex="6" GridPane.rowIndex="1" />
+        <Button mnemonicParsing="false" onAction="#handleSetSelectionEnd" text="]" GridPane.columnIndex="7" GridPane.rowIndex="1" />
+        <Button mnemonicParsing="false" text="&gt;&gt;|" GridPane.columnIndex="8" GridPane.rowIndex="1" />
+        <TextField fx:id="openMediaFileTextField" editable="false" maxWidth="1E308" GridPane.columnIndex="10" GridPane.hgrow="ALWAYS"
             GridPane.rowIndex="1" />
-        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#selectMediaFile" text="Open" GridPane.columnIndex="9"
+        <Button maxWidth="1E308" mnemonicParsing="false" onAction="#selectMediaFile" text="Open" GridPane.columnIndex="11"
             GridPane.hgrow="NEVER" GridPane.rowIndex="1" />
     </children>
 </GridPane>

@@ -25,7 +25,7 @@
                                 <Font name="Liberation Mono" size="18.0" />
                             </font>
                         </TextArea>
-                        <Line fx:id="lineSizeLine" endY="300.0" translateX="444.0" StackPane.alignment="TOP_LEFT" />
+                        <Line fx:id="lineSizeLine" endY="300.0" translateX="659.0" StackPane.alignment="TOP_LEFT" />
                     </children>
                 </StackPane>
                 <GridPane>
@@ -50,7 +50,7 @@
                             </children>
                         </HBox>
                         <ListView fx:id="subtitlesListView" GridPane.columnSpan="4" GridPane.rowIndex="1" />
-                        <TextField GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.vgrow="NEVER" />
+                        <TextField fx:id="subtitlesWorkFileTextField" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.vgrow="NEVER" />
                         <Button mnemonicParsing="false" onAction="#handleSubtitlesOpenFile" text="Open" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                         <Button mnemonicParsing="false" onAction="#handleSubtitlesRefreshFromFile" text="Refresh" GridPane.columnIndex="2"
                             GridPane.rowIndex="2" />

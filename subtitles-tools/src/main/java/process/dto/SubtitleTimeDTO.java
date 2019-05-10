@@ -65,4 +65,9 @@ public class SubtitleTimeDTO {
         long milliseconds = 60 * 60 * 1000 * hour + 60 * 1000 * minute + 1000 * second + millisecond;
         return milliseconds;
     }
+
+    @Override
+    public String toString() {
+        return getAsString();
+    }
 }

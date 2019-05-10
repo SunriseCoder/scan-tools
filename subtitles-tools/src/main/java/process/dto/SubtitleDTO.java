@@ -65,4 +65,10 @@ public class SubtitleDTO {
 
         return subtitleTime;
     }
+
+    @Override
+    public String toString() {
+        String string = getTimeAsString() + ": " + text;
+        return string;
+    }
 }

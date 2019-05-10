@@ -3,5 +3,11 @@ package process.context;
 public enum ApplicationParameters {
     // General
     SplitPaneDivider,
-    WorkMediaFile
+
+    // Files
+    WorkMediaFile,
+    WorkSubtitlesFile,
+
+    // Miscellaneous
+    TextEditorText
 }
