@@ -7,7 +7,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -33,7 +35,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import process.components.AudioPlayer;
-import process.components.AudioPlayer.SelectionInterval;
+import process.components.AudioPlayerSelection;
 import process.context.ApplicationContext;
 import process.context.ApplicationEvents;
 import process.context.ApplicationParameters;
@@ -53,7 +55,9 @@ public class SubtitlesProcessorApp extends Application {
     private ApplicationContext applicationContext;
 
     @FXML
-    private SplitPane splitPane;
+    private SplitPane verticalSplitPane;
+    @FXML
+    private SplitPane horizontalSplitPane;
 
     @FXML
     private ListView<SubtitleDTO> subtitlesListView;
@@ -85,7 +89,7 @@ public class SubtitlesProcessorApp extends Application {
         Parent root = FileUtils.loadFXML(this);
 
         Node audioPlayerNode = audioPlayer.createUI(applicationContext);
-        splitPane.getItems().add(0, audioPlayerNode);
+        verticalSplitPane.getItems().add(0, audioPlayerNode);
 
         textEditor.setOnKeyPressed(e -> handleTextEditorKeyPressed(e));
 
@@ -145,23 +149,12 @@ public class SubtitlesProcessorApp extends Application {
     }
 
     private void restoreComponent() throws IOException {
-        // TODO Fix for both SplitPanes
         // Restore SplitPane Dividers
-        /*
-         * String positionsString =
-         * applicationContext.getParameterValue(ApplicationParameters.SplitPaneDivider);
-         * if (positionsString != null) { double[] positions =
-         * Arrays.stream(positionsString.split(";")) .mapToDouble(s ->
-         * Double.parseDouble(s)).toArray(); splitPane.setDividerPositions(positions); }
-         *
-         * // Listener to Save SplitPane Dividers on SplitPane Dividers change
-         * splitPane.getDividers().forEach(div -> { div.positionProperty().addListener(e
-         * -> { double[] dividerPositions = splitPane.getDividerPositions(); String
-         * dividerPositionsString = Arrays.stream(dividerPositions).boxed() .map(d ->
-         * String.valueOf(d)) .collect(Collectors.joining(";"));
-         * applicationContext.setParameterValue(ApplicationParameters.SplitPaneDivider,
-         * dividerPositionsString); }); });
-         */
+        restoreSplitPane(verticalSplitPane, ApplicationParameters.VerticalSplitPaneDivider);
+        restoreSplitPane(horizontalSplitPane, ApplicationParameters.HorizontalSplitPaneDivider);
+
+        // Restore AudioPlayer Components
+        audioPlayer.restoreComponents();
 
         // Restore Work Folders
         String workMediaFilePath = applicationContext.getParameterValue(ApplicationParameters.WorkMediaFile);
@@ -182,11 +175,31 @@ public class SubtitlesProcessorApp extends Application {
             }
         }
 
-        // Restore TextEditor Text 
+        // Restore TextEditor Text
         String textEditorText = applicationContext.getParameterValue(ApplicationParameters.TextEditorText);
         if (textEditorText != null) {
             textEditor.setText(textEditorText);
         }
+    }
+
+    private void restoreSplitPane(SplitPane splitPane, ApplicationParameters applicationParameter) {
+        // Restore SplitPane Dividers
+        String positionsString = applicationContext.getParameterValue(applicationParameter);
+        if (positionsString != null) {
+            double[] positions = Arrays.stream(positionsString.split(";"))
+                    .mapToDouble(s -> Double.parseDouble(s)).toArray();
+            splitPane.setDividerPositions(positions);
+        }
+
+        // Listener to Save SplitPane Dividers on SplitPane Dividers change
+        splitPane.getDividers().forEach(div -> {
+            div.positionProperty().addListener(e -> {
+                double[] dividerPositions = splitPane.getDividerPositions();
+                String dividerPositionsString = Arrays.stream(dividerPositions).boxed().map(d -> String.valueOf(d))
+                        .collect(Collectors.joining(";"));
+                applicationContext.setParameterValue(applicationParameter, dividerPositionsString);
+            });
+        });
     }
 
     private void handleTextEditorKeyPressed(KeyEvent e) {
@@ -208,7 +221,7 @@ public class SubtitlesProcessorApp extends Application {
         // Double Click via Left Mouse Button
         if (e.getButton().equals(MouseButton.PRIMARY) && e.getClickCount() == 2) {
             SubtitleDTO subtitle = subtitlesListView.getSelectionModel().getSelectedItem();
-            setAudioPlayerSelectionInterval(subtitle);
+            setAudioPlayerSelection(subtitle);
         }
     }
 
@@ -245,7 +258,7 @@ public class SubtitlesProcessorApp extends Application {
 
     @FXML
     private void handleAddSubtitlePressed() throws IOException {
-        SelectionInterval selectionInterval = audioPlayer.getSelectionIntervalInMilliseconds();
+        AudioPlayerSelection selectionInterval = audioPlayer.getSelectionInMilliseconds();
         String selectedText = textEditor.getSelectedText();
 
         if (selectionInterval == null || selectedText == null || selectedText.isEmpty()) {
@@ -305,7 +318,7 @@ public class SubtitlesProcessorApp extends Application {
         // Setting Selection Interval on AudioPlayer
         if (subtitles.size() == 1) {
             SubtitleDTO subtitle = subtitles.get(0);
-            setAudioPlayerSelectionInterval(subtitle);
+            setAudioPlayerSelection(subtitle);
         }
     }
 
@@ -453,10 +466,10 @@ public class SubtitlesProcessorApp extends Application {
         applicationContext.setParameterValue(ApplicationParameters.TextEditorText, text);
     }
 
-    private void setAudioPlayerSelectionInterval(SubtitleDTO subtitle) {
+    private void setAudioPlayerSelection(SubtitleDTO subtitle) {
         long start = subtitle.getStart().getAsMilliseconds();
         long end = subtitle.getEnd().getAsMilliseconds();
-        SelectionInterval selectionInterval = new SelectionInterval(start, end);
-        audioPlayer.setSelectionIntervalInMilliseconds(selectionInterval);
+        AudioPlayerSelection selection = new AudioPlayerSelection(start, end);
+        audioPlayer.setSelectionInMilliseconds(selection);
     }
 }

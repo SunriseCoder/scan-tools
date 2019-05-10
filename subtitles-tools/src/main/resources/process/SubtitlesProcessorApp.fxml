@@ -13,10 +13,9 @@
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.text.Font?>
 
-<SplitPane fx:id="splitPane" orientation="VERTICAL" prefHeight="768.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/8.0.171"
-    xmlns:fx="http://javafx.com/fxml/1">
+<SplitPane fx:id="verticalSplitPane" orientation="VERTICAL" prefHeight="768.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1">
     <items>
-        <SplitPane dividerPositions="0.6340508806262231" prefHeight="160.0" prefWidth="200.0">
+        <SplitPane fx:id="horizontalSplitPane" orientation="HORIZONTAL">
             <items>
                 <StackPane fx:id="textEditorPane" prefHeight="150.0" prefWidth="200.0">
                     <children>
@@ -52,8 +51,7 @@
                         <ListView fx:id="subtitlesListView" GridPane.columnSpan="4" GridPane.rowIndex="1" />
                         <TextField fx:id="subtitlesWorkFileTextField" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.vgrow="NEVER" />
                         <Button mnemonicParsing="false" onAction="#handleSubtitlesOpenFile" text="Open" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                        <Button mnemonicParsing="false" onAction="#handleSubtitlesRefreshFromFile" text="Refresh" GridPane.columnIndex="2"
-                            GridPane.rowIndex="2" />
+                        <Button mnemonicParsing="false" onAction="#handleSubtitlesRefreshFromFile" text="Refresh" GridPane.columnIndex="2" GridPane.rowIndex="2" />
                         <Button mnemonicParsing="false" onAction="#handleSubtitlesSaveToFile" text="Save" GridPane.columnIndex="3" GridPane.rowIndex="2" />
                     </children>
                 </GridPane>
