@@ -320,7 +320,7 @@ public class AudioPlayer {
         currentMediaFile = file;
         openMediaFileTextField.setText(file.getAbsolutePath());
 
-        applicationContext.setParameterValue(ApplicationParameters.WorkMediaFile, file.getAbsolutePath());
+        applicationContext.setParameterValue(ApplicationParameters.MediaWorkFile, file.getAbsolutePath());
 
         Media media = new Media(file.toURI().toString());
         mediaPlayer = new MediaPlayer(media);

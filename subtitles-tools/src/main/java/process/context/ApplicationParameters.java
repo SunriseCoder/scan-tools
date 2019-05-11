@@ -1,15 +1,18 @@
 package process.context;
 
 public enum ApplicationParameters {
-    // General
-    HorizontalSplitPaneDivider,
-    VerticalSplitPaneDivider,
+    // AudioPlayer
+    AudioPlayerVolume,
+    MediaWorkFile,
 
-    // Files
-    WorkMediaFile,
-    WorkSubtitlesFile,
+    // TextEditor
+    TextEditorText,
+
+    // Subtitles
+    SubtitlesWorkFile,
 
     // Miscellaneous
-    AudioPlayerVolume,
-    TextEditorText
+    FontSize,
+    HorizontalSplitPaneDivider,
+    VerticalSplitPaneDivider
 }

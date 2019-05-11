@@ -22,6 +22,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -31,6 +33,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
+import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
@@ -44,6 +47,7 @@ import process.dto.SubtitleTimeDTO;
 import utils.FileUtils;
 import utils.StringUtils;
 import wrappers.IntWrapper;
+import wrappers.LongWrapper;
 
 public class SubtitlesProcessorApp extends Application {
     private static final String APPLICATION_CONTEXT_CONFIG_FILENAME = "subtitles-processor-config.json";
@@ -54,18 +58,23 @@ public class SubtitlesProcessorApp extends Application {
 
     private ApplicationContext applicationContext;
 
+    // General
     @FXML
     private SplitPane verticalSplitPane;
     @FXML
     private SplitPane horizontalSplitPane;
 
-    @FXML
-    private ListView<SubtitleDTO> subtitlesListView;
-
+    // TextEditor
     @FXML
     private TextArea textEditor;
     @FXML
     private Line lineSizeLine;
+
+    // Subtitles
+    @FXML
+    private Spinner<Integer> fontSizeSpinner;
+    @FXML
+    private ListView<SubtitleDTO> subtitlesListView;
     @FXML
     private TextField subtitlesWorkFileTextField;
 
@@ -88,11 +97,19 @@ public class SubtitlesProcessorApp extends Application {
         // Root UI Node
         Parent root = FileUtils.loadFXML(this);
 
+        // AudioPlayer
         Node audioPlayerNode = audioPlayer.createUI(applicationContext);
         verticalSplitPane.getItems().add(0, audioPlayerNode);
 
+        // TextEditor
         textEditor.setOnKeyPressed(e -> handleTextEditorKeyPressed(e));
 
+        // Subtitles Text Size Spinner
+        SpinnerValueFactory<Integer> valueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(10, 96, 12);
+        fontSizeSpinner.setValueFactory(valueFactory);
+        fontSizeSpinner.valueProperty().addListener(e -> handleFontSizeChanged());
+
+        // Subtitles ListView
         subtitlesListView.setOnMouseClicked(e -> handleSubtitlesMouseClicked(e));
         subtitlesListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         subtitlesListView.setCellFactory(c -> new SubtitleListCell());
@@ -149,15 +166,15 @@ public class SubtitlesProcessorApp extends Application {
     }
 
     private void restoreComponent() throws IOException {
-        // Restore SplitPane Dividers
+        // SplitPane Dividers
         restoreSplitPane(verticalSplitPane, ApplicationParameters.VerticalSplitPaneDivider);
         restoreSplitPane(horizontalSplitPane, ApplicationParameters.HorizontalSplitPaneDivider);
 
-        // Restore AudioPlayer Components
+        // AudioPlayer Components
         audioPlayer.restoreComponents();
 
-        // Restore Work Folders
-        String workMediaFilePath = applicationContext.getParameterValue(ApplicationParameters.WorkMediaFile);
+        // Work Folders
+        String workMediaFilePath = applicationContext.getParameterValue(ApplicationParameters.MediaWorkFile);
         if (workMediaFilePath != null) {
             File workMediaFile = new File(workMediaFilePath);
             if (workMediaFile.exists() && !workMediaFile.isDirectory()) {
@@ -165,20 +182,26 @@ public class SubtitlesProcessorApp extends Application {
             }
         }
 
-        // Restore Subtitles File
-        String workSubtitlesFilePath = applicationContext.getParameterValue(ApplicationParameters.WorkSubtitlesFile);
+        // TextEditor Text
+        String textEditorText = applicationContext.getParameterValue(ApplicationParameters.TextEditorText);
+        if (textEditorText != null) {
+            textEditor.setText(textEditorText);
+        }
+
+        // Font Size
+        String fontSizeString = applicationContext.getParameterValue(ApplicationParameters.FontSize);
+        if (fontSizeString != null) {
+            fontSizeSpinner.getValueFactory().setValue(Integer.parseInt(fontSizeString));
+        }
+
+        // Subtitles File
+        String workSubtitlesFilePath = applicationContext.getParameterValue(ApplicationParameters.SubtitlesWorkFile);
         if (workSubtitlesFilePath != null) {
             File workSubtitlesFile = new File(workSubtitlesFilePath);
             if (workSubtitlesFile.exists() && !workSubtitlesFile.isDirectory()) {
                 setWorkSubtitlesFile(workSubtitlesFile);
                 loadSubtitlesFromFile();
             }
-        }
-
-        // Restore TextEditor Text
-        String textEditorText = applicationContext.getParameterValue(ApplicationParameters.TextEditorText);
-        if (textEditorText != null) {
-            textEditor.setText(textEditorText);
         }
     }
 
@@ -195,8 +218,8 @@ public class SubtitlesProcessorApp extends Application {
         splitPane.getDividers().forEach(div -> {
             div.positionProperty().addListener(e -> {
                 double[] dividerPositions = splitPane.getDividerPositions();
-                String dividerPositionsString = Arrays.stream(dividerPositions).boxed().map(d -> String.valueOf(d))
-                        .collect(Collectors.joining(";"));
+                String dividerPositionsString = Arrays.stream(dividerPositions).boxed()
+                        .map(d -> String.valueOf(d)).collect(Collectors.joining(";"));
                 applicationContext.setParameterValue(applicationParameter, dividerPositionsString);
             });
         });
@@ -228,6 +251,14 @@ public class SubtitlesProcessorApp extends Application {
         }
     }
 
+    private void handleFontSizeChanged() {
+        Font font = new Font("Liberation Mono", fontSizeSpinner.getValue());
+        textEditor.setFont(font);
+
+        applicationContext.setParameterValue(ApplicationParameters.FontSize, fontSizeSpinner.getValue().toString());
+        subtitlesListView.refresh();
+    }
+
     private void handleSubtitlesMouseClicked(MouseEvent e) {
         // Double Click via Left Mouse Button
         if (e.getButton().equals(MouseButton.PRIMARY) && e.getClickCount() == 2) {
@@ -246,7 +277,7 @@ public class SubtitlesProcessorApp extends Application {
         }
     }
 
-    private static class SubtitleListCell extends ListCell<SubtitleDTO> {
+    private class SubtitleListCell extends ListCell<SubtitleDTO> {
         @Override
         protected void updateItem(SubtitleDTO item, boolean empty) {
             super.updateItem(item, empty);
@@ -255,11 +286,16 @@ public class SubtitlesProcessorApp extends Application {
             if (!empty) {
                 node = new VBox();
 
+                Integer fontSize = fontSizeSpinner.getValue();
+                Font font = new Font(fontSize);
+
                 Label timeLabel = new Label(item.getTimeAsString());
+                timeLabel.setFont(font);
                 timeLabel.setTextFill(Color.BLUE);
                 node.getChildren().add(timeLabel);
 
                 Label textLabel = new Label(item.getText());
+                textLabel.setFont(font);
                 textLabel.setTextFill(Color.BLACK);
                 node.getChildren().add(textLabel);
             }
@@ -277,8 +313,7 @@ public class SubtitlesProcessorApp extends Application {
             String message = "To Add new Subtitle You have to:\n"
                     + "1. Select Audio Interval on Wave Diagram via Mouse Left Click and Drag\n"
                     + "2. Type and Select Subtitle Text in Text Editor\n"
-                    // TODO Add HotKey here
-                    + "3. Press Add Button or ??? Hotkey";
+                    + "3. Press Add Button or Hotkey (CRTL+Right)";
             applicationContext.showError(message, null);
         }
 
@@ -293,11 +328,7 @@ public class SubtitlesProcessorApp extends Application {
         sortSubtitles();
 
         // Saving Subtitles File
-        try {
-            saveSubtitlesToFile();
-        } catch (IOException e) {
-            applicationContext.showError("Could not save Subtitles File: " + workSubtitlesFile.getAbsolutePath(), e);
-        }
+        saveSubtitlesToFile();
 
         // Resetting Selections
         audioPlayer.resetSelectionInterval();
@@ -305,14 +336,30 @@ public class SubtitlesProcessorApp extends Application {
 
         // Saving TextEditor Text
         saveTextEditorText();
+
+        audioPlayer.requestFocus();
     }
 
     @FXML
     private void handleEditSubtitlePressed() {
         ObservableList<SubtitleDTO> subtitleItems = subtitlesListView.getSelectionModel().getSelectedItems();
 
-        // TODO Implement check that if multiple elements selected, ask User for a confirmation
+        // User Confirmation about going to Edit Subtitle(s)
+        boolean confirmed;
+        if (subtitleItems.size() == 1) {
+            confirmed = applicationContext.showConfirmation("Edit Subtitles", "Are You sure to Edit One Subtitle?");
+        } else if (subtitleItems.size() > 1) {
+            confirmed = applicationContext.showConfirmation("Edit Subtitles",
+                    "You Are going to Edit Several Subtitles.\n"
+                            + "This will lead to lose all Timings of these Subtitles.\nAre You sure?");
+        } else {
+            return;
+        }
+        if (!confirmed) {
+            return;
+        }
 
+        // Deleting Selected Text from TextEditor
         String oldText = textEditor.getText();
         StringBuilder stringBuilder = new StringBuilder();
         List<SubtitleDTO> subtitles = new ArrayList<>(subtitleItems);
@@ -346,8 +393,12 @@ public class SubtitlesProcessorApp extends Application {
 
     @FXML
     private void handleDeleteSubtitlesPressed() {
-        ObservableList<SubtitleDTO> selectedItems = subtitlesListView.getSelectionModel().getSelectedItems();
-        subtitlesListView.getItems().removeAll(selectedItems);
+        boolean confirmed = applicationContext.showConfirmation("Delete Subtitle", "Are You sure to delete Subtitle?");
+        if (confirmed) {
+            ObservableList<SubtitleDTO> selectedItems = subtitlesListView.getSelectionModel().getSelectedItems();
+            subtitlesListView.getItems().removeAll(selectedItems);
+            saveSubtitlesToFile();
+        }
     }
 
     @FXML
@@ -358,7 +409,23 @@ public class SubtitlesProcessorApp extends Application {
     private void sortSubtitles() {
         subtitlesListView.getItems()
                 .sort((a, b) -> (int) (a.getStart().getAsMilliseconds() - b.getStart().getAsMilliseconds()));
-        // TODO Adjust that Start Time of Next Subtitle was Greater Than End Time of Previous Subtitle
+
+        // Adjust that Subtitles does not Intersect with each others
+        LongWrapper lastEnd = new LongWrapper(-1);
+        subtitlesListView.getItems().forEach(subtitle -> {
+            // Checking that Last End is Before Next Start
+            if (subtitle.getStart().getAsMilliseconds() <= lastEnd.getValue()) {
+                subtitle.setStart(new SubtitleTimeDTO(lastEnd.getValue() + 1));
+            }
+
+            // Checking that End is After Start
+            if (subtitle.getEnd().getAsMilliseconds() <= subtitle.getStart().getAsMilliseconds()) {
+                subtitle.setEnd(new SubtitleTimeDTO(subtitle.getStart().getAsMilliseconds() + 1));
+            }
+
+            lastEnd.setValue(subtitle.getEnd().getAsMilliseconds());
+        });
+        handleFontSizeChanged();
     }
 
     @FXML
@@ -435,7 +502,7 @@ public class SubtitlesProcessorApp extends Application {
         saveSubtitlesToFile();
     }
 
-    private void saveSubtitlesToFile() throws IOException {
+    private void saveSubtitlesToFile() {
         if (workSubtitlesFile == null) {
             chooseSubtitlesFileToSave();
         }
@@ -444,6 +511,14 @@ public class SubtitlesProcessorApp extends Application {
             return;
         }
 
+        try {
+            doSubtitlesSaveToFile();
+        } catch (IOException e) {
+            applicationContext.showError("Could not Save Subtitles to File: " + workSubtitlesFile.getAbsolutePath(), e);
+        }
+    }
+
+    private void doSubtitlesSaveToFile() throws IOException, FileNotFoundException {
         FileUtils.createFile(workSubtitlesFile, true);
         try (PrintWriter writer = new PrintWriter(workSubtitlesFile)) {
             IntWrapper counter = new IntWrapper(1);
@@ -479,7 +554,7 @@ public class SubtitlesProcessorApp extends Application {
         workSubtitlesFile = newFile;
 
         String filePath = newFile.getAbsolutePath();
-        applicationContext.setParameterValue(ApplicationParameters.WorkSubtitlesFile, filePath);
+        applicationContext.setParameterValue(ApplicationParameters.SubtitlesWorkFile, filePath);
 
         subtitlesWorkFileTextField.setText(filePath);
     }

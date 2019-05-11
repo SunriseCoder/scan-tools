@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -11,6 +12,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
 import structures.EventListener;
 import utils.JSONUtils;
 
@@ -110,5 +112,18 @@ public abstract class AbstractApplicationContext <Parameter extends Enum<?>, Eve
 
     private void showMessageOnUI(AlertType alertType, String message) {
         Platform.runLater(() -> new Alert(alertType, message).show());
+    }
+
+
+    public boolean showConfirmation(String caption, String message) {
+        Alert alert = new Alert(AlertType.CONFIRMATION);
+        alert.setHeaderText(caption);
+        alert.setContentText(message);
+
+        Optional<ButtonType> pressedButton = alert.showAndWait();
+
+        boolean result = pressedButton.get().equals(ButtonType.OK);
+
+        return result;
     }
 }
