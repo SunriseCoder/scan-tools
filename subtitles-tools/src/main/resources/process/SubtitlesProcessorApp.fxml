@@ -50,6 +50,7 @@
                                     </font>
                                 </Label>
                                 <Spinner fx:id="fontSizeSpinner" prefWidth="60.0" />
+                                <TextField fx:id="subtitlesSearchTextField" promptText="search" />
                             </children>
                         </HBox>
                         <ListView fx:id="subtitlesListView" GridPane.columnSpan="4" GridPane.rowIndex="1" />

@@ -74,6 +74,8 @@ public class SubtitlesProcessorApp extends Application {
     @FXML
     private Spinner<Integer> fontSizeSpinner;
     @FXML
+    private TextField subtitlesSearchTextField;
+    @FXML
     private ListView<SubtitleDTO> subtitlesListView;
     @FXML
     private TextField subtitlesWorkFileTextField;
@@ -108,6 +110,9 @@ public class SubtitlesProcessorApp extends Application {
         SpinnerValueFactory<Integer> valueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(10, 96, 12);
         fontSizeSpinner.setValueFactory(valueFactory);
         fontSizeSpinner.valueProperty().addListener(e -> handleFontSizeChanged());
+
+        // Subtitles Search
+        subtitlesSearchTextField.textProperty().addListener(e -> handleSubtitlesSerchTextChanged());
 
         // Subtitles ListView
         subtitlesListView.setOnMouseClicked(e -> handleSubtitlesMouseClicked(e));
@@ -257,6 +262,21 @@ public class SubtitlesProcessorApp extends Application {
 
         applicationContext.setParameterValue(ApplicationParameters.FontSize, fontSizeSpinner.getValue().toString());
         subtitlesListView.refresh();
+    }
+
+    private void handleSubtitlesSerchTextChanged() {
+        subtitlesListView.getSelectionModel().clearSelection();
+
+        String searchText = subtitlesSearchTextField.getText();
+        if (searchText.length() < 1) {
+            return;
+        }
+
+        subtitlesListView.getItems().forEach(subtitle -> {
+            if (subtitle.getText().contains(searchText)) {
+                subtitlesListView.getSelectionModel().select(subtitle);
+            }
+        });
     }
 
     private void handleSubtitlesMouseClicked(MouseEvent e) {
