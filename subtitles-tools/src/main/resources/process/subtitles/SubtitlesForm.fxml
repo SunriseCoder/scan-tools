@@ -28,6 +28,7 @@
         <HBox GridPane.columnSpan="4">
             <children>
                 <Button mnemonicParsing="false" onAction="#handleAddSubtitlePressed" text="Add" />
+                <Button mnemonicParsing="false" onAction="#handleEditSubtitlePressed" text="Edit" />
                 <Button mnemonicParsing="false" onAction="#handleMoveSubtitlesToEditorPressed" text="Move to Editor" />
                 <Button mnemonicParsing="false" onAction="#handleDeleteSubtitlesPressed" text="Delete" />
                 <Button mnemonicParsing="false" onAction="#handleSortSubtitlesPressed" text="Sort" />

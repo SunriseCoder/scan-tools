@@ -31,6 +31,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.stage.Stage;
 import process.context.ApplicationContext;
 import process.context.ApplicationEvents;
 import process.context.ApplicationParameters;
@@ -244,6 +245,28 @@ public class SubtitlesForm {
     @FXML
     private void handleAddSubtitlePressed() {
         applicationContext.fireEvent(ApplicationEvents.AddSubtitleAction, null);
+    }
+
+    @FXML
+    private void handleEditSubtitlePressed() throws IOException {
+        ObservableList<SubtitleDTO> selectedItems = subtitlesListView.getSelectionModel().getSelectedItems();
+
+        // Checking that User selected only 1 Subtitle
+        if (selectedItems.size() != 1) {
+            applicationContext.showWarning("You have to select 1 Subtitle first", null);
+            return;
+        }
+
+        // Creating SubtitleEditForm
+        SubtitleDTO subtitleDTO = selectedItems.get(0);
+        Stage stage = applicationContext.getStage();
+        SubtitleEditForm form = new SubtitleEditForm(stage);
+        form.setSubtitle(subtitleDTO);
+        form.showAndWait();
+
+        // Refreshing List and Saving to File
+        subtitlesListView.refresh();
+        saveSubtitlesToFile();
     }
 
     @FXML

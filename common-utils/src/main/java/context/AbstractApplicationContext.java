@@ -13,6 +13,7 @@ import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
+import javafx.stage.Stage;
 import structures.EventListener;
 import utils.JSONUtils;
 
@@ -22,6 +23,8 @@ public abstract class AbstractApplicationContext <Parameter extends Enum<?>, Eve
     // Used String type as a Key due to the problem of JSON Deserialization of Generic Types
     private Map<String, String> storage;
     private Map<Event, Set<EventListener>> eventListeners;
+
+    private Stage stage;
 
     public AbstractApplicationContext(String configFileName) {
         configurationFile = new File(configFileName);
@@ -39,6 +42,14 @@ public abstract class AbstractApplicationContext <Parameter extends Enum<?>, Eve
     public void setParameterValue(Parameter parameter, String value) {
         storage.put(parameter.name(), value);
         saveStorageToDisk();
+    }
+
+    public Stage getStage() {
+        return stage;
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
     }
 
     public void addEventListener(Event event, EventListener listener) {

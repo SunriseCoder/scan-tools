@@ -60,6 +60,7 @@ public class SubtitlesProcessorApp extends Application {
     public void start(Stage primaryStage) throws Exception {
         // Application Context
         applicationContext = new ApplicationContext(APPLICATION_CONTEXT_CONFIG_FILENAME);
+        applicationContext.setStage(primaryStage);
 
         // Root UI Node
         Parent root = FileUtils.loadFXML(this);
