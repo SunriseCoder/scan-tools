@@ -35,10 +35,16 @@ public class SubtitleEditForm extends Stage {
 
         Parent root = FileUtils.loadFXML(this);
 
+        // Validating TextField Value
         timeTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             Matcher matcher = subtitleTimePattern.matcher(newValue);
             String value = matcher.matches() ? newValue : oldValue;
             ((StringProperty) observable).setValue(value);
+        });
+
+        // Moving Selection Forward to Replace next symbol instead of Insert
+        timeTextField.setOnKeyPressed(e -> {
+            timeTextField.selectForward();
         });
 
         Scene scene = new Scene(root);
