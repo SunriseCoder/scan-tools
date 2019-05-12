@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -287,25 +288,68 @@ public class SubtitlesForm {
 
     @FXML
     private void handleSortSubtitlesPressed() {
-        sortSubtitles();
+        sortSubtitles(subtitlesListView.getItems());
+    }
+
+    @FXML
+    private void handleMergeSubtitlesPressed() {
+        ObservableList<SubtitleDTO> selectedItems = subtitlesListView.getSelectionModel().getSelectedItems();
+
+        // Checking that 2 or more Subtitles are Selected
+        if (selectedItems.size() < 2) {
+            applicationContext.showWarning("You have to Select at least 2 Subtitles to Merge", null);
+            return;
+        }
+
+        // User Confirmation
+        String confirmationMessage = "You are going to Merge " + selectedItems.size() + " Subtitle(s).\n"
+                + "That means, that as the result will me 1 Subtitle.\n"
+                + "Time Interval will be expanded to fit all Subtitles to be merged.\n"
+                + "Text will be also Merged by starting new line for each Subtitle.\n"
+                + "Attention! If You are merging not Neighbour Subtitles only,\n"
+                + "Then as result the subtitles in between could be damaged by next Sort!\n" + "Are You sure to Merge?";
+        boolean confirmed = applicationContext.showConfirmation("Merge Subtitles", confirmationMessage);
+        if (!confirmed) {
+            return;
+        }
+
+        // Sorting Subtitles
+        List<SubtitleDTO> subtitles = new ArrayList<>(selectedItems);
+        sortSubtitles(subtitles);
+
+        // Merging Time Intervals
+        SubtitleDTO subtitle = new SubtitleDTO();
+        subtitle.setStart(subtitles.get(0).getStart());
+        subtitle.setEnd(subtitles.get(subtitles.size() - 1).getEnd());
+
+        // Merging Text
+        String subtitleText = subtitles.stream().map(s -> s.getText()).collect(Collectors.joining("\n"));
+        subtitle.setText(subtitleText);
+
+        // Removing Source Subtitles from ListView and Adding New One
+        subtitlesListView.getItems().removeAll(subtitles);
+        subtitlesListView.getItems().add(subtitle);
+
+        // Sorting Subtitles to place New Subtitle and Adjust others
+        sortSubtitles(subtitlesListView.getItems());
     }
 
     public void addSubtitle(SubtitleDTO subtitle) {
         // Adding to the List and Sorting the List
-        subtitlesListView.getItems().add(subtitle);
-        sortSubtitles();
+        ObservableList<SubtitleDTO> items = subtitlesListView.getItems();
+        items.add(subtitle);
+        sortSubtitles(items);
 
         // Saving Subtitles File
         saveSubtitlesToFile();
     }
 
-    private void sortSubtitles() {
-        subtitlesListView.getItems()
-                .sort((a, b) -> (int) (a.getStart().getAsMilliseconds() - b.getStart().getAsMilliseconds()));
+    private void sortSubtitles(List<SubtitleDTO> items) {
+        items.sort((a, b) -> (int) (a.getStart().getAsMilliseconds() - b.getStart().getAsMilliseconds()));
 
         // Adjust that Subtitles does not Intersect with each others
         LongWrapper lastEnd = new LongWrapper(-1);
-        subtitlesListView.getItems().forEach(subtitle -> {
+        items.forEach(subtitle -> {
             // Checking that Last End is Before Next Start
             if (subtitle.getStart().getAsMilliseconds() <= lastEnd.getValue()) {
                 subtitle.setStart(new SubtitleTimeDTO(lastEnd.getValue() + 1));
@@ -318,7 +362,6 @@ public class SubtitlesForm {
 
             lastEnd.setValue(subtitle.getEnd().getAsMilliseconds());
         });
-        handleFontSizeChanged();
     }
 
     @FXML

@@ -31,6 +31,7 @@
                 <Button mnemonicParsing="false" onAction="#handleMoveSubtitlesToEditorPressed" text="Move to Editor" />
                 <Button mnemonicParsing="false" onAction="#handleDeleteSubtitlesPressed" text="Delete" />
                 <Button mnemonicParsing="false" onAction="#handleSortSubtitlesPressed" text="Sort" />
+                <Button mnemonicParsing="false" onAction="#handleMergeSubtitlesPressed" text="Merge" />
                 <Label contentDisplay="CENTER" focusTraversable="false" prefHeight="24.0" text="Font size:">
                     <font>
                         <Font size="14.0" />
