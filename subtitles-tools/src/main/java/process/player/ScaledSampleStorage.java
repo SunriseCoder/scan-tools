@@ -1,4 +1,4 @@
-package process.components;
+package process.player;
 
 import java.io.IOException;
 import java.util.HashMap;

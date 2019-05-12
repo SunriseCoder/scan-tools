@@ -4,6 +4,14 @@ public enum ApplicationEvents {
     // AudioPlayer
     AudioPlayerOnPlay,
 
+    // Subtitles
+    AddSubtitleAction,
+    MoveSubtitlesToEditor,
+    ViewSubtitleAction,
+
     // Files
-    WorkMediaFileChanged
+    WorkMediaFileChanged,
+
+    // Miscellaneous
+    FontSizeChanged
 }

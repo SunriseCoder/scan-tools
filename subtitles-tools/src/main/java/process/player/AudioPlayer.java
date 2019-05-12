@@ -1,4 +1,4 @@
-package process.components;
+package process.player;
 
 import java.io.File;
 import java.io.IOException;
@@ -320,15 +320,20 @@ public class AudioPlayer {
         currentMediaFile = file;
         openMediaFileTextField.setText(file.getAbsolutePath());
 
+        // Saving Work File to System Configuration
         applicationContext.setParameterValue(ApplicationParameters.MediaWorkFile, file.getAbsolutePath());
 
+        // Creating new Media and set it to new MediaPlayer
         Media media = new Media(file.toURI().toString());
         mediaPlayer = new MediaPlayer(media);
         mediaPlayer.currentTimeProperty().addListener((e) -> handleMediaPlayerPlaybackPositionChanged(e));
         mediaPlayer.volumeProperty().bind(volumeSlider.valueProperty());
 
+        // Creating Sample Storage
         WaveInputStream inputStream = WaveInputStream.create(file, 0);
         sampleStorage = new ScaledSampleStorage(inputStream, MIN_HORIZONTAL_SCALE);
+
+        // Calculating Scale for just opened File and Rendering
         calculateScale();
         render();
     }

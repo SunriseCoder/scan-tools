@@ -1,5 +1,7 @@
 package utils;
 
+import java.util.List;
+
 public class PrimitiveUtils {
 
     public static int littleEndianByteArrayToInt(byte[] buffer, int position, int size) {
@@ -27,6 +29,16 @@ public class PrimitiveUtils {
         for (int i = 0; i < sizeInBytes; i++) {
             array[i] = (byte) ((value >> (i * 8)) & 0xFF);
         }
+        return array;
+    }
+
+    public static int[] listToIntArray(List<Integer> list) {
+        int[] array = new int[list.size()];
+
+        for (int i = 0; i < list.size(); i++) {
+            array[i] = list.get(i);
+        }
+
         return array;
     }
 }
