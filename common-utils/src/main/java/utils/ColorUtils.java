@@ -20,6 +20,11 @@ public class ColorUtils {
         return result;
     }
 
+    public static int getRGB(String hexColor) {
+        int rgb = NumeralSystemsUtils.hexToDecInt(hexColor);
+        return rgb;
+    }
+
     public static RGB multiplyRGB(int rgb, double factor) {
         RGB resultRGB = new RGB();
 

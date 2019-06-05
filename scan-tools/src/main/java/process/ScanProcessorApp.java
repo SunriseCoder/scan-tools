@@ -89,6 +89,7 @@ public class ScanProcessorApp extends Application {
         String startFolderPath = applicationContext.getParameterValue(ApplicationParameters.StartFolder);
         if (startFolderPath != null) {
             File startFolder = new File(startFolderPath);
+            startFolder = FileUtils.getExistingParentIfFolderNotExists(startFolder);
             if (startFolder.exists() && startFolder.isDirectory()) {
                 applicationContext.fireEvent(ApplicationEvents.WorkFolderChanged, startFolder);
             }

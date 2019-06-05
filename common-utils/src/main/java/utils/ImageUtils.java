@@ -3,6 +3,10 @@ package utils;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 public class ImageUtils {
 
@@ -12,5 +16,16 @@ public class ImageUtils {
         graphics.setPaint(color);
         graphics.fillRect(0, 0, width, height);
         return image;
+    }
+
+    public static BufferedImage loadImage(File file) throws IOException {
+        BufferedImage image = ImageIO.read(file);
+        return image;
+    }
+
+    public static boolean saveImage(BufferedImage image, File outputFile) throws IOException {
+        String formatName = FileUtils.getFileExtension(outputFile.getName());
+        boolean result = ImageIO.write(image, formatName , outputFile);
+        return result;
     }
 }

@@ -104,4 +104,14 @@ public class FileUtils {
         }
         return file;
     }
+
+    public static File getExistingParentIfFolderNotExists(File folder) {
+        if (folder == null || (folder.exists() && folder.isDirectory())) {
+            return folder;
+        }
+        
+        File parent = folder.getParentFile();
+        parent = getExistingParentIfFolderNotExists(parent);
+        return parent;
+    }
 }

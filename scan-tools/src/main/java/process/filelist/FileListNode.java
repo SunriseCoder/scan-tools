@@ -58,10 +58,11 @@ public class FileListNode {
 
     @FXML
     private void selectFolder() {
+    	File startFolder = FileUtils.getExistingParentIfFolderNotExists(currentFolder);
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Open Folder with Images");
-        if (currentFolder != null) {
-            directoryChooser.setInitialDirectory(currentFolder);
+        if (startFolder != null) {
+            directoryChooser.setInitialDirectory(startFolder);
         }
         File newFolder = directoryChooser.showDialog(null);
 
