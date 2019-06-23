@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import context.AbstractApplicationContext;
+import dto.Point;
 import process.MarkupStorage;
-import process.dto.Point;
 
 public class ApplicationContext extends AbstractApplicationContext<ApplicationParameters, ApplicationEvents> {
     private Map<File, MarkupStorage> markupStorages;

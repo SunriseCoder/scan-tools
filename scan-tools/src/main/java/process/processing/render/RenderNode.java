@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import dto.Point;
 import filters.FilenameFilterImages;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -19,19 +20,18 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import process.context.ApplicationContext;
-import process.dto.Point;
 import process.processing.AbstractNode;
-import process.processing.render.binarization.ImageBinarization;
-import process.processing.render.crop.AbstractImageCrop;
-import process.processing.render.crop.RotationImageCrop;
-import process.processing.render.crop.SimpleCrop;
-import process.processing.render.filters.AbstractImageFilter;
-import process.processing.render.filters.BilinearFilter;
-import process.processing.render.filters.BinarizationFilter;
-import process.processing.render.filters.ImageFilter;
-import process.processing.render.filters.RoughFilter;
-import process.processing.render.merge.ImageMerge;
-import process.processing.render.resize.ImageResize;
+import processing.images.binarization.ImageBinarization;
+import processing.images.crop.AbstractImageCrop;
+import processing.images.crop.RotationImageCrop;
+import processing.images.crop.SimpleCrop;
+import processing.images.filters.AbstractImageFilter;
+import processing.images.filters.BilinearFilter;
+import processing.images.filters.BinarizationFilter;
+import processing.images.filters.ImageFilter;
+import processing.images.filters.RoughFilter;
+import processing.images.merge.ImageMerge;
+import processing.images.resize.ImageResize;
 import utils.FileUtils;
 import utils.ThreadUtils;
 
@@ -178,10 +178,10 @@ public class RenderNode extends AbstractNode {
             }
 
             ImageMerge merge = null;
+            ImageMergeMethods mergeMethod = null;
             if (needMerge) {
                 merge = new ImageMerge();
-                ImageMergeMethods mergeMethod = imageMergeComboBox.getSelectionModel().getSelectedItem();
-                merge.setMergeMethod(mergeMethod);
+                mergeMethod = imageMergeComboBox.getSelectionModel().getSelectedItem();
             }
 
             File[] files = inputFolder.listFiles(new FilenameFilterImages());
@@ -227,7 +227,7 @@ public class RenderNode extends AbstractNode {
                 // Merge Images
                 if (needMerge) {
                     int remainder;
-                    switch (merge.getMergeMethod()) {
+                    switch (mergeMethod) {
                         case Method1ImageOnFirstPage:
                             remainder = 0;
                             break;
@@ -235,7 +235,7 @@ public class RenderNode extends AbstractNode {
                             remainder = 1;
                             break;
                         default:
-                            throw new IllegalArgumentException("Merge Method is not supported: " + merge.getMergeMethod());
+                            throw new IllegalArgumentException("Merge Method is not supported: " + mergeMethod);
                     }
 
                     if (i % 2 == remainder) {

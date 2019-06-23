@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import components.ExtCircle;
+import dto.FileListEntry;
+import dto.Point;
 import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
 import javafx.scene.Parent;
@@ -25,12 +28,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
-import process.components.ExtCircle;
 import process.context.ApplicationContext;
 import process.context.ApplicationEvents;
 import process.context.ApplicationParameters;
-import process.dto.FileListEntry;
-import process.dto.Point;
 import utils.FileUtils;
 import utils.MathUtils;
 

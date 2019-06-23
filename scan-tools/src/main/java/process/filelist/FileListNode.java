@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import dto.FileListEntry;
 import filters.FilenameFilterImages;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -21,7 +22,6 @@ import javafx.stage.DirectoryChooser;
 import process.context.ApplicationContext;
 import process.context.ApplicationEvents;
 import process.context.ApplicationParameters;
-import process.dto.FileListEntry;
 import storages.IconStorage;
 import storages.IconStorage.Icons;
 import utils.FileUtils;

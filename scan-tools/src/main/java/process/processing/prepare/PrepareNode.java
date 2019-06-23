@@ -17,10 +17,10 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ProgressBar;
 import process.context.ApplicationContext;
 import process.processing.AbstractNode;
-import process.processing.prepare.reordering.AbstractReorderer;
-import process.processing.prepare.reordering.Reordering4PagesOn1SheetFromMiddle;
-import process.processing.prepare.rotation.AbstractRotator;
-import process.processing.prepare.rotation.RotationOdd180Degrees;
+import processing.images.reordering.AbstractReorderer;
+import processing.images.reordering.Reordering4PagesOn1SheetFromMiddle;
+import processing.images.rotation.AbstractRotator;
+import processing.images.rotation.RotationOdd180Degrees;
 import utils.FileUtils;
 
 public class PrepareNode extends AbstractNode {

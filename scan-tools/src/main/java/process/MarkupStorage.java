@@ -10,8 +10,8 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import dto.Point;
 import process.context.ApplicationContext;
-import process.dto.Point;
 import utils.JSONUtils;
 
 public class MarkupStorage {

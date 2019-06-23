@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import dto.FileListEntry;
 import javafx.application.Application;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
@@ -24,9 +25,8 @@ import javafx.stage.Stage;
 import process.context.ApplicationContext;
 import process.context.ApplicationEvents;
 import process.context.ApplicationParameters;
-import process.dto.FileListEntry;
 import process.filelist.FileListNode;
-import process.processing.render.filters.BinarizationFilter;
+import processing.images.filters.BinarizationFilter;
 import utils.FileUtils;
 
 public class BinarizationExperimentsApp extends Application {

@@ -20,9 +20,24 @@ public class ColorUtils {
         return result;
     }
 
+    public static RGB getRGB(int color) {
+        RGB rgb = new RGB();
+
+        rgb.r = getRed(color);
+        rgb.g = getGreen(color);
+        rgb.b = getBlue(color);
+
+        return rgb;
+    }
+
     public static int getRGB(String hexColor) {
         int rgb = NumeralSystemsUtils.hexToDecInt(hexColor);
         return rgb;
+    }
+
+    public static int getRGBWitoutAlpha(int color) {
+        int colorWithoutAlpha = color & 0xFFFFFF;
+        return colorWithoutAlpha;
     }
 
     public static RGB multiplyRGB(int rgb, double factor) {

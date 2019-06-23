@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-import process.processing.render.filters.BilinearFilter;
+import processing.images.filters.BilinearFilter;
 import structures.RGB;
 import utils.ColorUtils;
 

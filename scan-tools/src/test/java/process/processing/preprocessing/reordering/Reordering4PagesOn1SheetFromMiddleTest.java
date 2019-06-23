@@ -11,8 +11,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import process.processing.prepare.reordering.AbstractReorderer;
-import process.processing.prepare.reordering.Reordering4PagesOn1SheetFromMiddle;
+import processing.images.reordering.AbstractReorderer;
+import processing.images.reordering.Reordering4PagesOn1SheetFromMiddle;
 
 @RunWith(Parameterized.class)
 public class Reordering4PagesOn1SheetFromMiddleTest {
