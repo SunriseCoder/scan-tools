@@ -43,6 +43,8 @@ public class GraphApp extends Application {
     private GraphHistory graphHistory;
     private Graph graph;
 
+    private Vertex selectedVertex;
+
     public GraphApp() {
         graphFile = new File(GRAPH_FILENAME);
     }
@@ -82,14 +84,38 @@ public class GraphApp extends Application {
     }
 
     private void handleMouseClicked(MouseEvent e) {
-        Vertex vertex = new Vertex();
-        vertex.setPosition(e.getSceneX(), e.getSceneY());
+        double x = e.getSceneX();
+        double y = e.getSceneY();
 
-        graph.addVertex(vertex);
-        updateGraphHistory();
+        Vertex vertex = findVertex(x, y);
 
-        saveGraph();
+        if (vertex == null) {
+            vertex = new Vertex();
+            vertex.setPosition(x, y);
+            vertex.setSize(100, 50);
+            graph.addVertex(vertex);
+            updateGraphHistory();
+            saveGraph();
+        } else {
+            selectedVertex = vertex;
+        }
+
         renderGraph();
+    }
+
+    private Vertex findVertex(double x, double y) {
+        for (Vertex vertex : graph.getVertices()) {
+            Point position = vertex.getPosition();
+            Point size = vertex.getSize();
+
+            boolean matches = x >= position.x && x <= position.x + size.x;
+            matches &= y >= position.y && y <= position.y + size.y;
+
+            if (matches) {
+                return vertex;
+            }
+        }
+        return null;
     }
 
     private void updateGraphHistory() {
@@ -97,16 +123,24 @@ public class GraphApp extends Application {
     }
 
     private void renderGraph() {
+        imagePane.getChildren().clear();
+
         for (Vertex vertex : graph.getVertices()) {
-            Point position = vertex.getPosition();
-
-            Rectangle rectange = new Rectangle(100, 50, null);
-            rectange.setStroke(Color.AQUA);
-            rectange.setX(position.x);
-            rectange.setY(position.y);
-
+            Color color = vertex == selectedVertex ? Color.RED : Color.BLUE;
+            Rectangle rectange = createRectangle(vertex, color);
             imagePane.getChildren().add(rectange);
         }
+    }
+
+    private Rectangle createRectangle(Vertex vertex, Color color) {
+        Point position = vertex.getPosition();
+        Point size = vertex.getSize();
+
+        Rectangle rectange = new Rectangle(size.x, size.y, null);
+        rectange.setStroke(color);
+        rectange.setX(position.x);
+        rectange.setY(position.y);
+        return rectange;
     }
 
     private void saveGraph() {
