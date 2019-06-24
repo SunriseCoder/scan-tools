@@ -5,9 +5,11 @@ import java.util.List;
 
 public class Graph {
     private List<Vertex> vertices;
+    private List<Edge> edges;
 
     public Graph() {
         vertices = new ArrayList<>();
+        edges = new ArrayList<>();
     }
 
     public List<Vertex> getVertices() {
@@ -22,9 +24,11 @@ public class Graph {
         vertices.remove(vertex);
     }
 
-    public Graph cloneSelf() {
-        Graph clone = new Graph();
-        clone.vertices = new ArrayList<>(vertices);
-        return clone;
+    public List<Edge> getEdges() {
+        return edges;
+    }
+
+    public void addEdge(Edge edge) {
+        edges.add(edge);
     }
 }

@@ -1,12 +1,20 @@
 package dto;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class Vertex {
     private Point position;
     private Point size;
 
+    private Set<Edge> incomingEdges;
+    private Set<Edge> outgoingEdges;
+
     public Vertex() {
         position = new Point();
         size = new Point();
+        incomingEdges = new HashSet<>();
+        outgoingEdges = new HashSet<>();
     }
 
     public Point getPosition() {
@@ -25,5 +33,13 @@ public class Vertex {
     public void setSize(double x, double y) {
         size.x = x;
         size.y = y;
+    }
+
+    public void addIncomingEdge(Edge edge) {
+        incomingEdges.add(edge);
+    }
+
+    public void addOutgoingEdge(Edge edge) {
+        outgoingEdges.add(edge);
     }
 }
