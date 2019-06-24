@@ -10,12 +10,16 @@ public class Graph {
         vertices = new ArrayList<>();
     }
 
+    public List<Vertex> getVertices() {
+        return vertices;
+    }
+
     public void addVertex(Vertex vertex) {
         vertices.add(vertex);
     }
 
-    public List<Vertex> getVertices() {
-        return vertices;
+    public void removeVertex(Vertex vertex) {
+        vertices.remove(vertex);
     }
 
     public Graph cloneSelf() {
