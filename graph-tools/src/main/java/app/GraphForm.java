@@ -340,9 +340,25 @@ public class GraphForm {
     }
 
     private void addEdge(EdgeEndpoint edgeStart, EdgeEndpoint edgeEnd) {
-        Edge edge = new Edge(edgeStart, edgeEnd);
+        EdgeEndpoint relativeEdgeStart = sceneToRelativeEndpoint(edgeStart);
+        EdgeEndpoint relativeEdgeEnd = sceneToRelativeEndpoint(edgeEnd);
+        Edge edge = new Edge(relativeEdgeStart, relativeEdgeEnd);
         graph.addEdge(edge);
         renderGraph();
+    }
+
+    private EdgeEndpoint sceneToRelativeEndpoint(EdgeEndpoint sceneEndpoint) {
+        Vertex vertex = sceneEndpoint.getVertex();
+
+        EdgeEndpoint relativeEndpoint = new EdgeEndpoint();
+        relativeEndpoint.setVertex(vertex);
+
+        double relativePositionX = sceneEndpoint.getPoint().x / vertex.getSize().x;
+        double relativePositionY = sceneEndpoint.getPoint().y / vertex.getSize().y;
+        Point relativePosition = new Point(relativePositionX, relativePositionY);
+        relativeEndpoint.setPoint(relativePosition);
+
+        return relativeEndpoint;
     }
 
     private void renderGraph() {
@@ -379,10 +395,19 @@ public class GraphForm {
         Line line = new Line();
         line.setStroke(Color.BLUE);
 
-        line.setStartX(edge.getEdgeStart().getVertex().getPosition().x + edge.getEdgeStart().getPoint().x);
-        line.setStartY(edge.getEdgeStart().getVertex().getPosition().y + edge.getEdgeStart().getPoint().y);
-        line.setEndX(edge.getEdgeEnd().getVertex().getPosition().x + edge.getEdgeEnd().getPoint().x);
-        line.setEndY(edge.getEdgeEnd().getVertex().getPosition().y + edge.getEdgeEnd().getPoint().y);
+        Point startVertexPosition = edge.getEdgeStart().getVertex().getPosition();
+        Point startVertexSize = edge.getEdgeStart().getVertex().getSize();
+
+        Point endVertexPosition = edge.getEdgeEnd().getVertex().getPosition();
+        Point endVetexSize = edge.getEdgeEnd().getVertex().getSize();
+
+        Point edgeStartPosition = edge.getEdgeStart().getPoint();
+        Point edgeEndPosition = edge.getEdgeEnd().getPoint();
+
+        line.setStartX(startVertexPosition.x + edgeStartPosition.x * startVertexSize.x);
+        line.setStartY(startVertexPosition.y + edgeStartPosition.y * startVertexSize.y);
+        line.setEndX(endVertexPosition.x + edgeEndPosition.x * endVetexSize.x);
+        line.setEndY(endVertexPosition.y + edgeEndPosition.y * endVetexSize.y);
 
         return line;
     }

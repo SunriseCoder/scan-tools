@@ -20,4 +20,12 @@ public class EdgeEndpoint {
     public Vertex getVertex() {
         return vertex;
     }
+
+    public void setPoint(Point point) {
+        this.point = point;
+    }
+
+    public void setVertex(Vertex vertex) {
+        this.vertex = vertex;
+    }
 }
