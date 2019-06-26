@@ -10,6 +10,7 @@ import app.context.ApplicationParameters;
 import dto.Edge;
 import dto.EdgeEndpoint;
 import dto.Graph;
+import dto.GraphElement;
 import dto.Point;
 import dto.Vertex;
 import javafx.fxml.FXML;
@@ -22,10 +23,11 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import utils.FileUtils;
+import utils.GeometryUtils;
 import utils.JSONUtils;
 
 public class GraphForm {
-    private static final int VERTEX_EDGE_HOVER_WIDTH = 10;
+    private static final int HOVER_LINE_WIDTH = 10;
 
     private ApplicationContext applicationContext;
 
@@ -38,7 +40,7 @@ public class GraphForm {
     private File graphFile;
     private Graph graph;
 
-    private Vertex selectedVertex;
+    private GraphElement selectedElement;
     private double lastPosX;
     private double lastPosY;
 
@@ -52,12 +54,12 @@ public class GraphForm {
         hoverLine = new Line();
         hoverLine.setFill(null);
         hoverLine.setStroke(Color.GREEN);
-        hoverLine.setStrokeWidth(3);
+        hoverLine.setStrokeWidth(HOVER_LINE_WIDTH / 2);
 
         newEdgeLine = new Line();
         newEdgeLine.setFill(null);
         newEdgeLine.setStroke(Color.GREEN);
-        newEdgeLine.setStrokeWidth(3);
+        newEdgeLine.setStrokeWidth(HOVER_LINE_WIDTH / 2);
     }
 
     public Parent init(ApplicationContext applicationContext) throws IOException {
@@ -94,13 +96,17 @@ public class GraphForm {
         double posOnImageY = getImageCoordinateY(e.getSceneY());
 
         Vertex vertex = findVertex(posOnImageX, posOnImageY);
+        updateVertexHoverLine(vertex, posOnImageX, posOnImageY);
 
-        updateHoverLine(vertex, posOnImageX, posOnImageY);
+        if (vertex == null) {
+            Edge edge = findEdge(posOnImageX, posOnImageY);
+            updateEdgeHoverLine(edge, posOnImageX, posOnImageY);
+        }
 
         updateNewEdgeLine(posOnImageX, posOnImageY);
     }
 
-    private void updateHoverLine(Vertex vertex, double posOnImageX, double posOnImageY) {
+    private void updateVertexHoverLine(Vertex vertex, double posOnImageX, double posOnImageY) {
         if (vertex == null) {
             hoverLine.setOpacity(0);
             return;
@@ -114,7 +120,7 @@ public class GraphForm {
         double startX = 0, endX = 0, startY = 0, endY = 0, opacity = 0;
 
         // Left Edge
-        if (posOnImageX >= vertexLeftX - VERTEX_EDGE_HOVER_WIDTH && posOnImageX <= vertexLeftX + VERTEX_EDGE_HOVER_WIDTH) {
+        if (posOnImageX >= vertexLeftX - HOVER_LINE_WIDTH && posOnImageX <= vertexLeftX + HOVER_LINE_WIDTH) {
             startX = endX = vertexLeftX;
             startY = vertexTopY;
             endY = vertexBottomY;
@@ -122,7 +128,7 @@ public class GraphForm {
         }
 
         // Top Edge
-        if (posOnImageY >= vertexTopY - VERTEX_EDGE_HOVER_WIDTH && posOnImageY <= vertexTopY + VERTEX_EDGE_HOVER_WIDTH) {
+        if (posOnImageY >= vertexTopY - HOVER_LINE_WIDTH && posOnImageY <= vertexTopY + HOVER_LINE_WIDTH) {
             startX = vertexLeftX;
             endX = vertexRightX;
             startY = endY = vertexTopY;
@@ -130,7 +136,7 @@ public class GraphForm {
         }
 
         // Right Edge
-        if (posOnImageX >= vertexRightX - VERTEX_EDGE_HOVER_WIDTH && posOnImageX <= vertexRightX + VERTEX_EDGE_HOVER_WIDTH) {
+        if (posOnImageX >= vertexRightX - HOVER_LINE_WIDTH && posOnImageX <= vertexRightX + HOVER_LINE_WIDTH) {
             startX = endX = vertexRightX;
             startY = vertexTopY;
             endY = vertexBottomY;
@@ -138,7 +144,7 @@ public class GraphForm {
         }
 
         // Bottom Edge
-        if (posOnImageY >= vertexBottomY - VERTEX_EDGE_HOVER_WIDTH && posOnImageY <= vertexBottomY + VERTEX_EDGE_HOVER_WIDTH) {
+        if (posOnImageY >= vertexBottomY - HOVER_LINE_WIDTH && posOnImageY <= vertexBottomY + HOVER_LINE_WIDTH) {
             startX = vertexLeftX;
             endX = vertexRightX;
             startY = endY = vertexBottomY;
@@ -150,6 +156,23 @@ public class GraphForm {
         hoverLine.setStartY(startY);
         hoverLine.setEndX(endX);
         hoverLine.setEndY(endY);
+    }
+
+    private void updateEdgeHoverLine(Edge edge, double posOnImageX, double posOnImageY) {
+        if (edge == null) {
+            hoverLine.setOpacity(0);
+            return;
+        }
+
+        hoverLine.setOpacity(1);
+
+        Point lineStart = Edge.getAbsolutePosition(edge.getEdgeStart());
+        Point lineEnd = Edge.getAbsolutePosition(edge.getEdgeEnd());
+
+        hoverLine.setStartX(lineStart.x);
+        hoverLine.setStartY(lineStart.y);
+        hoverLine.setEndX(lineEnd.x);
+        hoverLine.setEndY(lineEnd.y);
     }
 
     private void updateNewEdgeLine(double posOnImageX, double posOnImageY) {
@@ -175,22 +198,25 @@ public class GraphForm {
 
     private void handleMousePressed(MouseEvent e) {
         if (e.isPrimaryButtonDown()) {
-            selectVertex(e.getSceneX(), e.getSceneY());
+            selectGraphElement(e.getSceneX(), e.getSceneY());
         }
 
         saveLastMousePosition(e.getSceneX(), e.getSceneY());
     }
 
-    private void selectVertex(double x, double y) {
+    private void selectGraphElement(double x, double y) {
         double posOnImageX = getImageCoordinateX(x);
         double posOnImageY = getImageCoordinateY(y);
 
         Vertex vertex = findVertex(posOnImageX, posOnImageY);
-        if (vertex == null) {
-            addVertex(posOnImageX, posOnImageY);
-        } else {
-            selectedVertex = vertex;
+        Edge edge = findEdge(posOnImageX, posOnImageY);
+        if (vertex != null) {
+            selectedElement = vertex;
             checkAddEdge(vertex, posOnImageX, posOnImageY);
+        } else if (edge != null) {
+            selectedElement = edge;
+        } else {
+            addVertex(posOnImageX, posOnImageY);
         }
 
         renderGraph();
@@ -215,8 +241,12 @@ public class GraphForm {
         double currentPosX = e.getSceneX();
         double currentPosY = e.getSceneY();
         if (e.isPrimaryButtonDown()) {
-            if (selectedVertex != null) {
-                handleVertexDrag(currentPosX, currentPosY);
+            if (selectedElement != null) {
+                if (selectedElement instanceof Vertex) {
+                    handleVertexDrag(currentPosX, currentPosY);
+                } else if (selectedElement instanceof Edge) {
+                    // TODO handleEdgeDrag
+                }
             }
         } else if (e.isSecondaryButtonDown()) {
             handleImageDrag(currentPosX, currentPosY);
@@ -226,9 +256,14 @@ public class GraphForm {
     }
 
     private void handleVertexDrag(double currentPosX, double currentPosY) {
+        if (selectedElement == null || !(selectedElement instanceof Vertex)) {
+            return;
+        }
+
         double deltaX = currentPosX - lastPosX;
         double deltaY = currentPosY - lastPosY;
 
+        Vertex selectedVertex = (Vertex) selectedElement;
         Point vertexOldPosition = selectedVertex.getPosition();
         selectedVertex.setPosition(vertexOldPosition.x + deltaX, vertexOldPosition.y + deltaY);
 
@@ -260,9 +295,7 @@ public class GraphForm {
     private void handleKeyPressed(KeyEvent e) {
         switch (e.getCode()) {
         case DELETE:
-            if (selectedVertex != null) {
-                deleteVertex(selectedVertex);
-            }
+            deleteSelectedElement();
             break;
         default:
             break;
@@ -279,8 +312,25 @@ public class GraphForm {
         }
     }
 
+    private void deleteSelectedElement() {
+        if (selectedElement == null) {
+            return;
+        }
+
+        if (selectedElement instanceof Vertex) {
+            deleteVertex((Vertex) selectedElement);
+        } else if (selectedElement instanceof Edge) {
+            deleteEdge((Edge) selectedElement);
+        }
+    }
+
     private void deleteVertex(Vertex vertex) {
         graph.removeVertex(vertex);
+        renderGraph();
+    }
+
+    private void deleteEdge(Edge edge) {
+        graph.removeEdge(edge);
         renderGraph();
     }
 
@@ -299,6 +349,18 @@ public class GraphForm {
         return null;
     }
 
+    private Edge findEdge(double posOnImageX, double posOnImageY) {
+        for (Edge edge : graph.getEdges()) {
+            Point lineStart = Edge.getAbsolutePosition(edge.getEdgeStart());
+            Point lineEnd = Edge.getAbsolutePosition(edge.getEdgeEnd());
+            double distance = GeometryUtils.distanceBetweenPointAndLine(new Point(posOnImageX, posOnImageY), lineStart, lineEnd);
+            if (distance <= HOVER_LINE_WIDTH) {
+                return edge;
+            }
+        }
+        return null;
+    }
+
     private void checkAddEdge(Vertex vertex, double x, double y) {
         double vertexLeftX = vertex.getPosition().x;
         double vertexRightX = vertexLeftX + vertex.getSize().x;
@@ -309,22 +371,22 @@ public class GraphForm {
         Point point = null;
         if (vertex != null) {
             // Left Edge
-            if (x >= vertexLeftX - VERTEX_EDGE_HOVER_WIDTH && x <= vertexLeftX + VERTEX_EDGE_HOVER_WIDTH) {
+            if (x >= vertexLeftX - HOVER_LINE_WIDTH && x <= vertexLeftX + HOVER_LINE_WIDTH) {
                 point = new Point(0, y - vertexTopY);
             }
 
             // Top Edge
-            if (y >= vertexTopY - VERTEX_EDGE_HOVER_WIDTH && y <= vertexTopY + VERTEX_EDGE_HOVER_WIDTH) {
+            if (y >= vertexTopY - HOVER_LINE_WIDTH && y <= vertexTopY + HOVER_LINE_WIDTH) {
                 point = new Point(x - vertexLeftX, 0);
             }
 
             // Right Edge
-            if (x >= vertexRightX - VERTEX_EDGE_HOVER_WIDTH && x <= vertexRightX + VERTEX_EDGE_HOVER_WIDTH) {
+            if (x >= vertexRightX - HOVER_LINE_WIDTH && x <= vertexRightX + HOVER_LINE_WIDTH) {
                 point = new Point(vertexRightX - vertexLeftX, y - vertexTopY);
             }
 
             // Bottom Edge
-            if (y >= vertexBottomY - VERTEX_EDGE_HOVER_WIDTH && y <= vertexBottomY + VERTEX_EDGE_HOVER_WIDTH) {
+            if (y >= vertexBottomY - HOVER_LINE_WIDTH && y <= vertexBottomY + HOVER_LINE_WIDTH) {
                 point = new Point(x - vertexLeftX, vertexBottomY - vertexTopY);
             }
 
@@ -333,7 +395,9 @@ public class GraphForm {
                     edgeStart = new EdgeEndpoint(point, vertex);
                 }
             } else {
-                addEdge(edgeStart, new EdgeEndpoint(point, vertex));
+                if (edgeStart.getVertex() != vertex) {
+                    addEdge(edgeStart, new EdgeEndpoint(point, vertex));
+                }
                 edgeStart = null;
             }
         }
@@ -363,18 +427,20 @@ public class GraphForm {
 
     private void renderGraph() {
         imagePane.getChildren().clear();
+        hoverLine.setOpacity(0);
 
         imagePane.getChildren().add(hoverLine);
         imagePane.getChildren().add(newEdgeLine);
 
         for (Vertex vertex : graph.getVertices()) {
-            Color color = vertex == selectedVertex ? Color.RED : Color.BLUE;
+            Color color = vertex == selectedElement ? Color.RED : Color.BLUE;
             Rectangle rectange = createVertexRectangle(vertex, color);
             imagePane.getChildren().add(rectange);
         }
 
         for (Edge edge : graph.getEdges()) {
-            Line line = createEdgeLine(edge);
+            Color color = edge == selectedElement ? Color.RED : Color.BLUE;
+            Line line = createEdgeLine(edge, color);
             imagePane.getChildren().add(line);
         }
     }
@@ -391,25 +457,31 @@ public class GraphForm {
         return rectange;
     }
 
-    private Line createEdgeLine(Edge edge) {
+    private Line createEdgeLine(Edge edge, Color color) {
         Line line = new Line();
-        line.setStroke(Color.BLUE);
+        line.setStroke(color);
 
-        Point startVertexPosition = edge.getEdgeStart().getVertex().getPosition();
-        Point startVertexSize = edge.getEdgeStart().getVertex().getSize();
+        Point edgeStartPosition = calculateEdgeEndpointPosition(edge.getEdgeStart());
+        Point edgeEndPosition = calculateEdgeEndpointPosition(edge.getEdgeEnd());
 
-        Point endVertexPosition = edge.getEdgeEnd().getVertex().getPosition();
-        Point endVetexSize = edge.getEdgeEnd().getVertex().getSize();
-
-        Point edgeStartPosition = edge.getEdgeStart().getPoint();
-        Point edgeEndPosition = edge.getEdgeEnd().getPoint();
-
-        line.setStartX(startVertexPosition.x + edgeStartPosition.x * startVertexSize.x);
-        line.setStartY(startVertexPosition.y + edgeStartPosition.y * startVertexSize.y);
-        line.setEndX(endVertexPosition.x + edgeEndPosition.x * endVetexSize.x);
-        line.setEndY(endVertexPosition.y + edgeEndPosition.y * endVetexSize.y);
+        line.setStartX(edgeStartPosition.x);
+        line.setStartY(edgeStartPosition.y);
+        line.setEndX(edgeEndPosition.x);
+        line.setEndY(edgeEndPosition.y);
 
         return line;
+    }
+
+    private Point calculateEdgeEndpointPosition(EdgeEndpoint edgeEndpoint) {
+        Point startVertexPosition = edgeEndpoint.getVertex().getPosition();
+        Point startVertexSize = edgeEndpoint.getVertex().getSize();
+        Point edgeStartPosition = edgeEndpoint.getPoint();
+
+        double x = startVertexPosition.x + edgeStartPosition.x * startVertexSize.x;
+        double y = startVertexPosition.y + edgeStartPosition.y * startVertexSize.y;
+
+        Point position = new Point (x, y);
+        return position;
     }
 
     private void saveGraph() {
