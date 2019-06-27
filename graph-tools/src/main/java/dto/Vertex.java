@@ -3,7 +3,12 @@ package dto;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope = Vertex.class)
 public class Vertex extends GraphElement {
+    private int id;
     private String text;
     private String details;
     private Point position;
@@ -17,6 +22,14 @@ public class Vertex extends GraphElement {
         size = new Point();
         incomingEdges = new HashSet<>();
         outgoingEdges = new HashSet<>();
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getText() {
@@ -59,5 +72,13 @@ public class Vertex extends GraphElement {
 
     public void addOutgoingEdge(Edge edge) {
         outgoingEdges.add(edge);
+    }
+
+    public void removeIncomingEdge(Edge edge) {
+        incomingEdges.remove(edge);
+    }
+
+    public void removeOutgoingEdge(Edge edge) {
+        outgoingEdges.remove(edge);
     }
 }

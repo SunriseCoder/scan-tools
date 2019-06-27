@@ -1,6 +1,11 @@
 package dto;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope = Edge.class)
 public class Edge extends GraphElement {
+    private int id;
     private EdgeEndpoint edgeStart;
     private EdgeEndpoint edgeEnd;
 
@@ -12,6 +17,14 @@ public class Edge extends GraphElement {
         this.edgeStart = edgeStart;
         this.edgeEnd = edgeEnd;
         updateVertices();
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public EdgeEndpoint getEdgeStart() {
@@ -33,8 +46,13 @@ public class Edge extends GraphElement {
     }
 
     private void updateVertices() {
-        edgeStart.getVertex().addOutgoingEdge(this);
-        edgeEnd.getVertex().addIncomingEdge(this);
+        if (edgeStart != null && edgeStart.getVertex() != null) {
+            edgeStart.getVertex().addOutgoingEdge(this);
+        }
+
+        if (edgeEnd != null && edgeEnd.getVertex() != null) {
+            edgeEnd.getVertex().addIncomingEdge(this);
+        }
     }
 
     public static Point getAbsolutePosition(EdgeEndpoint endpoint) {
@@ -49,5 +67,17 @@ public class Edge extends GraphElement {
 
         Point absolutePosition = new Point(x, y);
         return absolutePosition;
+    }
+
+    public void removeItselfFromVertices() {
+        if (edgeStart != null && edgeStart.getVertex() != null) {
+            edgeStart.getVertex().removeOutgoingEdge(this);
+            edgeStart = null;
+        }
+
+        if (edgeEnd != null && edgeEnd.getVertex() != null) {
+            edgeEnd.getVertex().removeIncomingEdge(this);
+            edgeEnd = null;
+        }
     }
 }

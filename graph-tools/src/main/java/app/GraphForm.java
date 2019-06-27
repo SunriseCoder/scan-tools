@@ -99,6 +99,7 @@ public class GraphForm {
             };
             graph = JSONUtils.loadFromDisk(graphFile, typeReference);
         } catch (IOException e) {
+            e.printStackTrace();
             graph = new Graph();
         }
 
@@ -317,6 +318,9 @@ public class GraphForm {
         case ENTER:
             editSelectedVertex();
             break;
+        case ESCAPE:
+            cancelAddEdge();
+            break;
         default:
             break;
         }
@@ -351,6 +355,13 @@ public class GraphForm {
 
     private void deleteEdge(Edge edge) {
         graph.removeEdge(edge);
+        renderGraph();
+    }
+
+    private void cancelAddEdge() {
+        if (edgeStart != null) {
+            edgeStart = null;
+        }
         renderGraph();
     }
 
