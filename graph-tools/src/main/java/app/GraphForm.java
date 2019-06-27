@@ -14,6 +14,7 @@ import dto.GraphElement;
 import dto.Point;
 import dto.Vertex;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
 import javafx.scene.Parent;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
@@ -22,12 +23,23 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
 import utils.FileUtils;
 import utils.GeometryUtils;
 import utils.JSONUtils;
 
 public class GraphForm {
+    private static final int VERTEX_WIDTH = 100;
+    private static final int VERTEX_HEIGHT = 50;
+    private static final int VERTEX_TEXT_PADDING = 50;
     private static final int HOVER_LINE_WIDTH = 10;
+
+    private static final Color COLOR_VERTEX_TEXT = Color.BLUE;
+    private static final Color COLOR_VERTEX_BORDER = Color.BLUE;
+    private static final Color COLOR_EDGE = Color.BLUE;
+    private static final Color COLOR_HOVERLINE = Color.GREEN;
+    private static final Color COLOR_EDGE_NEW = Color.GREEN;
 
     private ApplicationContext applicationContext;
 
@@ -53,16 +65,18 @@ public class GraphForm {
     public GraphForm() {
         hoverLine = new Line();
         hoverLine.setFill(null);
-        hoverLine.setStroke(Color.GREEN);
+        hoverLine.setStroke(COLOR_HOVERLINE);
         hoverLine.setStrokeWidth(HOVER_LINE_WIDTH / 2);
 
         newEdgeLine = new Line();
         newEdgeLine.setFill(null);
-        newEdgeLine.setStroke(Color.GREEN);
+        newEdgeLine.setStroke(COLOR_EDGE_NEW);
         newEdgeLine.setStrokeWidth(HOVER_LINE_WIDTH / 2);
     }
 
     public Parent init(ApplicationContext applicationContext) throws IOException {
+        this.applicationContext = applicationContext;
+
         String graphFileName = applicationContext.getParameterValue(ApplicationParameters.GraphFileName);
         graphFile = new File(graphFileName);
 
@@ -199,6 +213,9 @@ public class GraphForm {
     private void handleMousePressed(MouseEvent e) {
         if (e.isPrimaryButtonDown()) {
             selectGraphElement(e.getSceneX(), e.getSceneY());
+            if (e.getClickCount() == 2) {
+                editSelectedVertex();
+            }
         }
 
         saveLastMousePosition(e.getSceneX(), e.getSceneY());
@@ -226,7 +243,7 @@ public class GraphForm {
         Vertex vertex;
         vertex = new Vertex();
         vertex.setPosition(x, y);
-        vertex.setSize(100, 50);
+        vertex.setSize(VERTEX_WIDTH, VERTEX_HEIGHT);
         graph.addVertex(vertex);
 
         renderGraph();
@@ -296,6 +313,9 @@ public class GraphForm {
         switch (e.getCode()) {
         case DELETE:
             deleteSelectedElement();
+            break;
+        case ENTER:
+            editSelectedVertex();
             break;
         default:
             break;
@@ -412,6 +432,10 @@ public class GraphForm {
     }
 
     private EdgeEndpoint sceneToRelativeEndpoint(EdgeEndpoint sceneEndpoint) {
+        if (sceneEndpoint == null) {
+            return null;
+        }
+
         Vertex vertex = sceneEndpoint.getVertex();
 
         EdgeEndpoint relativeEndpoint = new EdgeEndpoint();
@@ -433,13 +457,15 @@ public class GraphForm {
         imagePane.getChildren().add(newEdgeLine);
 
         for (Vertex vertex : graph.getVertices()) {
-            Color color = vertex == selectedElement ? Color.RED : Color.BLUE;
+            Color color = vertex == selectedElement ? Color.RED : COLOR_VERTEX_BORDER;
             Rectangle rectange = createVertexRectangle(vertex, color);
             imagePane.getChildren().add(rectange);
+            Text text = createVertexText(vertex);
+            imagePane.getChildren().add(text);
         }
 
         for (Edge edge : graph.getEdges()) {
-            Color color = edge == selectedElement ? Color.RED : Color.BLUE;
+            Color color = edge == selectedElement ? Color.RED : COLOR_EDGE;
             Line line = createEdgeLine(edge, color);
             imagePane.getChildren().add(line);
         }
@@ -455,6 +481,19 @@ public class GraphForm {
         rectange.setY(position.y);
 
         return rectange;
+    }
+
+    private Text createVertexText(Vertex vertex) {
+        Text text = new Text(vertex.getText());
+        text.setFill(COLOR_VERTEX_TEXT);
+
+        Bounds bounds = text.getLayoutBounds();
+        double x = vertex.getPosition().x + (vertex.getSize().x - bounds.getWidth()) / 2;
+        double y = vertex.getPosition().y + (vertex.getSize().y - bounds.getHeight() + 24) / 2;
+        text.setX(x);
+        text.setY(y);
+
+        return text;
     }
 
     private Line createEdgeLine(Edge edge, Color color) {
@@ -482,6 +521,35 @@ public class GraphForm {
 
         Point position = new Point (x, y);
         return position;
+    }
+
+    private void editSelectedVertex() {
+        if (selectedElement == null || !(selectedElement instanceof Vertex)) {
+            return;
+        }
+
+        Vertex vertex = (Vertex) selectedElement;
+
+        try {
+            Stage stage = applicationContext.getStage();
+            VertexEditForm vertexEditForm = new VertexEditForm(stage);
+            vertexEditForm.setVertex(vertex);
+            vertexEditForm.showAndWait();
+
+            updateVertexSize(vertex);
+            renderGraph();
+        } catch (IOException e) {
+            applicationContext.showError("Could not Edit Vertex", e);
+        }
+    }
+
+    private void updateVertexSize(Vertex vertex) {
+        Text text = new Text(vertex.getText());
+
+        Bounds textBounds = text.getBoundsInLocal();
+        double width = Math.max(textBounds.getWidth() + VERTEX_TEXT_PADDING, VERTEX_WIDTH);
+        double height = Math.max(textBounds.getHeight() + VERTEX_TEXT_PADDING, VERTEX_HEIGHT);
+        vertex.setSize(width, height);
     }
 
     private void saveGraph() {

@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Vertex extends GraphElement {
+    private String text;
+    private String details;
     private Point position;
     private Point size;
 
@@ -15,6 +17,22 @@ public class Vertex extends GraphElement {
         size = new Point();
         incomingEdges = new HashSet<>();
         outgoingEdges = new HashSet<>();
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public String getDetails() {
+        return details;
+    }
+
+    public void setDetails(String details) {
+        this.details = details;
     }
 
     public Point getPosition() {
@@ -30,9 +48,9 @@ public class Vertex extends GraphElement {
         return size;
     }
 
-    public void setSize(double x, double y) {
-        size.x = x;
-        size.y = y;
+    public void setSize(double width, double height) {
+        size.x = width;
+        size.y = height;
     }
 
     public void addIncomingEdge(Edge edge) {
