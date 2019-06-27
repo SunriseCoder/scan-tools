@@ -362,7 +362,8 @@ public class GraphForm {
         if (edgeStart != null) {
             edgeStart = null;
         }
-        renderGraph();
+
+        updateNewEdgeLine(lastPosX, lastPosY);
     }
 
     private Vertex findVertex(double x, double y) {
@@ -496,6 +497,7 @@ public class GraphForm {
 
     private Text createVertexText(Vertex vertex) {
         Text text = new Text(vertex.getText());
+        text.setOnMouseDragged(e -> handleMouseDrag(e));
         text.setFill(COLOR_VERTEX_TEXT);
 
         Bounds bounds = text.getLayoutBounds();
