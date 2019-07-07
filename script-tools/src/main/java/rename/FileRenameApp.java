@@ -5,11 +5,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.attribute.FileTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 public class FileRenameApp {
-    private static final Pattern FILE_PATTERN = Pattern.compile("^[0-9]{4}-[0-9]{2}-[0-9]{2}_.*$");
+    private static final Pattern FILE_PATTERN = Pattern.compile("^[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}_.*$");
+    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd_HH-mm-ss").withZone(ZoneId.systemDefault());
 
     private static String fileTimeAttribute = "creationTime";
 
@@ -53,9 +56,10 @@ public class FileRenameApp {
             System.out.println("Processing file: " + oldFileRelativeName);
 
             Map<String, Object> attributes = Files.readAttributes(file.toPath(), fileTimeAttribute);
-            FileTime creationTime = (FileTime) attributes.get(fileTimeAttribute);
+            FileTime fileTime = (FileTime) attributes.get(fileTimeAttribute);
 
-            String newFileName = creationTime.toString().substring(0, 10) + "_" + oldFileName;
+            String dateString = dateTimeFormatter.format(fileTime.toInstant());
+            String newFileName = dateString + "_" + oldFileName;
             File newFile = new File(file.getParentFile(), newFileName);
             String newFileRelativeName = root.toPath().relativize(newFile.toPath()).toString();
             String renameCommand = "move \"" + oldFileRelativeName + "\" \"" + newFileRelativeName + "\"";
