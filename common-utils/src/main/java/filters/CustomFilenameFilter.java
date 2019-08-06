@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import utils.FileUtils;
@@ -11,12 +12,9 @@ import utils.FileUtils;
 public class CustomFilenameFilter implements FilenameFilter {
     private Set<String> extensions;
 
-    public CustomFilenameFilter() {
-        extensions = new HashSet<>();
-    }
-
-    protected void addExtensions(String... extensions) {
-        this.extensions.addAll(Arrays.asList(extensions));
+    public CustomFilenameFilter(String... extensions) {
+        List<String> extensionList = Arrays.asList(extensions);
+        this.extensions = new HashSet<>(extensionList);
     }
 
     @Override

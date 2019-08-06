@@ -1,11 +1,9 @@
 package filters;
 
 public class FilenameFilterImages extends CustomFilenameFilter {
-    private String[] extensions = { "bmp", "jpg", "png", "gif", "tif", "tiff" };
+    private static String[] IMAGE_EXTENSIONS = { "bmp", "jpg", "png", "gif", "tif", "tiff" };
 
     public FilenameFilterImages() {
-        super();
-
-        addExtensions(extensions);
+        super(IMAGE_EXTENSIONS);
     }
 }
