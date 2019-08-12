@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.SplitPane?>
+
+<SplitPane fx:id="splitPane" dividerPositions="0.24070450097847357"
+    prefHeight="768.0" prefWidth="1024.0"
+    xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" />
