@@ -8,11 +8,7 @@ import process.context.ApplicationContext;
 import utils.FileUtils;
 
 public class ViewForm {
-    private ApplicationContext applicationContext;
-
     public Node createUI(ApplicationContext applicationContext) throws IOException {
-        this.applicationContext = applicationContext;
-
         Parent root = FileUtils.loadFXML(this);
 
         return root;

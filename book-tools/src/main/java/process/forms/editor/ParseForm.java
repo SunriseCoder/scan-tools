@@ -2,6 +2,9 @@ package process.forms.editor;
 
 import java.io.IOException;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -9,11 +12,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
 import process.context.ApplicationContext;
+import process.services.BookService;
 import utils.FileUtils;
 
+@Component
 public class ParseForm {
-    private ApplicationContext applicationContext;
-
     @FXML
     private SplitPane parseSplitPane;
 
@@ -36,8 +39,6 @@ public class ParseForm {
     private TextArea correctField;
 
     public Node createUI(ApplicationContext applicationContext) throws IOException {
-        this.applicationContext = applicationContext;
-
         Parent root = FileUtils.loadFXML(this);
 
         return root;

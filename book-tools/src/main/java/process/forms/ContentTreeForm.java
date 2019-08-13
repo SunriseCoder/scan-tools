@@ -11,14 +11,10 @@ import process.context.ApplicationContext;
 import utils.FileUtils;
 
 public class ContentTreeForm {
-    private ApplicationContext applicationContext;
-
     @FXML
     private TreeView<String> treeView;
 
     public Node createUI(ApplicationContext applicationContext) throws IOException {
-        this.applicationContext = applicationContext;
-
         Parent root = FileUtils.loadFXML(this);
 
         TreeItem<String> rootItem = new TreeItem<>("Root");

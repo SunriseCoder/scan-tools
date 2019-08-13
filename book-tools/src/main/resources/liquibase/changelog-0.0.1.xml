@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       xsd/dbchangelog-3.6.xsd"
+    logicalFilePath="changelog-0.0.1">
+
+    <changeSet id="0.0.1-01" author="SunriseCoder">
+
+        <createTable tableName="languages">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_languages" nullable="false" />
+            </column>
+            <column name="name_two_letters" type="varchar(2)">
+                <constraints unique="true" uniqueConstraintName="ui_languages_name2" nullable="false" />
+            </column>
+            <column name="name_three_letters" type="varchar(3)">
+                <constraints unique="true" uniqueConstraintName="ui_languages_name3" nullable="false" />
+            </column>
+            <column name="name_in_english" type="varchar(64)">
+                <constraints unique="true" uniqueConstraintName="ui_languages_name_eng" nullable="false" />
+            </column>
+            <column name="name_in_language" type="varchar(64)">
+                <constraints unique="true" uniqueConstraintName="ui_languages_name_native" nullable="false" />
+            </column>
+        </createTable>
+
+        <createTable tableName="book_elements">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_book_elements" nullable="false" />
+            </column>
+            <column name="parent_id" type="bigint">
+                <constraints foreignKeyName="fk_book_elements_parent" references="book_elements(id)" />
+            </column>
+            <column name="title" type="varchar(64)">
+                <constraints nullable="false" />
+            </column>
+            <column name="content" type="longtext" />
+            <column name="language_id" type="bigint">
+                <constraints foreignKeyName="fk_book_elements_language" references="languages(id)" />
+            </column>
+        </createTable>
+
+    </changeSet>
+
+</databaseChangeLog>

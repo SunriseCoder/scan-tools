@@ -2,6 +2,9 @@ package process.forms;
 
 import java.io.IOException;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -12,9 +15,8 @@ import process.forms.editor.ParseForm;
 import process.forms.editor.ViewForm;
 import utils.FileUtils;
 
+@Component
 public class EditorForm {
-    private ApplicationContext applicationContext;
-
     @FXML
     private Tab viewTab;
     @FXML
@@ -22,9 +24,10 @@ public class EditorForm {
     @FXML
     private Tab parseTab;
 
-    public Node createUI(ApplicationContext applicationContext) throws IOException {
-        this.applicationContext = applicationContext;
+    @Autowired
+    private ParseForm parseForm;
 
+    public Node createUI(ApplicationContext applicationContext) throws IOException {
         Parent root = FileUtils.loadFXML(this);
 
         ViewForm viewForm = new ViewForm();
@@ -35,7 +38,7 @@ public class EditorForm {
         Node editFormNode = editForm.createUI(applicationContext);
         editTab.setContent(editFormNode);
 
-        ParseForm parseForm = new ParseForm();
+        //parseForm = new ParseForm();
         Node parseFormNode = parseForm.createUI(applicationContext);
         parseTab.setContent(parseFormNode);
 

@@ -1,18 +1,21 @@
 package process;
 
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.stereotype.Component;
+
 import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.SplitPane;
-import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import process.context.ApplicationContext;
 import process.forms.ContentTreeForm;
 import process.forms.EditorForm;
 import utils.FileUtils;
 
+@Component
 public class BookProcessorApp extends Application {
     private static final String APPLICATION_CONTEXT_CONFIG_FILENAME = "book-processor-config.json";
 
@@ -25,8 +28,12 @@ public class BookProcessorApp extends Application {
     @FXML
     private SplitPane splitPane;
 
+    private AnnotationConfigApplicationContext springContext;
+
     @Override
     public void start(Stage primaryStage) throws Exception {
+        springContext = new AnnotationConfigApplicationContext("process");
+
         // Application Context
         applicationContext = new ApplicationContext(APPLICATION_CONTEXT_CONFIG_FILENAME);
         applicationContext.setStage(primaryStage);
@@ -39,8 +46,8 @@ public class BookProcessorApp extends Application {
         Node contentTreeFormNode = contentTreeForm.createUI(applicationContext);
         splitPane.getItems().add(contentTreeFormNode);
 
-        // EditorForm
-        EditorForm editorForm = new EditorForm();
+        //editorForm = new EditorForm();
+        EditorForm editorForm = springContext.getBean(EditorForm.class);
         Node editorFormNode = editorForm.createUI(applicationContext);
         splitPane.getItems().add(editorFormNode);
 
