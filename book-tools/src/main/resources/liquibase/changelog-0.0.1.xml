@@ -34,6 +34,7 @@
             <column name="title" type="varchar(64)">
                 <constraints nullable="false" />
             </column>
+            <column name="source" type="longtext" />
             <column name="content" type="longtext" />
             <column name="language_id" type="bigint">
                 <constraints foreignKeyName="fk_book_elements_language" references="languages(id)" />

@@ -5,6 +5,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
@@ -27,7 +28,8 @@
 
             <children>
                 <Button fx:id="transformButton" text="Transform" />
-                <Button fx:id="saveButton" text="Save" />
+                <Button fx:id="saveAsCurrentButton" onAction="#handleSaveAsCurrent" text="Save as Current" />
+                <Button fx:id="saveAsChildButton" onAction="#handleSaveAsChild" text="Save as Child" />
                 <Button fx:id="resetButton" text="Reset" />
                 <Button fx:id="deleteButton" text="Delete" />
             </children>
@@ -38,7 +40,7 @@
 
         </HBox>
 
-        <SplitPane fx:id="parseSplitPane" dividerPositions="0.25, 0.5, 0.75" prefHeight="160.0" prefWidth="200.0"  GridPane.rowIndex="1">
+        <SplitPane fx:id="parseSplitPane" dividerPositions="0.25, 0.5, 0.75" prefHeight="160.0" prefWidth="200.0" GridPane.rowIndex="1">
 
             <items>
 
@@ -53,7 +55,7 @@
                     <children>
                         <Label alignment="CENTER" maxHeight="1E308" maxWidth="1E308" text="Source text:" textAlignment="CENTER" GridPane.hgrow="ALWAYS"
                             GridPane.vgrow="NEVER" />
-                        <TextArea id="sourceField" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1" />
+                        <TextArea fx:id="sourceField" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1" />
                     </children>
                 </GridPane>
 
@@ -68,7 +70,7 @@
                     <children>
                         <Label alignment="CENTER" maxHeight="1E308" maxWidth="1E308" text="Transformation text:" textAlignment="CENTER"
                             GridPane.hgrow="ALWAYS" GridPane.vgrow="NEVER" />
-                        <TextArea id="transformationField" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1" />
+                        <TextArea fx:id="transformationField" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1" />
                     </children>
                 </GridPane>
 
@@ -83,7 +85,7 @@
                     <children>
                         <Label alignment="CENTER" maxHeight="1E308" maxWidth="1E308" text="Transformed text:" textAlignment="CENTER"
                             GridPane.hgrow="ALWAYS" GridPane.vgrow="NEVER" />
-                        <TextArea id="transformedField" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1" />
+                        <TextArea fx:id="transformedField" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1" />
                     </children>
                 </GridPane>
 
@@ -92,13 +94,18 @@
                         <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
                     </columnConstraints>
                     <rowConstraints>
+                        <RowConstraints vgrow="NEVER" />
+                        <RowConstraints vgrow="NEVER" />
                         <RowConstraints minHeight="0.0" vgrow="NEVER" />
                         <RowConstraints minHeight="10.0" vgrow="ALWAYS" />
                     </rowConstraints>
                     <children>
-                        <Label alignment="CENTER" maxHeight="1E308" maxWidth="1E308" text="Correct text:" textAlignment="CENTER" GridPane.hgrow="ALWAYS"
+                        <Label alignment="CENTER" maxHeight="1E308" maxWidth="1E308" text="Title:" textAlignment="CENTER" GridPane.hgrow="ALWAYS"
                             GridPane.vgrow="NEVER" />
-                        <TextArea id="correctField" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1" />
+                        <TextField fx:id="titleField" GridPane.rowIndex="1" />
+                        <Label alignment="CENTER" maxHeight="1E308" maxWidth="1E308" text="Content text:" textAlignment="CENTER" GridPane.hgrow="ALWAYS"
+                            GridPane.rowIndex="2" GridPane.vgrow="NEVER" />
+                        <TextArea fx:id="contentField" GridPane.rowIndex="3" />
                     </children>
                 </GridPane>
 

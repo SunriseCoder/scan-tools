@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 import process.entities.BookElementEntity;
 
 @Repository
-public interface BookRepository extends JpaRepository<BookElementEntity, Long> {
+public interface BookElementRepository extends JpaRepository<BookElementEntity, Long> {
     List<BookElementEntity> findAllByParentIsNull();
 }
