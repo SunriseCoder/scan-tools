@@ -20,10 +20,10 @@ import utils.FileUtils;
 
 @Component
 public class ParseForm {
+    private ApplicationContext applicationContext;
+
     @Autowired
     private BookElementService bookElementService;
-
-    private BookElementEntity currentBookElement;
 
     @FXML
     private SplitPane parseSplitPane;
@@ -50,9 +50,10 @@ public class ParseForm {
     @FXML
     private TextArea contentField;
 
-    private int counter;
+    private BookElementEntity currentBookElement;
 
     public Node createUI(ApplicationContext applicationContext) throws IOException {
+        this.applicationContext = applicationContext;
         applicationContext.addEventListener(ApplicationEvents.CurrentBookElementChanged,
                 value -> currentBookElementChanged(value));
 
@@ -62,15 +63,11 @@ public class ParseForm {
     }
 
     private void currentBookElementChanged(Object value) {
-        if (value == null) {
-            return;
-        }
+        currentBookElement = value == null ? null : (BookElementEntity) value;
 
-        currentBookElement = (BookElementEntity) value;
-
-        titleField.setText(currentBookElement.getTitle());
-        sourceField.setText(currentBookElement.getSource());
-        contentField.setText(currentBookElement.getContent());
+        titleField.setText(currentBookElement == null ? "" : currentBookElement.getTitle());
+        sourceField.setText(currentBookElement == null ? "" : currentBookElement.getSource());
+        contentField.setText(currentBookElement == null ? "" : currentBookElement.getContent());
     }
 
     @FXML
@@ -95,5 +92,16 @@ public class ParseForm {
         bookElementEntity.setContent(contentField.getText());
 
         BookElementEntity savedEntity = bookElementService.save(bookElementEntity);
+
+        applicationContext.fireEvent(ApplicationEvents.BookElementTreeChanged, savedEntity);
+    }
+
+    @FXML
+    private void handleDeleteCurrent() {
+        if (currentBookElement == null) {
+            return;
+        }
+
+        applicationContext.fireEvent(ApplicationEvents.DeleteSelectedBookElement, null);
     }
 }

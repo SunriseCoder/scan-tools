@@ -1,5 +1,8 @@
 package process.context;
 
 public enum ApplicationEvents {
-    CurrentBookElementChanged
+    // Book Element Tree
+    BookElementTreeChanged,
+    CurrentBookElementChanged,
+    DeleteSelectedBookElement
 }

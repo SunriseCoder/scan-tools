@@ -28,4 +28,9 @@ public class BookElementService {
         BookElementEntity savedEntity = bookElementRepository.saveAndFlush(entity);
         return savedEntity;
     }
+
+    public void delete(BookElementEntity bookElementEntity) {
+        Long id = bookElementEntity.getId();
+        bookElementRepository.deleteById(id);
+    }
 }

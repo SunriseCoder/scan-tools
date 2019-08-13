@@ -31,7 +31,7 @@
                 <Button fx:id="saveAsCurrentButton" onAction="#handleSaveAsCurrent" text="Save as Current" />
                 <Button fx:id="saveAsChildButton" onAction="#handleSaveAsChild" text="Save as Child" />
                 <Button fx:id="resetButton" text="Reset" />
-                <Button fx:id="deleteButton" text="Delete" />
+                <Button fx:id="deleteButton" onAction="#handleDeleteCurrent" text="Delete" />
             </children>
 
             <padding>

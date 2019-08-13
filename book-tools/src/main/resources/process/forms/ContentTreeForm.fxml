@@ -18,7 +18,7 @@
     <children>
         <HBox GridPane.halignment="RIGHT" GridPane.hgrow="ALWAYS">
             <children>
-                <Button fx:id="refreshButton" onAction="#refreshTree" text="Refresh" />
+                <Button fx:id="refreshButton" onAction="#handleRefreshBookElementTree" text="Refresh" />
             </children>
         </HBox>
         <TreeView fx:id="treeView" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1" />
