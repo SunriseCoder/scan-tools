@@ -1,11 +1,15 @@
 package process.entities;
 
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 @Entity(name = "book_elements")
 public class BookElementEntity {
@@ -23,6 +27,9 @@ public class BookElementEntity {
 
     @ManyToOne
     private LanguageEntity language;
+
+    @OneToMany(mappedBy = "parent", fetch = FetchType.EAGER)
+    private List<BookElementEntity> children;
 
     public Long getId() {
         return id;
@@ -62,5 +69,13 @@ public class BookElementEntity {
 
     public void setLanguage(LanguageEntity language) {
         this.language = language;
+    }
+
+    public List<BookElementEntity> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<BookElementEntity> children) {
+        this.children = children;
     }
 }

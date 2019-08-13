@@ -42,7 +42,7 @@ public class BookProcessorApp extends Application {
         Parent root = FileUtils.loadFXML(this);
 
         // ContentTreeForm
-        ContentTreeForm contentTreeForm = new ContentTreeForm();
+        ContentTreeForm contentTreeForm = springContext.getBean(ContentTreeForm.class);
         Node contentTreeFormNode = contentTreeForm.createUI(applicationContext);
         splitPane.getItems().add(contentTreeFormNode);
 

@@ -1,5 +1,6 @@
 package process.services;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,5 +17,10 @@ public class BookService {
     public BookElementEntity getById(long id) {
         Optional<BookElementEntity> entity = repository.findById(id);
         return entity.get();
+    }
+
+    public List<BookElementEntity> getRootElements() {
+        List<BookElementEntity> list = repository.findAllByParentIsNull();
+        return list;
     }
 }
