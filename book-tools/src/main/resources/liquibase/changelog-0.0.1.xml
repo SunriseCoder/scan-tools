@@ -31,6 +31,7 @@
             <column name="parent_id" type="bigint">
                 <constraints foreignKeyName="fk_book_elements_parent" references="book_elements(id)" />
             </column>
+            <column name="position" type="bigint" />
             <column name="title" type="varchar(64)">
                 <constraints nullable="false" />
             </column>

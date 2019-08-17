@@ -25,8 +25,31 @@ public class BookElementService {
     }
 
     public BookElementEntity save(BookElementEntity entity) {
+        calculatePositionForNewEntity(entity);
+
         BookElementEntity savedEntity = bookElementRepository.saveAndFlush(entity);
+
         return savedEntity;
+    }
+
+    private void calculatePositionForNewEntity(BookElementEntity entity) {
+        // Calculating Position for New Entities only
+        // For Existing Entities please use Up/Down shifting
+        if (entity.getId() != null) {
+            return;
+        }
+
+        BookElementEntity parent = entity.getParent();
+        BookElementEntity entityWithMaxPosition;
+        if (parent == null) {
+            entityWithMaxPosition = bookElementRepository.findTopByParentIsNullOrderByPositionDesc();
+        } else {
+            entityWithMaxPosition = bookElementRepository.findTopByParentOrderByPositionDesc(parent);
+        }
+        Long position = entityWithMaxPosition == null ? 10 : entityWithMaxPosition.getPosition();
+        position = position == null ? 10 : position + 10;
+
+        entity.setPosition(position);
     }
 
     public void delete(BookElementEntity bookElementEntity) {

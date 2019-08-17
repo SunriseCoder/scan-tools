@@ -15,6 +15,7 @@ import javafx.scene.control.TextField;
 import process.context.ApplicationContext;
 import process.context.ApplicationEvents;
 import process.entities.BookElementEntity;
+import process.parser.RawBookParser;
 import process.services.BookElementService;
 import utils.FileUtils;
 
@@ -52,6 +53,12 @@ public class ParseForm {
 
     private BookElementEntity currentBookElement;
 
+    private RawBookParser rawBookParser;
+
+    public ParseForm() {
+        rawBookParser = new RawBookParser();
+    }
+
     public Node createUI(ApplicationContext applicationContext) throws IOException {
         this.applicationContext = applicationContext;
         applicationContext.addEventListener(ApplicationEvents.CurrentBookElementChanged,
@@ -71,10 +78,36 @@ public class ParseForm {
     }
 
     @FXML
+    private void handleTransform() {
+        try {
+            String sourceText = sourceField.getText();
+            String transformationText = transformationField.getText();
+
+            String parsedText = rawBookParser.parse(sourceText, transformationText);
+
+            transformedField.setText(parsedText);
+        } catch (Exception e) {
+            applicationContext.showError("Error due to transform text", e);
+        }
+    }
+
+    @FXML
     private void handleSaveAsCurrent() {
         if (currentBookElement == null) {
             handleSaveAsChild();
         } else {
+            saveBookElement(currentBookElement);
+        }
+    }
+
+    @FXML
+    private void handleSaveAsSibling() {
+        if (currentBookElement == null) {
+            handleSaveAsChild();
+        } else {
+            // Nullifying Id and Children for the existing entity that JPA could save it as New Entity
+            currentBookElement.setId(null);
+            currentBookElement.setChildren(null);
             saveBookElement(currentBookElement);
         }
     }

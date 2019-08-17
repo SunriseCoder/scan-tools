@@ -21,6 +21,9 @@ public class BookElementEntity {
     @ManyToOne
     private BookElementEntity parent;
 
+    @Column(columnDefinition = "bigint")
+    private Long position;
+
     private String title;
 
     @Column(columnDefinition = "longtext")
@@ -49,6 +52,14 @@ public class BookElementEntity {
 
     public void setParent(BookElementEntity parent) {
         this.parent = parent;
+    }
+
+    public Long getPosition() {
+        return position;
+    }
+
+    public void setPosition(Long position) {
+        this.position = position;
     }
 
     public String getTitle() {
@@ -89,5 +100,10 @@ public class BookElementEntity {
 
     public void setChildren(List<BookElementEntity> children) {
         this.children = children;
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "[id=" + id + ", title=" + title + "]";
     }
 }

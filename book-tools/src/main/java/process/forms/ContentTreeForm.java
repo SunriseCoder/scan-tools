@@ -133,6 +133,12 @@ public class ContentTreeForm {
         Map<Long, TreeItem<BookElementEntity>> oldItems = item.getChildren().parallelStream()
                 .collect(Collectors.toMap(i -> i.getValue().getId(), i -> i));
 
+        // Sorting Entities by Position
+        entities.sort((a, b) -> compareLong(a.getPosition(), b.getPosition()));
+
+        // Clearing
+        item.getChildren().clear();
+
         entities.stream().forEach(entity -> {
             // Removing Item from the List to know, which Items were updated and don't need to be removed
             TreeItem<BookElementEntity> childItem = oldItems.remove(entity.getId());
@@ -144,17 +150,30 @@ public class ContentTreeForm {
 
                 // Put the Item to the Item Map
                 treeItems.put(entity.getId(), childItem);
-
-                // Adding new Item to the TreeView
-                item.getChildren().add(childItem);
             }
+
+            // Adding new Item to the TreeView
+            item.getChildren().add(childItem);
 
             // Processing Sub-Elements Recursively
             processElementsRecursively(entity.getChildren(), childItem);
         });
+    }
 
-        // Removing Items from the Tree, which Entities were deleted
-        item.getChildren().removeAll(oldItems.values());
+    private int compareLong(Long a, Long b) {
+        if (a == b) {
+            return 0;
+        }
+
+        if (a == null) {
+            return 1;
+        }
+
+        if (b == null) {
+            return -1;
+        }
+
+        return a.compareTo(b);
     }
 
     private class ContentTreeCell extends TreeCell<BookElementEntity> {
