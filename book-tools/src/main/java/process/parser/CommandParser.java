@@ -11,8 +11,8 @@ import process.parser.dto.Action;
 import process.parser.dto.Command;
 import process.parser.dto.Command.Condition;
 import process.parser.dto.Command.Positions;
-import process.parser.dto.TagAttribute;
 import process.parser.dto.Variable;
+import process.parser.dto.html.TagAttribute;
 
 public class CommandParser {
 

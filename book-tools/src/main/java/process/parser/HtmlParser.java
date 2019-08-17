@@ -4,8 +4,8 @@ import java.text.ParseException;
 import java.util.Stack;
 
 import process.parser.dto.Chain;
-import process.parser.dto.HtmlElement;
-import process.parser.dto.TagAttribute;
+import process.parser.dto.html.HtmlElement;
+import process.parser.dto.html.TagAttribute;
 
 public class HtmlParser {
 

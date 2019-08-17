@@ -1,4 +1,4 @@
-package process.parser.dto;
+package process.parser.dto.html;
 
 import java.util.HashMap;
 import java.util.Map;

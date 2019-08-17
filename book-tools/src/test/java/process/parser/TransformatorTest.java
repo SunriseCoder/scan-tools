@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import process.parser.dto.Chain;
 import process.parser.dto.Command;
-import process.parser.dto.HtmlElement;
+import process.parser.dto.html.HtmlElement;
 
 public class TransformatorTest {
     private HtmlParser htmlParser;

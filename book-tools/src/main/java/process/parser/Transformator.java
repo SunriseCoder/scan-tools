@@ -8,9 +8,9 @@ import process.parser.dto.Chain;
 import process.parser.dto.Command;
 import process.parser.dto.Command.Condition;
 import process.parser.dto.Command.Positions;
-import process.parser.dto.HtmlElement;
-import process.parser.dto.TagAttribute;
 import process.parser.dto.Variable;
+import process.parser.dto.html.HtmlElement;
+import process.parser.dto.html.TagAttribute;
 
 public class Transformator {
 

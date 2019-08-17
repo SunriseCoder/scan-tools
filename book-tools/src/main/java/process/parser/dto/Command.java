@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import process.parser.dto.html.TagAttribute;
+
 public class Command {
     private Map<Positions, Condition> conditions;
     private List<Action> actions;

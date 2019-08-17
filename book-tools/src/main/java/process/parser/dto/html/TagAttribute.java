@@ -1,4 +1,4 @@
-package process.parser.dto;
+package process.parser.dto.html;
 
 public class TagAttribute {
     private String name;

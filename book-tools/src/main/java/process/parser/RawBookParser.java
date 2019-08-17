@@ -6,8 +6,8 @@ import java.util.Map;
 
 import process.parser.dto.Chain;
 import process.parser.dto.Command;
-import process.parser.dto.HtmlElement;
 import process.parser.dto.Variable;
+import process.parser.dto.html.HtmlElement;
 
 public class RawBookParser {
     private HtmlParser htmlParser;
