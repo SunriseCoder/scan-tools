@@ -12,6 +12,7 @@
         <module>audio-tools</module>
         <module>book-tools</module>
         <module>graph-tools</module>
+        <module>password-tools</module>
         <module>scan-tools</module>
         <module>script-tools</module>
         <module>subtitles-tools</module>

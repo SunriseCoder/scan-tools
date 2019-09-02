@@ -114,4 +114,19 @@ public class FileUtils {
         parent = getExistingParentIfFolderNotExists(parent);
         return parent;
     }
+
+    public static void saveToFile(String text, String filename) throws IOException {
+        File file = createFile(filename, true);
+
+        try (FileWriter fileWriter = new FileWriter(file, true);
+                PrintWriter printWriter = new PrintWriter(fileWriter);) {
+            printWriter.println(text);
+        }
+    }
+
+    public static String replaceResolution(String filename, String replacement) {
+        String newFileName = getFileName(filename);
+        newFileName += "." + replacement;
+        return newFileName;
+    }
 }
