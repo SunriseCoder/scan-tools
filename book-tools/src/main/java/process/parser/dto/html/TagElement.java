@@ -82,4 +82,25 @@ public class TagElement extends AbstractHtmlElement {
 
         return hasNestedTags.getValue().booleanValue();
     }
+
+    public String getContentValue(String tagName) {
+        for (HtmlElement element : content) {
+            // Looking for the TagElement with given Name
+            if (element != null && element instanceof TagElement && ((TagElement) element).getName().equals(tagName)) {
+                TagElement tag = (TagElement) element;
+                List<HtmlElement> tagContent = tag.getContent();
+                // Checking that the Content is the only TextElement
+                if (tagContent.size() == 1 && tagContent.get(0) instanceof TextElement) {
+                    String value = ((TextElement) tagContent.get(0)).getValue();
+                    return value;
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        return "<" + name + " />";
+    }
 }

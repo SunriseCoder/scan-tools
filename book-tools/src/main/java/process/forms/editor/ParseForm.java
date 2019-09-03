@@ -1,6 +1,8 @@
 package process.forms.editor;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,7 @@ import javafx.scene.control.TextField;
 import process.context.ApplicationContext;
 import process.context.ApplicationEvents;
 import process.entities.BookElementEntity;
+import process.parser.BookElementSplitter;
 import process.parser.RawBookParser;
 import process.services.BookElementService;
 import utils.FileUtils;
@@ -45,6 +48,9 @@ public class ParseForm {
     private CheckBox wrapTextCheckBox;
 
     @FXML
+    private Button splitChildrenButton;
+
+    @FXML
     private TextArea sourceField;
     @FXML
     private TextArea transformationField;
@@ -58,9 +64,11 @@ public class ParseForm {
     private BookElementEntity currentBookElement;
 
     private RawBookParser rawBookParser;
+    private BookElementSplitter bookElementSplitter;
 
     public ParseForm() {
         rawBookParser = new RawBookParser();
+        bookElementSplitter = new BookElementSplitter();
     }
 
     public Node createUI(ApplicationContext applicationContext) throws IOException {
@@ -150,5 +158,19 @@ public class ParseForm {
         transformationField.setWrapText(wrapText);
         transformedField.setWrapText(wrapText);
         contentField.setWrapText(wrapText);
+    }
+
+    @FXML
+    private void handleSplitChildren() throws ParseException {
+        String content = contentField.getText();
+        List<BookElementEntity> entities = bookElementSplitter.split(content, currentBookElement);
+
+        String message = "Are You sure to add " + entities.size() + " entity(s)?";
+        boolean confirmed = applicationContext.showConfirmation("Split Children", message);
+
+        if (confirmed) {
+            bookElementService.save(entities);
+            applicationContext.fireEvent(ApplicationEvents.BookElementTreeChanged, currentBookElement);
+        }
     }
 }

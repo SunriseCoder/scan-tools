@@ -1,5 +1,6 @@
 package process.entities;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -100,6 +101,13 @@ public class BookElementEntity {
 
     public void setChildren(List<BookElementEntity> children) {
         this.children = children;
+    }
+
+    public void addChild(BookElementEntity child) {
+        if (children == null) {
+            children = new ArrayList<>();
+        }
+        children.add(child);
     }
 
     @Override

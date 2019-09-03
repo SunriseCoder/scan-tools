@@ -34,18 +34,24 @@ public class HtmlParser {
                     parsingMode = ParsingModes.ParsingOpeningTag;
                 } else {
                     parsingMode = ParsingModes.ParsingText;
-                    buffer.append(symbol);
+                    if (!"\t".equals(symbol) && !"\n".equals(symbol)) {
+                        buffer.append(symbol);
+                    }
                 }
                 break;
 
             case ParsingText:
                 if ("<".equals(symbol)) {
-                    createTextElement(buffer, currentContent);
+                    if (!buffer.toString().replaceAll("\n", "").replaceAll("\t", "").isEmpty()) {
+                        createTextElement(buffer, currentContent);
+                    }
 
                     parsingMode = ParsingModes.ParsingOpeningTag;
                     buffer = new StringBuilder();
                 } else {
-                    buffer.append(symbol);
+                    if (!"\t".equals(symbol) && !"\n".equals(symbol)) {
+                        buffer.append(symbol);
+                    }
                 }
                 break;
 

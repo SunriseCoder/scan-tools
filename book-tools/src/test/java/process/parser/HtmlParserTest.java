@@ -124,15 +124,23 @@ public class HtmlParserTest {
         complexTest("<a a=1><b b=2>", "<a a=\"1\" /><b b=\"2\" />");
     }
 
+    @Test
+    public void testParseFormattedText() throws ParseException {
+        complexTest("<a>\n\t<b />\n</a>", "<a><b /></a>");
+        complexTest("<a>\n\tHello1\n\t<b />\n\tHello2\n</a>", "<a>\n\tHello1\n\t<b />\n\tHello2\n</a>\n", true);
+    }
+
     private void complexTest(String sourceText) throws ParseException {
-        complexTest(sourceText, sourceText);
+        complexTest(sourceText, sourceText, false);
     }
 
     private void complexTest(String sourceText, String expectedText) throws ParseException {
+        complexTest(sourceText, expectedText, false);
+    }
+
+    private void complexTest(String sourceText, String expectedText, boolean format) throws ParseException {
         List<HtmlElement> parsedContent = parser.parse(sourceText);
-
-        String renderedText = renderer.render(parsedContent);
-
+        String renderedText = renderer.render(parsedContent, format);
         assertEquals(expectedText, renderedText);
     }
 

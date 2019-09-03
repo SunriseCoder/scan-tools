@@ -25,20 +25,35 @@ public class BookElementService {
     }
 
     public BookElementEntity save(BookElementEntity entity) {
-        calculatePositionForNewEntity(entity);
+        // Calculating Position for New Entities only
+        // For Existing Entities please use Up/Down shifting
+        if (entity.getId() == null) {
+            Long position = calculatePositionForNewEntity(entity);
+            entity.setPosition(position);
+        }
 
         BookElementEntity savedEntity = bookElementRepository.saveAndFlush(entity);
 
         return savedEntity;
     }
 
-    private void calculatePositionForNewEntity(BookElementEntity entity) {
-        // Calculating Position for New Entities only
-        // For Existing Entities please use Up/Down shifting
-        if (entity.getId() != null) {
+    public void save(List<BookElementEntity> entities) {
+        if (entities == null || entities.isEmpty()) {
             return;
         }
 
+        Long position = calculatePositionForNewEntity(entities.get(0));
+        for (BookElementEntity entity : entities) {
+            if (entity.getId() == null) {
+                entity.setPosition(position);
+                position += 10;
+            }
+        }
+
+        bookElementRepository.saveAll(entities);
+    }
+
+    private Long calculatePositionForNewEntity(BookElementEntity entity) {
         BookElementEntity parent = entity.getParent();
         BookElementEntity entityWithMaxPosition;
         if (parent == null) {
@@ -49,7 +64,7 @@ public class BookElementService {
         Long position = entityWithMaxPosition == null ? 10 : entityWithMaxPosition.getPosition();
         position = position == null ? 10 : position + 10;
 
-        entity.setPosition(position);
+        return position;
     }
 
     public void delete(BookElementEntity bookElementEntity) {
