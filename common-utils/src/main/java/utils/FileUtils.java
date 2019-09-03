@@ -27,8 +27,17 @@ public class FileUtils {
         return name;
     }
 
+    public static void printLine(String filename, String text) throws IOException {
+        File file = new File(filename);
+        printLine(file, text);
+    }
+
     public static void printLine(File folder, String filename, String text) throws IOException {
         File file = new File(folder, filename);
+        printLine(file, text);
+    }
+
+    private static void printLine(File file, String text) throws IOException {
         FileWriter fileWriter = new FileWriter(file, true);
         PrintWriter printWriter = new PrintWriter(fileWriter);
         printWriter.println(text);
@@ -56,7 +65,7 @@ public class FileUtils {
         return file;
     }
     public static void createFile(File file, boolean overwrite) throws IOException {
-        file.getParentFile().mkdirs();
+        file.getAbsoluteFile().getParentFile().mkdirs();
 
         if (!overwrite && file.exists()) {
             throw new FileAlreadyExistsException(file.getAbsolutePath());
@@ -109,7 +118,7 @@ public class FileUtils {
         if (folder == null || (folder.exists() && folder.isDirectory())) {
             return folder;
         }
-        
+
         File parent = folder.getParentFile();
         parent = getExistingParentIfFolderNotExists(parent);
         return parent;

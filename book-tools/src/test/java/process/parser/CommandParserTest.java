@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNull;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +16,6 @@ import process.parser.dto.Command;
 import process.parser.dto.Command.Condition;
 import process.parser.dto.Command.Positions;
 import process.parser.dto.Variable;
-import process.parser.dto.html.TagAttribute;
 
 public class CommandParserTest {
     private CommandParser commandParser;
@@ -86,8 +86,8 @@ public class CommandParserTest {
         assertEquals("span", condition1.getTagName());
 
         assertEquals(1, condition1.getAttributes().size());
-        TagAttribute attribute1 = condition1.getAttributes().values().iterator().next();
-        assertEquals("font", attribute1.getName());
+        Entry<String, String> attribute1 = condition1.getAttributes().entrySet().iterator().next();
+        assertEquals("font", attribute1.getKey());
         assertEquals("15a", attribute1.getValue());
 
         assertEquals(1, command1.getActions().size());
@@ -108,13 +108,8 @@ public class CommandParserTest {
 
         assertEquals(2, condition1.getAttributes().size());
 
-        TagAttribute attribute1 = condition1.getAttributes().get("font");
-        assertEquals("font", attribute1.getName());
-        assertEquals("15a", attribute1.getValue());
-
-        TagAttribute attribute2 = condition1.getAttributes().get("style");
-        assertEquals("style", attribute2.getName());
-        assertEquals("bold", attribute2.getValue());
+        assertEquals("15a", condition1.getAttributeValue("font"));
+        assertEquals("bold",condition1.getAttributeValue("style"));
 
         assertEquals(1, command1.getActions().size());
         assertEquals("stub", command1.getActions().get(0).getName());
@@ -134,13 +129,8 @@ public class CommandParserTest {
 
         assertEquals(2, condition1.getAttributes().size());
 
-        TagAttribute attribute1 = condition1.getAttributes().get("font");
-        assertEquals("font", attribute1.getName());
-        assertEquals("15a", attribute1.getValue());
-
-        TagAttribute attribute2 = condition1.getAttributes().get("style");
-        assertEquals("style", attribute2.getName());
-        assertEquals("bold", attribute2.getValue());
+        assertEquals("15a", condition1.getAttributeValue("font"));
+        assertEquals("bold",condition1.getAttributeValue("style"));
 
         Condition condition2 = command1.getCondition(Positions.Next);
         assertEquals("span", condition2.getTagName());

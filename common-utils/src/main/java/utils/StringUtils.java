@@ -13,4 +13,21 @@ public class StringUtils {
 
         return text;
     }
+
+    public static String toCamelCase(String string) {
+        StringBuilder sb = new StringBuilder();
+
+        String previousSymbol = null;
+        for (int i = 0; i < string.length(); i++) {
+            String currentSymbol = string.substring(i, i + 1);
+            if (!" ".equals(currentSymbol) && (" ".equals(previousSymbol) || previousSymbol == null)) {
+                sb.append(currentSymbol.toUpperCase());
+            } else {
+                sb.append(currentSymbol.toLowerCase());
+            }
+            previousSymbol = currentSymbol;
+        }
+
+        return sb.toString();
+    }
 }

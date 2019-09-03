@@ -1,156 +1,300 @@
 package process.parser;
 
 import java.text.ParseException;
-import java.util.Stack;
+import java.util.ArrayList;
+import java.util.List;
 
 import process.parser.dto.Chain;
 import process.parser.dto.html.HtmlElement;
-import process.parser.dto.html.TagAttribute;
+import process.parser.dto.html.TagElement;
+import process.parser.dto.html.TextElement;
 
 public class HtmlParser {
+    private static final String REGEX_ALPHA_NUMERIC = "[A-Za-z0-9]";
 
-    public Chain<HtmlElement> parse(String string) throws ParseException {
-        Chain<HtmlElement> firstChain = null;
-        Chain<HtmlElement> previousChain = null;
+    public List<HtmlElement> parse(String htmlText) throws ParseException {
+        List<HtmlElement> rootContent = new ArrayList<>();
 
-        Modes mode = Modes.Free;
-        StringBuilder tag = new StringBuilder();
-        StringBuilder content = new StringBuilder();
-        HtmlElement element = null;
-        Stack<String> tagHierarchy = new Stack<>();
-        for (int i = 0; i < string.length(); i++) {
-            String symbol = string.substring(i, i + 1);
+        if (htmlText == null) {
+            return rootContent;
+        }
 
-            switch (mode) {
+        StringBuilder buffer = new StringBuilder();
+        TagElement currentTag = null;
+        String attributeName = null;
+        List<HtmlElement> currentContent = rootContent;
+        ParsingModes parsingMode = ParsingModes.Start;
+        for (int i = 0; i < htmlText.length(); i++) {
+            String symbol = htmlText.substring(i, i + 1);
 
-            case Free:
-                if (symbol.equals("<")) {
-                    mode = Modes.TagNameStart;
-                    tag = new StringBuilder();
-                }
-                break;
+            switch (parsingMode) {
 
-            case TagNameStart:
-                if (symbol.equals("/")) {
-                    mode = Modes.CloseTagName;
+            case Start:
+                if ("<".equals(symbol)) {
+                    parsingMode = ParsingModes.ParsingOpeningTag;
                 } else {
-                    mode = Modes.OpeningTagName;
-                    tag.append(symbol);
+                    parsingMode = ParsingModes.ParsingText;
+                    buffer.append(symbol);
                 }
                 break;
 
-            case OpeningTagName:
-                if (symbol.equals(">")) {
-                    if ("br".equals(tag.toString()) && tagHierarchy.size() == 0) {
-                        element = createHtmlElement(tag);
-                        previousChain = addElementToChain(element, previousChain);
-                        if (firstChain == null) {
-                            firstChain = previousChain;
-                        }
+            case ParsingText:
+                if ("<".equals(symbol)) {
+                    createTextElement(buffer, currentContent);
 
-                        mode = Modes.Free;
-                        break;
-                    }
-                    // Saving TagName without attributes
-                    tagHierarchy.push(tag.toString().split(" ")[0]);
+                    parsingMode = ParsingModes.ParsingOpeningTag;
+                    buffer = new StringBuilder();
+                } else {
+                    buffer.append(symbol);
+                }
+                break;
 
-                    if (tagHierarchy.size() > 1) {
-                        content.append("<").append(tag).append(">");
-                        mode = Modes.TagContent;
-                        break;
+            case ParsingOpeningTag:
+                if ("/".equals(symbol)) {
+                    if (buffer.length() > 0) {
+                        // Creating New TagElememnt
+                        currentTag = createTagElement(currentTag, buffer.toString());
+                        currentTag.setParentContent(currentContent);
+                        currentContent.add(currentTag);
+
+                        // Replacing current Content with new child Tag Content
+                        currentContent = currentTag.getContent();
+
+                        parsingMode = ParsingModes.ParsingEmptyTag;
+                        buffer = new StringBuilder();
                     } else {
-                        element = createHtmlElement(tag);
+                        parsingMode = ParsingModes.ParsingClosingTag;
+                    }
+                } else if (">".equals(symbol)) {
+                    if (buffer.length() == 0) {
+                        throw new ParseException("Empty opening Tag at: " + i, i);
+                    }
 
-                        previousChain = addElementToChain(element, previousChain);
-                        if (firstChain == null) {
-                            firstChain = previousChain;
-                        }
+                    // Creating New TagElememnt
+                    currentTag = createTagElement(currentTag, buffer.toString());
+                    currentTag.setParentContent(currentContent);
+                    currentContent.add(currentTag);
 
-                        mode = Modes.TagContent;
-                        content = new StringBuilder();
+                    // Replacing current Content with new child Tag Content
+                    currentContent = currentTag.getContent();
+
+                    parsingMode = ParsingModes.Start;
+                    buffer = new StringBuilder();
+                } else if (symbol.matches(REGEX_ALPHA_NUMERIC)) {
+                    buffer.append(symbol);
+                } else if (" ".equals(symbol)) {
+                    if (buffer.length() > 0) {
+                        // Creating New TagElememnt
+                        currentTag = createTagElement(currentTag, buffer.toString());
+                        currentTag.setParentContent(currentContent);
+                        currentContent.add(currentTag);
+
+                        // Replacing current Content with new child Tag Content
+                        currentContent = currentTag.getContent();
+
+                        parsingMode = ParsingModes.ParsingAttributeName;
+                        buffer = new StringBuilder();
                     }
                 } else {
-                    tag.append(symbol);
+                    throw new ParseException("Illegal Symbol: " + symbol + " at " + i, i);
                 }
                 break;
 
-            case CloseTagName:
-                if (symbol.equals(">")) {
-                    boolean found = false;
-
-                    while (tagHierarchy.size() > 0) {
-                        String storedTag = tagHierarchy.pop();
-                        if (storedTag.equals(tag.toString())) {
-                            found = true;
-                            break;
-                        }
+            case ParsingAttributeName:
+                if (" ".equals(symbol)) {
+                    if (buffer.length() > 0) {
+                        parsingMode = ParsingModes.ParsingForAssignOrNewAttribute;
                     }
-
-                    if (!found) {
-                        String message = "Main Tag \"" + element + "\" was not properly closed";
-                        throw new ParseException(message, string.length());
+                } else if ("=".equals(symbol)) {
+                    attributeName = buffer.toString();
+                    parsingMode = ParsingModes.ParsingAttributeValue;
+                    buffer = new StringBuilder();
+                } else if ("/".equals(symbol)) {
+                    if (buffer.length() > 0) {
+                        currentTag.setAttribute(buffer.toString(), buffer.toString());
                     }
+                    parsingMode = ParsingModes.ParsingEmptyTag;
+                    buffer = new StringBuilder();
+                } else if (">".equals(symbol)) {
+                    if (buffer.length() > 0) {
+                        currentTag.setAttribute(buffer.toString(), buffer.toString());
+                    }
+                    parsingMode = ParsingModes.Start;
+                    buffer = new StringBuilder();
+                } else if (symbol.matches(REGEX_ALPHA_NUMERIC)) {
+                    buffer.append(symbol);
+                } else {
+                    throw new ParseException("Illegal symbol: " + symbol, i);
+                }
+                break;
 
-                    if (tagHierarchy.size() == 0) {
-                        element.setContent(content.toString());
-                        mode = Modes.Free;
+            case ParsingForAssignOrNewAttribute:
+                if ("=".equals(symbol)) {
+                    attributeName = buffer.toString();
+                    parsingMode = ParsingModes.ParsingAttributeValue;
+                    buffer = new StringBuilder();
+                } else if (">".equals(symbol)) {
+                    attributeName = buffer.toString();
+                    currentTag.setAttribute(attributeName, attributeName);
+
+                    parsingMode = ParsingModes.Start;
+                    buffer = new StringBuilder();
+                } else if (symbol.matches(REGEX_ALPHA_NUMERIC)) {
+                    attributeName = buffer.toString();
+                    currentTag.setAttribute(attributeName, attributeName);
+                    parsingMode = ParsingModes.ParsingAttributeName;
+                    buffer = new StringBuilder();
+                    buffer.append(symbol);
+                } else {
+                    throw new ParseException("Illegal symbol: " + symbol + " at " + i, i);
+                }
+                break;
+
+            case ParsingAttributeValue:
+                if ("\"".equals(symbol)) {
+                    parsingMode = ParsingModes.ParsingAttributeValueQuoteOpen;
+                } else if (" ".equals(symbol)) {
+                    if (buffer.length() > 0) {
+                        String attributeValue = buffer.toString();
+                        currentTag.setAttribute(attributeName, attributeValue);
+                        parsingMode = ParsingModes.ParsingAttributeName;
+                        buffer = new StringBuilder();
+                    }
+                } else if ("\\".equals(symbol)) {
+                    parsingMode = ParsingModes.ParsingAttributeValueEscaped;
+                } else if (">".equals(symbol)) {
+                    if (buffer.length() > 0) {
+                        String attributeValue = buffer.toString();
+                        currentTag.setAttribute(attributeName, attributeValue);
+                        parsingMode = ParsingModes.Start;
+                        buffer = new StringBuilder();
                     } else {
-                        content.append("</").append(tag).append(">");
-                        mode = Modes.TagContent;
+                        throw new ParseException("Illegal symbol " + symbol + " at " + i, i);
                     }
                 } else {
-                    tag.append(symbol);
+                    buffer.append(symbol);
                 }
                 break;
 
-            case TagContent:
-                if (symbol.equals("<")) {
-                    mode = Modes.TagNameStart;
-                    tag = new StringBuilder();
+            case ParsingAttributeValueQuoteOpen:
+                if ("\\".equals(symbol)) {
+                    parsingMode = ParsingModes.ParsingAttributeValueQuoteOpenEscaped;
+                } else if ("\"".equals(symbol)) {
+                    currentTag.setAttribute(attributeName, buffer.toString());
+                    parsingMode = ParsingModes.ParsingAttributeName;
+                    buffer = new StringBuilder();
                 } else {
-                    content.append(symbol);
+                    buffer.append(symbol);
+                }
+                break;
+
+            case ParsingAttributeValueQuoteOpenEscaped:
+                buffer.append(symbol);
+                parsingMode = ParsingModes.ParsingAttributeValueQuoteOpen;
+                break;
+
+            case ParsingAttributeValueEscaped:
+                buffer.append(symbol);
+                parsingMode = ParsingModes.ParsingAttributeValue;
+                break;
+
+            case ParsingEmptyTag:
+                if (">".equals(symbol)) {
+                    currentContent = currentTag.getParentContent();
+                    currentTag = currentTag.getParentTag();
+
+                    parsingMode = ParsingModes.Start;
+                    buffer = new StringBuilder();
+                }
+                break;
+
+            case ParsingClosingTag:
+                if (">".equals(symbol)) {
+                    if (currentTag == null) {
+                        throw new ParseException("Closing non-existing Tag: " + buffer, i);
+                    }
+
+                    while (currentTag != null && !buffer.toString().trim().equals(currentTag.getName())) {
+                        currentContent = currentTag.getParentContent();
+
+                        List<HtmlElement> childContent = currentTag.getContent();
+                        currentContent.addAll(childContent);
+                        currentTag.clearContent();
+
+                        currentTag = currentTag.getParentTag();
+                    }
+
+                    currentContent = currentTag.getParentContent();
+                    currentTag = currentTag.getParentTag();
+
+                    parsingMode = ParsingModes.Start;
+                    buffer = new StringBuilder();
+                } else if (" ".equals(symbol)) {
+                    // Just skip space symbol inside close tag definition
+                } else {
+                    buffer.append(symbol);
                 }
                 break;
 
             default:
-                break;
+                throw new IllegalStateException("Illegal Parsing State: " + parsingMode);
             }
         }
 
-        return firstChain;
-    }
-
-    private HtmlElement createHtmlElement(StringBuilder tag) {
-        HtmlElement element = new HtmlElement();
-
-        String[] attributes = tag.toString().split(" ");
-        String tagName = attributes[0];
-        element.setTagName(tagName);
-
-        for (int i = 1; i < attributes.length; i++) {
-            String attribute = attributes[i];
-
-            String[] attributeParts = attribute.split("=");
-            String attributeName = attributeParts[0];
-            String attributeValue = attributeParts[1].replaceAll("\"", "");
-
-            TagAttribute tagAttribute = new TagAttribute();
-            tagAttribute.setName(attributeName);
-            tagAttribute.setValue(attributeValue);
-
-            element.getAttributes().put(attributeName, tagAttribute);
+        if (parsingMode == ParsingModes.ParsingText && buffer.length() > 0) {
+            createTextElement(buffer, rootContent);
         }
 
-        return element;
+        // Tags, which were never closed
+        while (currentTag != null) {
+            currentContent = currentTag.getParentContent();
+
+            List<HtmlElement> childContent = currentTag.getContent();
+            currentContent.addAll(childContent);
+            currentTag.clearContent();
+
+            currentTag = currentTag.getParentTag();
+        }
+
+        return rootContent;
     }
 
-    private Chain<HtmlElement> addElementToChain(HtmlElement element, Chain<HtmlElement> currentChain) {
-        Chain<HtmlElement> newChain = new Chain<>(element);
-        newChain.linkPrevious(currentChain);
-        return newChain;
+    private void createTextElement(StringBuilder buffer, List<HtmlElement> content) {
+        TextElement textElement = new TextElement();
+        textElement.setValue(buffer.toString());
+        content.add(textElement);
     }
 
-    public enum Modes {
-        Free, TagNameStart, CloseTagName, OpeningTagName, TagContent
+    private TagElement createTagElement(TagElement parentTag, String tagName) {
+        TagElement tagElement = new TagElement();
+        tagElement.setParentTag(parentTag);
+        tagElement.setName(tagName);
+
+        return tagElement;
+    }
+
+    private enum ParsingModes {
+        Start, ParsingText, ParsingOpeningTag, ParsingOpeningTagName, ParsingEmptyTag, ParsingClosingTag,
+        ParsingAttributeName, ParsingForAssignOrNewAttribute, ParsingAttributeValue, ParsingAttributeValueQuoteOpen,
+        ParsingAttributeValueQuoteOpenEscaped, ParsingAttributeValueEscaped
+    }
+
+    public Chain<HtmlElement> toChain(List<HtmlElement> elements) {
+        Chain<HtmlElement> firstChain = null;
+        Chain<HtmlElement> previousChain = null;
+
+        for (int i = 0; i < elements.size(); i++) {
+            HtmlElement element = elements.get(i);
+            Chain<HtmlElement> currentChain = new Chain<>(element);
+            currentChain.linkPrevious(previousChain);
+
+            if (firstChain == null) {
+                firstChain = currentChain;
+            }
+
+            previousChain = currentChain;
+        }
+
+        return firstChain;
     }
 }

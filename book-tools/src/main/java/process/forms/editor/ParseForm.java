@@ -9,6 +9,7 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -39,6 +40,9 @@ public class ParseForm {
     private Button resetButton;
     @FXML
     private Button deleteButton;
+
+    @FXML
+    private CheckBox wrapTextCheckBox;
 
     @FXML
     private TextArea sourceField;
@@ -136,5 +140,15 @@ public class ParseForm {
         }
 
         applicationContext.fireEvent(ApplicationEvents.DeleteSelectedBookElement, null);
+    }
+
+    @FXML
+    private void handleWrapTextToggle() {
+        boolean wrapText = wrapTextCheckBox.isSelected();
+
+        sourceField.setWrapText(wrapText);
+        transformationField.setWrapText(wrapText);
+        transformedField.setWrapText(wrapText);
+        contentField.setWrapText(wrapText);
     }
 }

@@ -12,7 +12,6 @@ import process.parser.dto.Command;
 import process.parser.dto.Command.Condition;
 import process.parser.dto.Command.Positions;
 import process.parser.dto.Variable;
-import process.parser.dto.html.TagAttribute;
 
 public class CommandParser {
 
@@ -32,7 +31,7 @@ public class CommandParser {
             return null;
         }
 
-        Command command = new Command();
+        Command command = new Command(commandText);
 
         String[] commandParts = commandText.split("->");
         String conditionPart = commandParts[0].trim();
@@ -115,27 +114,22 @@ public class CommandParser {
         if (conditionParts.length > 1) {
             for (int i = 1; i < conditionParts.length; i++) {
                 String tagAttributes = conditionParts[i];
-                TagAttribute tagAttribute = parseAttribute(tagAttributes);
-                condition.getAttributes().put(tagAttribute.getName(), tagAttribute);
+                parseAttribute(tagAttributes, condition);
             }
         }
     }
 
-    private TagAttribute parseAttribute(String tagAttributeText) {
-        TagAttribute attribute = new TagAttribute();
-
+    private void parseAttribute(String tagAttributeText, Condition condition) {
         String[] attributeParts = tagAttributeText.split("=");
 
         String attributeName = attributeParts[0];
-        attribute.setName(attributeName);
 
         String attributeValue = attributeParts[1];
         if (attributeValue.length() >= 2 && attributeValue.startsWith("\"") && attributeValue.endsWith("\"")) {
             attributeValue = attributeValue.substring(1, attributeValue.length() - 1);
         }
-        attribute.setValue(attributeValue);
 
-        return attribute;
+        condition.setAttributeValue(attributeName, attributeValue);
     }
 
     private List<Action> parseActions(String actionsText) {

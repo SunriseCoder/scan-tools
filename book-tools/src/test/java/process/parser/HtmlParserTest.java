@@ -1,103 +1,143 @@
 package process.parser;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.text.ParseException;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import process.parser.dto.Chain;
 import process.parser.dto.html.HtmlElement;
+import process.parser.dto.html.TagElement;
+import process.parser.dto.html.TextElement;
 
 public class HtmlParserTest {
     private HtmlParser parser;
+    private HtmlRenderer renderer;
 
     @Before
     public void beforeTest() {
         parser = new HtmlParser();
+        renderer = new HtmlRenderer();
     }
 
     @Test
-    public void testParseEmptyTag() throws ParseException {
-        Chain<HtmlElement> elements = parser.parse("<span class=\"fontstyle13\"></span>");
-        assertNull(elements.getNextChain());
+    public void testParseNull() throws ParseException {
+        List<HtmlElement> content = parser.parse(null);
 
-        HtmlElement element = elements.getValue();
-        assertEquals("", element.getContent());
-        assertTrue(element.isEmpty());
-
-        assertEquals("fontstyle13", element.getAttributeValue("class"));
-        assertFalse(element.containsAttribute("style"));
+        assertNotNull(content);
+        assertEquals(0, content.size());
     }
 
     @Test
-    public void testParseFullTag() throws ParseException {
-        Chain<HtmlElement> elements = parser.parse("<span class=\"fontstyle15\" style=\"font-size:12pt;\">Content<br>Text</span>");
-        assertNull(elements.getNextChain());
+    public void testParseEmptyText() throws ParseException {
+        List<HtmlElement> content = parser.parse("");
 
-        HtmlElement element = elements.getValue();
-        assertEquals("Content<br>Text", element.getContent());
-        assertFalse(element.isEmpty());
+        assertNotNull(content);
+        assertEquals(0, content.size());
+    }
 
-        assertEquals("fontstyle15", element.getAttributeValue("class"));
-        assertEquals("font-size:12pt;", element.getAttributeValue("style"));
+    @Test(expected = ParseException.class)
+    public void testEmptyTagError() throws ParseException {
+        parser.parse("<>");
     }
 
     @Test
-    public void testMultipleTags() throws ParseException {
-        Chain<HtmlElement> elements = parser.parse("<span>Content1</span><span>Content2</span>");
-        assertNotNull(elements.getNextChain());
+    public void testParseJustText() throws ParseException {
+        List<HtmlElement> content = parser.parse("Text");
 
-        HtmlElement element1 = elements.getValue();
-        assertEquals("Content1", element1.getContent());
+        assertNotNull(content);
+        assertEquals(1, content.size());
 
-        elements = elements.getNextChain();
-        assertNull(elements.getNextChain());
+        HtmlElement element1 = content.get(0);
+        assertTrue(element1 instanceof TextElement);
 
-        HtmlElement element2 = elements.getValue();
-        assertEquals("Content2", element2.getContent());
+        TextElement text1 = (TextElement) element1;
+        assertEquals("Text", text1.getValue());
+        assertNull(text1.getParentContent());
+        assertNull(text1.getParentTag());
+    }
+
+    @Test
+    public void testEmptyTag() throws ParseException {
+        List<HtmlElement> content = parser.parse("<span />");
+
+        assertEquals(1, content.size());
+
+        HtmlElement element1 = content.get(0);
+        assertTrue(element1 instanceof TagElement);
+
+        TagElement tag1 = (TagElement) element1;
+        assertEquals("span", tag1.getName());
+        assertEquals(0, tag1.getAttributes().size());
+        assertEquals(0, tag1.getContent().size());
+    }
+
+    @Test
+    public void testTagWithSpaces() throws ParseException {
+        List<HtmlElement> content = parser.parse(" < span > < / span > ");
+
+        assertEquals(3, content.size());
+
+        assertTrue(content.get(0) instanceof TextElement);
+        assertEquals(" ", ((TextElement) content.get(0)).getValue());
+
+        assertTrue(content.get(1) instanceof TagElement);
+        TagElement tag = (TagElement) content.get(1);
+        assertEquals("span", tag.getName());
+        assertEquals(0, tag.getAttributes().size());
+        assertEquals(1, tag.getContent().size());
+        assertTrue(tag.getContent().get(0) instanceof TextElement);
+        assertEquals(" ", ((TextElement) tag.getContent().get(0)).getValue());
+
+        assertTrue(content.get(2) instanceof TextElement);
+        assertEquals(" ", ((TextElement) content.get(2)).getValue());
+    }
+
+    @Test
+    public void testParseTagWithAttributes() throws ParseException {
+        List<HtmlElement> content = parser.parse("<tag attr=\"value\" />");
+
+        assertEquals(1, content.size());
+
+        HtmlElement element1 = content.get(0);
+        assertTrue(element1 instanceof TagElement);
+
+        TagElement tag1 = (TagElement) element1;
+        assertEquals("tag", tag1.getName());
+        assertEquals(0, tag1.getContent().size());
+        assertEquals(1, tag1.getAttributes().size());
+        assertEquals("value", tag1.getAttributeValue("attr"));
+    }
+
+    @Test
+    public void testParseComplexStructures() throws ParseException {
+        complexTest(" <span at=\"atv\" v2> <div> <br /> </div> </span> ");
+        complexTest("<span><br></span>", "<span><br /></span>");
+        complexTest("<span><br><br><br></span>", "<span><br /><br /><br /></span>");
+        complexTest(" < span at = atv v2 > < div/>< / span >", " <span at=\"atv\" v2> <div /></span>");
+        complexTest("<a><b><c>", "<a /><b /><c />");
+        complexTest("<a a=1><b b=2>", "<a a=\"1\" /><b b=\"2\" />");
+    }
+
+    private void complexTest(String sourceText) throws ParseException {
+        complexTest(sourceText, sourceText);
+    }
+
+    private void complexTest(String sourceText, String expectedText) throws ParseException {
+        List<HtmlElement> parsedContent = parser.parse(sourceText);
+
+        String renderedText = renderer.render(parsedContent);
+
+        assertEquals(expectedText, renderedText);
     }
 
     @Test(expected = Exception.class)
     public void testWrongClosingTag() throws ParseException {
         parser.parse("<span>Content1</wrong>");
-    }
-
-    @Test
-    public void testParseTagWithNestedTag() throws ParseException {
-        Chain<HtmlElement> elements = parser.parse("<span>Content1<b>Content2</b></span>");
-        assertNull(elements.getNextChain());
-
-        HtmlElement element1 = elements.getValue();
-        assertEquals("span", element1.getTagName());
-        assertEquals("Content1<b>Content2</b>", element1.getContent());
-    }
-
-    @Test
-    public void testParseNonClosedBrBetweenTags() throws ParseException {
-        Chain<HtmlElement> elements = parser.parse("<span>Content1</span><br><span>Content2</span>");
-
-        HtmlElement element1 = elements.getValue();
-        assertEquals("span", element1.getTagName());
-        assertEquals("Content1", element1.getContent());
-
-        elements = elements.getNextChain();
-        assertNotNull(elements);
-        HtmlElement element2 = elements.getValue();
-        assertEquals("br", element2.getTagName());
-        assertNull(element2.getContent());
-
-        elements = elements.getNextChain();
-        assertNotNull(elements);
-        HtmlElement element3 = elements.getValue();
-        assertEquals("span", element3.getTagName());
-        assertEquals("Content2", element3.getContent());
-
-        assertNull(elements.getNextChain());
     }
 }

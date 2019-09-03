@@ -19,4 +19,9 @@ public class StringUtilsTest {
         assertEquals("text", StringUtils.trimEndSymbols("text\n", "\n"));
         assertEquals("text", StringUtils.trimEndSymbols("text\n\n\n", "\n"));
     }
+
+    @Test
+    public void testToCamelCase() {
+        assertEquals("Just Random Text For Test", StringUtils.toCamelCase("JUst Random tExt foR TesT"));
+    }
 }

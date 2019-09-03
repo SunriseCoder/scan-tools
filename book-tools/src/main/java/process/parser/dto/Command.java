@@ -1,17 +1,25 @@
 package process.parser.dto;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import process.parser.dto.html.TagAttribute;
+import java.util.TreeMap;
 
 public class Command {
+    private String sourceText;
     private Map<Positions, Condition> conditions;
     private List<Action> actions;
 
-    public Command() {
-        conditions = new HashMap<>();
+    public Command(String sourceText) {
+        this.sourceText = sourceText;
+        conditions = new TreeMap<>();
+    }
+
+    public String getSourceText() {
+        return sourceText;
+    }
+
+    public void setSourceText(String sourceText) {
+        this.sourceText = sourceText;
     }
 
     public Map<Positions, Condition> getConditions() {
@@ -35,13 +43,18 @@ public class Command {
         this.actions = actions;
     }
 
+    @Override
+    public String toString() {
+        return sourceText;
+    }
+
     public static class Condition {
         private Positions position;
         private String tagName;
-        private Map<String, TagAttribute> attributes;
+        private Map<String, String> attributes;
 
         public Condition() {
-            attributes = new HashMap<>();
+            attributes = new TreeMap<>();
         }
 
         public Positions getPosition() {
@@ -60,11 +73,11 @@ public class Command {
             this.tagName = tagName;
         }
 
-        public Map<String, TagAttribute> getAttributes() {
+        public Map<String, String> getAttributes() {
             return attributes;
         }
 
-        public void setAttributes(Map<String, TagAttribute> attributes) {
+        public void setAttributes(Map<String, String> attributes) {
             this.attributes = attributes;
         }
 
@@ -74,9 +87,12 @@ public class Command {
         }
 
         public String getAttributeValue(String name) {
-            TagAttribute attribute = attributes.get(name);
-            String attributeValue = attribute == null ? null : attribute.getValue();
+            String attributeValue = attributes.get(name);
             return attributeValue;
+        }
+
+        public void setAttributeValue(String name, String value) {
+            attributes.put(name, value);
         }
     }
 
