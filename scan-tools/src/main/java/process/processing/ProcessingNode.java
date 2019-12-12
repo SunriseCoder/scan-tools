@@ -14,6 +14,7 @@ import process.processing.orientation.OrientationNode;
 import process.processing.render.RenderNode;
 import process.processing.reorder.ReorderNode;
 import process.processing.rotateAndCrop.RotateAndCropNode;
+import process.processing.split.SplitNode;
 import utils.FileUtils;
 import utils.ThreadUtils;
 
@@ -51,6 +52,12 @@ public class ProcessingNode {
         Node rotateAndCropNode = rotateAndCrop.init(applicationContext);
         GridPane.setRowIndex(rotateAndCropNode, rowIndex++);
         processingTabGridPane.getChildren().add(rotateAndCropNode);
+
+        // Split
+        SplitNode split = new SplitNode();
+        Node splitNode = split.init(applicationContext);
+        GridPane.setRowIndex(splitNode, rowIndex++);
+        processingTabGridPane.getChildren().add(splitNode);
 
         // Reorder
         ReorderNode prepare = new ReorderNode();

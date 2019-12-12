@@ -1,4 +1,4 @@
-package process.processing.reorder;
+package process.processing.split;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -16,15 +16,15 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ProgressBar;
 import process.context.ApplicationContext;
 import process.processing.AbstractNode;
-import processing.images.reordering.AbstractReorderer;
-import processing.images.reordering.Reordering4PagesOn1SheetFromMiddle;
+import processing.images.split.AbstractSplitter;
+import processing.images.split.Split2PagesOn1ImageHorizontally;
 import utils.FileUtils;
 
-public class ReorderNode extends AbstractNode {
+public class SplitNode extends AbstractNode {
     private ApplicationContext applicationContext;
 
     @FXML
-    private ComboBox<ReorderingMethods> reorderingComboBox;
+    private ComboBox<SplitMethods> splitComboBox;
 
     @FXML
     private ProgressBar progressBar;
@@ -38,16 +38,16 @@ public class ReorderNode extends AbstractNode {
     }
 
     public void initialize() throws Exception {
-        initComboBox(reorderingComboBox, ReorderingMethodsListCell.class, ReorderingMethods.values());
+        initComboBox(splitComboBox, SplitMethodsListCell.class, SplitMethods.values());
     }
 
     @FXML
     private void startProcessing() throws Exception {
-        Thread thread = new Thread(new PrepareTask());
+        Thread thread = new Thread(new SplitTask());
         thread.start();
     }
 
-    private class PrepareTask implements Runnable {
+    private class SplitTask implements Runnable {
 
         @Override
         public void run() {
@@ -55,55 +55,65 @@ public class ReorderNode extends AbstractNode {
                 // TODO Lock Start Button before start and unlock after job finished
                 // TODO Implement Cancel Button (maybe same button, but change caption)
                 runWithExceptions();
-                Platform.runLater(() -> applicationContext.showMessage("Prepare Images is done"));
+                Platform.runLater(() -> applicationContext.showMessage("Split Images is done"));
             } catch (Exception e) {
-                Platform.runLater(() -> applicationContext.showError("Error due to Prepare Images", e));
+                Platform.runLater(() -> applicationContext.showError("Error due to Split Images", e));
             }
         }
 
         private void runWithExceptions() throws Exception {
-            ReorderingMethods reorderingMethod = reorderingComboBox.getSelectionModel().getSelectedItem();
+            SplitMethods splitMethod = splitComboBox.getSelectionModel().getSelectedItem();
 
-            if (reorderingMethod == null) {
+            if (splitMethod == null) {
                 return;
             }
 
-            AbstractReorderer reorderer = reorderingMethod.cl.newInstance();
+            AbstractSplitter splitter = splitMethod.cl.newInstance();
 
             File inputFolder = applicationContext.getWorkFolder();
-            File outputFolder = new File(inputFolder, "prepared");
+            File outputFolder = new File(inputFolder, "splitted");
             outputFolder.mkdir();
 
             File[] files = inputFolder.listFiles(new FilenameFilterImages());
             int amountOfImages = files.length;
 
             for (int i = 0; i < amountOfImages; i++) {
-                int sourceIndex = i;
-                int destinationIndex = i;
-
-                sourceIndex = reorderer.getReorderedPageNumber(sourceIndex, amountOfImages);
-
-                File sourceFile = files[sourceIndex];
+                File sourceFile = files[i];
                 BufferedImage image = ImageIO.read(sourceFile);
 
-                String outputFileName = files[destinationIndex].getName();
-                File outputFile = new File(outputFolder, outputFileName);
-                String formatName = FileUtils.getFileExtension(outputFileName);
-                ImageIO.write(image, formatName, outputFile);
+                BufferedImage[] splittedImages = splitter.split(image);
+
+                for (int j = 0; j < splittedImages.length; j++) {
+                    BufferedImage splittedImage = splittedImages[j];
+
+                    saveImageToFile(outputFolder, sourceFile.getName(), splittedImage, j);
+                }
 
                 progress = (double) (i + 1) / amountOfImages;
                 Platform.runLater(new UpdateProgressTask());
             }
         }
+
+        public void saveImageToFile(File outputFolder, String sourceFileName, BufferedImage image, int index) throws IOException {
+            // Generating Output Filename
+            String outputFileName = FileUtils.getFileName(sourceFileName);
+            outputFileName += "-" + (index + 1);
+            outputFileName += "." + FileUtils.getFileExtension(sourceFileName);
+
+            // Saving Image
+            File outputFile = new File(outputFolder, outputFileName);
+            String formatName = FileUtils.getFileExtension(outputFileName);
+            ImageIO.write(image, formatName, outputFile);
+        }
     }
 
-    public enum ReorderingMethods {
-        Method4PagesOn1SheetFromMiddle("4 pages, from middle", Reordering4PagesOn1SheetFromMiddle.class);
+    public enum SplitMethods {
+        Method2PagesOn1ImageHorizontally("2 pages on one Image horizontally", Split2PagesOn1ImageHorizontally.class);
 
         private String text;
-        private Class<? extends AbstractReorderer> cl;
+        private Class<? extends AbstractSplitter> cl;
 
-        private ReorderingMethods(String text, Class<? extends AbstractReorderer> cl) {
+        private SplitMethods(String text, Class<? extends AbstractSplitter> cl) {
             this.text = text;
             this.cl = cl;
         }
@@ -112,14 +122,14 @@ public class ReorderNode extends AbstractNode {
             return text;
         }
 
-        public Class<? extends AbstractReorderer> getCl() {
+        public Class<? extends AbstractSplitter> getCl() {
             return cl;
         }
     }
 
-    public static class ReorderingMethodsListCell extends ListCell<ReorderingMethods> {
+    public static class SplitMethodsListCell extends ListCell<SplitMethods> {
         @Override
-        protected void updateItem(ReorderingMethods item, boolean empty) {
+        protected void updateItem(SplitMethods item, boolean empty) {
             super.updateItem(item, empty);
             setText(item == null ? null : item.getText());
         }
