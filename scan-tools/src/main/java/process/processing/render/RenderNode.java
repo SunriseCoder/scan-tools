@@ -3,11 +3,9 @@ package process.processing.render;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import dto.Point;
 import filters.FilenameFilterImages;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -20,16 +18,11 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import process.context.ApplicationContext;
+import process.handlers.SmoothFilters;
 import process.processing.AbstractNode;
 import processing.images.binarization.ImageBinarization;
-import processing.images.crop.AbstractImageCrop;
-import processing.images.crop.RotationImageCrop;
-import processing.images.crop.SimpleCrop;
-import processing.images.filters.AbstractImageFilter;
-import processing.images.filters.BilinearFilter;
 import processing.images.filters.BinarizationFilter;
 import processing.images.filters.ImageFilter;
-import processing.images.filters.RoughFilter;
 import processing.images.merge.ImageMerge;
 import processing.images.resize.ImageResize;
 import utils.FileUtils;
@@ -51,11 +44,6 @@ public class RenderNode extends AbstractNode {
 
     @FXML
     private ComboBox<SmoothFilters> smoothFilterComboBox;
-
-    @FXML
-    private CheckBox imageCropCheckBox;
-    @FXML
-    private ComboBox<ImageCrops> imageCropComboBox;
 
     @FXML
     private CheckBox imageResizeCheckBox;
@@ -93,7 +81,6 @@ public class RenderNode extends AbstractNode {
 
     public void initialize() throws Exception {
         initComboBox(smoothFilterComboBox, SmoothFilterListCell.class, SmoothFilters.values());
-        initComboBox(imageCropComboBox, ImageCropListCell.class, ImageCrops.values());
 
         sourceDPITextField.setText(DEFAULT_RESIZE_SOURCE_DPI);
         targetDPITextField.setText(DEFAULT_RESIZE_TARGET_DPI);
@@ -127,7 +114,6 @@ public class RenderNode extends AbstractNode {
         }
 
         private void runWithExceptions() throws Exception {
-            boolean needCrop = imageCropCheckBox.isSelected();
             boolean needResize = imageResizeCheckBox.isSelected();
             boolean needBinarization = imageBinarizationCheckBox.isSelected();
             boolean needMerge = imageMergeCheckBox.isSelected();
@@ -139,16 +125,9 @@ public class RenderNode extends AbstractNode {
             applicationContext.reloadSelectionBoundaries(applicationContext.getWorkFolder());
 
             SmoothFilters selectedSmoothFilter = smoothFilterComboBox.getSelectionModel().getSelectedItem();
-            ImageCrops selectedImageCrop = imageCropComboBox.getSelectionModel().getSelectedItem();
 
             // Preparing processors
-            ImageFilter smoothFilter = selectedSmoothFilter.cl.newInstance();
-
-            AbstractImageCrop imageCrop = null;
-            if (needCrop) {
-                imageCrop = selectedImageCrop.cl.newInstance();
-                imageCrop.setSmoothFilter(smoothFilter);
-            }
+            ImageFilter smoothFilter = selectedSmoothFilter.getCl().newInstance();
 
             ImageResize resize = null;
             if (needResize) {
@@ -194,25 +173,12 @@ public class RenderNode extends AbstractNode {
             BufferedImage previousImage = null;
             int mergeCounter = 1;
             String fileNameBase = createFileNameBase(files[0].getName());
-            boolean sentNoBoundariesWarning = false;
             progress = 0;
             ThreadUtils.runLater(new UpdateProgressTask());
             for (int i = 0; i < amountOfImages; i++) {
                 File inputFile = files[i];
-                BufferedImage image = ImageIO.read(inputFile);
-
-                // Crop
                 String fileName = inputFile.getName();
-                if (needCrop) {
-                    List<Point> boundaries = applicationContext.getSelectionBoundaries(inputFolder, fileName);
-                    if (boundaries == null) {
-                        if (!sentNoBoundariesWarning) {
-                            applicationContext.showWarning("Not all Images has been Marked Up", null);
-                        }
-                    } else {
-                        image = imageCrop.processImage(image, boundaries);
-                    }
-                }
+                BufferedImage image = ImageIO.read(inputFile);
 
                 // Resize
                 if (needResize) {
@@ -289,49 +255,7 @@ public class RenderNode extends AbstractNode {
         }
     }
 
-    public static enum SmoothFilters {
-        BilinearFilter("Bilinear Filter", BilinearFilter.class),
-        RoughFilter("Rough Filter", RoughFilter.class);
-
-        private String text;
-        private Class<? extends AbstractImageFilter> cl;
-
-        private SmoothFilters(String text, Class<? extends AbstractImageFilter> cl) {
-            this.text = text;
-            this.cl = cl;
-        }
-
-        public String getText() {
-            return text;
-        }
-
-        public Class<? extends AbstractImageFilter> getCl() {
-            return cl;
-        }
-    }
-
-    public static enum ImageCrops {
-        RotationImageCrop("Rotate and crop", RotationImageCrop.class),
-        SimpleImageCrop("Simple crop", SimpleCrop.class);
-
-        private String text;
-        private Class<? extends AbstractImageCrop> cl;
-
-        private ImageCrops(String text, Class<? extends AbstractImageCrop> cl) {
-            this.text = text;
-            this.cl = cl;
-        }
-
-        public String getText() {
-            return text;
-        }
-
-        public Class<? extends AbstractImageCrop> getCl() {
-            return cl;
-        }
-    }
-
-    public static enum ImageMergeMethods {
+    public enum ImageMergeMethods {
         Method1ImageOnFirstPage("1 Image"),
         Method2ImagesOnFirstPage("2 Images");
 
@@ -349,14 +273,6 @@ public class RenderNode extends AbstractNode {
     public static class SmoothFilterListCell extends ListCell<SmoothFilters> {
         @Override
         protected void updateItem(SmoothFilters item, boolean empty) {
-            super.updateItem(item, empty);
-            setText(item == null ? null : item.getText());
-        }
-    }
-
-    public static class ImageCropListCell extends ListCell<ImageCrops> {
-        @Override
-        protected void updateItem(ImageCrops item, boolean empty) {
             super.updateItem(item, empty);
             setText(item == null ? null : item.getText());
         }

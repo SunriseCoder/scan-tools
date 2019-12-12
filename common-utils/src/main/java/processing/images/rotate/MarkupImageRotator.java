@@ -1,4 +1,4 @@
-package processing.images.crop;
+package processing.images.rotate;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -6,49 +6,42 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import dto.Point;
+import processing.images.filters.ImageFilter;
 import utils.MathUtils;
 
-public class RotationImageCrop extends AbstractImageCrop {
-    private BufferedImage sourceImage;
-    private List<Point> selectionBoundaries;
-
-    private double rotationAngle;
+public class MarkupImageRotator extends AbstractImageRotator {
+    private ImageFilter smoothFilter;
 
     @Override
-    public BufferedImage processImage(BufferedImage image, List<Point> boundaries) {
-        sourceImage = image;
-        selectionBoundaries = boundaries;
-        smoothFilter.setImage(sourceImage);
+    public void setSmoothFilter(ImageFilter smoothFilter) {
+        this.smoothFilter = smoothFilter;
+    }
 
-        // Step 1 - Calculating rotation angle by the selection
-        rotationAngle = calculateRotationAngle();
+    @Override
+    public BufferedImage processImage(BufferedImage image, List<Point> markupBoundaries) {
+        smoothFilter.setImage(image);
 
-        // Step 2 - Calculating resolution of new Image
-        NewImageBoundaries newImageBoundaries = calculateNewImageBoundaries();
+        // Calculate Rotation Angle
+        double rotationAngle = calculateRotationAngle(markupBoundaries);
 
-        // Step 3 - Creating empty new Image
+        // Calculating resolution of new Image
+        NewImageBoundaries newImageBoundaries = calculateNewImageBoundaries(image, rotationAngle);
+
+        // Creating empty new Image
         BufferedImage newImage = new BufferedImage(newImageBoundaries.width, newImageBoundaries.height,
                 BufferedImage.TYPE_INT_RGB);
 
-        // Step 4 - Copying all pixels to the newImage
+        // Copying all pixels to the newImage
         copyRotatedPixels(newImage, rotationAngle, newImageBoundaries);
-
-        // Step 5 - Crop rotated Image
-        List<Point> cropBoundaries = rotatePoints(selectionBoundaries, -rotationAngle);
-        // Applying offset
-        cropBoundaries = cropBoundaries.stream()
-            .map(point -> new Point(point.x - newImageBoundaries.minX, point.y - newImageBoundaries.minY))
-            .collect(Collectors.toList());
-        newImage = cropImage(newImage, cropBoundaries);
 
         return newImage;
     }
 
-    private double calculateRotationAngle() {
-        Point cropPoint1 = selectionBoundaries.get(0);
-        Point cropPoint2 = selectionBoundaries.get(1);
-        Point cropPoint3 = selectionBoundaries.get(2);
-        Point cropPoint4 = selectionBoundaries.get(3);
+    private double calculateRotationAngle(List<Point> markupBoundaries) {
+        Point cropPoint1 = markupBoundaries.get(0);
+        Point cropPoint2 = markupBoundaries.get(1);
+        Point cropPoint3 = markupBoundaries.get(2);
+        Point cropPoint4 = markupBoundaries.get(3);
 
         double angle1 = calculateRotationAngleHorizontalEdge(cropPoint1, cropPoint2);
         double angle2 = calculateRotationAngleVerticalEdge(cropPoint2, cropPoint3);
@@ -78,7 +71,25 @@ public class RotationImageCrop extends AbstractImageCrop {
         return angle;
     }
 
-    private NewImageBoundaries calculateNewImageBoundaries() {
+    @Override
+    public List<Point> calculateCropBoundaries(BufferedImage image, List<Point> markupBoundaries) {
+     // Calculate Rotation Angle
+        double rotationAngle = calculateRotationAngle(markupBoundaries);
+
+        // Calculating resolution of new Image
+        NewImageBoundaries newImageBoundaries = calculateNewImageBoundaries(image, rotationAngle);
+
+        // Image Crop Boundaries
+        List<Point> cropBoundaries = rotatePoints(markupBoundaries, -rotationAngle);
+        // Applying offset
+        cropBoundaries = cropBoundaries.stream()
+                .map(point -> new Point(point.x - newImageBoundaries.minX, point.y - newImageBoundaries.minY))
+                .collect(Collectors.toList());
+
+        return cropBoundaries;
+    }
+
+    private NewImageBoundaries calculateNewImageBoundaries(BufferedImage sourceImage, double rotationAngle) {
         NewImageBoundaries result = new NewImageBoundaries();
 
         List<Point> sourceImageBoundaries = new ArrayList<>();
@@ -120,26 +131,6 @@ public class RotationImageCrop extends AbstractImageCrop {
         }
     }
 
-    private BufferedImage cropImage(BufferedImage newImage, List<Point> cropBoundaries) {
-        int minX = (int) Math.floor(cropBoundaries.stream().mapToDouble(point -> point.x).min().getAsDouble());
-        int maxX = (int) Math.ceil(cropBoundaries.stream().mapToDouble(point -> point.x).max().getAsDouble());
-        int minY = (int) Math.floor(cropBoundaries.stream().mapToDouble(point -> point.y).min().getAsDouble());
-        int maxY = (int) Math.ceil(cropBoundaries.stream().mapToDouble(point -> point.y).max().getAsDouble());
-
-        int width = maxX - minX + 1;
-        int height = maxY - minY + 1;
-
-        try {
-            newImage = newImage.getSubimage(minX, minY, width, height);
-        } catch (Exception e) {
-            System.out.println();
-            e.printStackTrace();
-            throw new RuntimeException();
-        }
-
-        return newImage;
-    }
-
     private List<Point> rotatePoints(List<Point> points, double angle) {
         List<Point> result = points.stream().map(point -> rotatePoint(point, angle)).collect(Collectors.toList());
         return result;
@@ -152,7 +143,7 @@ public class RotationImageCrop extends AbstractImageCrop {
         return rotatedPoint;
     }
 
-    static class NewImageBoundaries {
+    private static class NewImageBoundaries {
         public int width;
         public int height;
 

@@ -10,8 +10,10 @@ import javafx.scene.layout.GridPane;
 import process.context.ApplicationContext;
 import process.context.ApplicationEvents;
 import process.processing.actions.ActionsNode;
-import process.processing.prepare.PrepareNode;
+import process.processing.orientation.OrientationNode;
 import process.processing.render.RenderNode;
+import process.processing.reorder.ReorderNode;
+import process.processing.rotateAndCrop.RotateAndCropNode;
 import utils.FileUtils;
 import utils.ThreadUtils;
 
@@ -30,19 +32,36 @@ public class ProcessingNode {
         Parent node = FileUtils.loadFXML(this);
 
         applicationContext.addEventListener(ApplicationEvents.SensorControl, value -> saveButton.setVisible((boolean) value));
+        int rowIndex = 0;
 
+        // Actions
         ActionsNode actions = new ActionsNode();
         Node actionsNode = actions.init(applicationContext);
+        GridPane.setRowIndex(actionsNode, rowIndex++);
         processingTabGridPane.getChildren().add(actionsNode);
 
-        PrepareNode reorder = new PrepareNode();
-        Node reorderNode = reorder.init(applicationContext);
-        GridPane.setRowIndex(reorderNode, 1);
+        // Orientation
+        OrientationNode orientation = new OrientationNode();
+        Node orientationNode = orientation.init(applicationContext);
+        GridPane.setRowIndex(orientationNode, rowIndex++);
+        processingTabGridPane.getChildren().add(orientationNode);
+
+        // Rotate and Crop
+        RotateAndCropNode rotateAndCrop = new RotateAndCropNode();
+        Node rotateAndCropNode = rotateAndCrop.init(applicationContext);
+        GridPane.setRowIndex(rotateAndCropNode, rowIndex++);
+        processingTabGridPane.getChildren().add(rotateAndCropNode);
+
+        // Reorder
+        ReorderNode prepare = new ReorderNode();
+        Node reorderNode = prepare.init(applicationContext);
+        GridPane.setRowIndex(reorderNode, rowIndex++);
         processingTabGridPane.getChildren().add(reorderNode);
 
+        // Render
         RenderNode render = new RenderNode();
         Node renderNode = render.init(applicationContext);
-        GridPane.setRowIndex(renderNode, 2);
+        GridPane.setRowIndex(renderNode, rowIndex++);
         processingTabGridPane.getChildren().add(renderNode);
 
         return node;

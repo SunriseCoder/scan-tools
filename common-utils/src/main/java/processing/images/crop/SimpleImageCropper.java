@@ -5,7 +5,7 @@ import java.util.List;
 
 import dto.Point;
 
-public class SimpleCrop extends AbstractImageCrop {
+public class SimpleImageCropper extends AbstractImageCropper {
 
     @Override
     public BufferedImage processImage(BufferedImage image, List<Point> boundaries) {

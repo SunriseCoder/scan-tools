@@ -41,52 +41,44 @@
                 </Label>
                 <ComboBox fx:id="smoothFilterComboBox" maxWidth="1E308" GridPane.columnIndex="1" GridPane.columnSpan="3" HBox.hgrow="ALWAYS" />
 
-                <!-- Crop Image -->
-                <CheckBox fx:id="imageCropCheckBox" mnemonicParsing="false" selected="true" text="Crop Images:" GridPane.rowIndex="1">
-                    <font>
-                        <Font size="14.0" />
-                    </font>
-                </CheckBox>
-                <ComboBox fx:id="imageCropComboBox" maxWidth="1E308" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="1" HBox.hgrow="ALWAYS" />
-
                 <!-- Resize Image -->
-                <CheckBox fx:id="imageResizeCheckBox" mnemonicParsing="false" selected="true" text="Resize Images:" GridPane.rowIndex="2">
+                <CheckBox fx:id="imageResizeCheckBox" mnemonicParsing="false" selected="true" text="Resize Images:" GridPane.rowIndex="1">
                     <font>
                         <Font size="14.0" />
                     </font>
                 </CheckBox>
-                <Label text="Source DPI:" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="RIGHT" GridPane.rowIndex="2">
+                <Label text="Source DPI:" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="RIGHT" GridPane.rowIndex="1">
                     <font>
                         <Font size="14.0" />
                     </font>
                 </Label>
-                <TextField fx:id="sourceDPITextField" maxWidth="-Infinity" prefWidth="70.0" GridPane.columnIndex="3" GridPane.halignment="RIGHT" GridPane.hgrow="NEVER" GridPane.rowIndex="2" />
-                <Label text="Target DPI:" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="RIGHT" GridPane.rowIndex="3">
+                <TextField fx:id="sourceDPITextField" maxWidth="-Infinity" prefWidth="70.0" GridPane.columnIndex="3" GridPane.halignment="RIGHT" GridPane.hgrow="NEVER" GridPane.rowIndex="1" />
+                <Label text="Target DPI:" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="RIGHT" GridPane.rowIndex="2">
                     <font>
                         <Font size="14.0" />
                     </font>
                 </Label>
-                <TextField fx:id="targetDPITextField" maxWidth="-Infinity" prefWidth="70.0" GridPane.columnIndex="3" GridPane.halignment="RIGHT" GridPane.hgrow="NEVER" GridPane.rowIndex="3" />
+                <TextField fx:id="targetDPITextField" maxWidth="-Infinity" prefWidth="70.0" GridPane.columnIndex="3" GridPane.halignment="RIGHT" GridPane.hgrow="NEVER" GridPane.rowIndex="2" />
 
                 <!-- Binarization -->
-                <CheckBox fx:id="imageBinarizationCheckBox" mnemonicParsing="false" selected="true" text="Binarize Images:" GridPane.rowIndex="4">
+                <CheckBox fx:id="imageBinarizationCheckBox" mnemonicParsing="false" selected="true" text="Binarize Images:" GridPane.rowIndex="3">
                     <font>
                         <Font size="14.0" />
                     </font>
                 </CheckBox>
-                <Label text="Threshold:" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="4">
+                <Label text="Threshold:" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="3">
                     <font>
                         <Font size="14.0" />
                     </font>
                 </Label>
-                <TextField fx:id="thresholdTextField" maxWidth="-Infinity" prefWidth="100.0" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.hgrow="NEVER" GridPane.rowIndex="4" />
+                <TextField fx:id="thresholdTextField" maxWidth="-Infinity" prefWidth="100.0" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.hgrow="NEVER" GridPane.rowIndex="3" />
                 <!-- RGB Weights -->
-                <Label text="Weights:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="5">
+                <Label text="Weights:" GridPane.columnIndex="0" GridPane.halignment="RIGHT" GridPane.rowIndex="4">
                     <font>
                         <Font size="14.0" />
                     </font>
                 </Label>
-                <HBox maxHeight="-Infinity" maxWidth="-Infinity" spacing="5.0" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.halignment="RIGHT" GridPane.rowIndex="5" GridPane.valignment="CENTER">
+                <HBox maxHeight="-Infinity" maxWidth="-Infinity" spacing="5.0" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.halignment="RIGHT" GridPane.rowIndex="4" GridPane.valignment="CENTER">
                     <Label maxHeight="1.7976931348623157E308" text="R: " />
                     <TextField fx:id="weightRedTextField" minWidth="40.0" prefWidth="40.0" />
                     <Label maxHeight="1.7976931348623157E308" text="G: " />
@@ -96,21 +88,21 @@
                 </HBox>
 
                 <!-- Merge Images -->
-                <CheckBox fx:id="imageMergeCheckBox" mnemonicParsing="false" selected="true" text="Merge Images:" GridPane.rowIndex="6">
+                <CheckBox fx:id="imageMergeCheckBox" mnemonicParsing="false" selected="true" text="Merge Images:" GridPane.rowIndex="5">
                     <font>
                         <Font size="14.0" />
                     </font>
                 </CheckBox>
-                <Label text="First Page:" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="6">
+                <Label text="First Page:" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="5">
                     <font>
                         <Font size="14.0" />
                     </font>
                 </Label>
-                <ComboBox fx:id="imageMergeComboBox" maxWidth="1E308" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.hgrow="ALWAYS" GridPane.rowIndex="6" />
+                <ComboBox fx:id="imageMergeComboBox" maxWidth="1E308" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5" />
 
                 <!-- Progress Bar and Process Button -->
-                <ProgressBar fx:id="progressBar" maxWidth="1E308" prefHeight="22.0" progress="0.0" GridPane.columnSpan="3" GridPane.hgrow="ALWAYS" GridPane.rowIndex="7" GridPane.vgrow="ALWAYS" />
-                <Button mnemonicParsing="false" onAction="#startProcessing" prefWidth="70.0" text="Process" GridPane.columnIndex="3" GridPane.hgrow="NEVER" GridPane.rowIndex="7" GridPane.vgrow="NEVER">
+                <ProgressBar fx:id="progressBar" maxWidth="1E308" prefHeight="22.0" progress="0.0" GridPane.columnSpan="3" GridPane.hgrow="ALWAYS" GridPane.rowIndex="6" GridPane.vgrow="ALWAYS" />
+                <Button mnemonicParsing="false" onAction="#startProcessing" prefWidth="70.0" text="Process" GridPane.columnIndex="3" GridPane.hgrow="NEVER" GridPane.rowIndex="6" GridPane.vgrow="NEVER">
                     <font>
                         <Font size="14.0" />
                     </font>
