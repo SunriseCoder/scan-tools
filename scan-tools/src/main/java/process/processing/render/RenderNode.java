@@ -23,7 +23,6 @@ import process.processing.AbstractNode;
 import processing.images.binarization.ImageBinarization;
 import processing.images.filters.BinarizationFilter;
 import processing.images.filters.ImageFilter;
-import processing.images.merge.ImageMerge;
 import processing.images.resize.ImageResize;
 import utils.FileUtils;
 import utils.ThreadUtils;
@@ -64,11 +63,6 @@ public class RenderNode extends AbstractNode {
     private TextField weightBlueTextField;
 
     @FXML
-    private CheckBox imageMergeCheckBox;
-    @FXML
-    private ComboBox<ImageMergeMethods> imageMergeComboBox;
-
-    @FXML
     private ProgressBar progressBar;
 
     private double progress;
@@ -89,8 +83,6 @@ public class RenderNode extends AbstractNode {
         weightRedTextField.setText(DEFAULT_BINARIZATION_WEIGHT_RED);
         weightGreenTextField.setText(DEFAULT_BINARIZATION_WEIGHT_GREEN);
         weightBlueTextField.setText(DEFAULT_BINARIZATION_WEIGHT_BLUE);
-
-        initComboBox(imageMergeComboBox, ImageMergeListCell.class, ImageMergeMethods.values());
     }
 
     @FXML
@@ -116,7 +108,6 @@ public class RenderNode extends AbstractNode {
         private void runWithExceptions() throws Exception {
             boolean needResize = imageResizeCheckBox.isSelected();
             boolean needBinarization = imageBinarizationCheckBox.isSelected();
-            boolean needMerge = imageMergeCheckBox.isSelected();
 
             File inputFolder = applicationContext.getWorkFolder();
             File outputFolder = new File(inputFolder, "rendered");
@@ -156,13 +147,6 @@ public class RenderNode extends AbstractNode {
                 binarization.setColorFilter(binarizationFilter);
             }
 
-            ImageMerge merge = null;
-            ImageMergeMethods mergeMethod = null;
-            if (needMerge) {
-                merge = new ImageMerge();
-                mergeMethod = imageMergeComboBox.getSelectionModel().getSelectedItem();
-            }
-
             File[] files = inputFolder.listFiles(new FilenameFilterImages());
             int amountOfImages = files.length;
             if (amountOfImages == 0) {
@@ -170,9 +154,6 @@ public class RenderNode extends AbstractNode {
                 return;
             }
 
-            BufferedImage previousImage = null;
-            int mergeCounter = 1;
-            String fileNameBase = createFileNameBase(files[0].getName());
             progress = 0;
             ThreadUtils.runLater(new UpdateProgressTask());
             for (int i = 0; i < amountOfImages; i++) {
@@ -190,59 +171,16 @@ public class RenderNode extends AbstractNode {
                     image = binarization.processImage(image);
                 }
 
-                // Merge Images
-                if (needMerge) {
-                    int remainder;
-                    switch (mergeMethod) {
-                        case Method1ImageOnFirstPage:
-                            remainder = 0;
-                            break;
-                        case Method2ImagesOnFirstPage:
-                            remainder = 1;
-                            break;
-                        default:
-                            throw new IllegalArgumentException("Merge Method is not supported: " + mergeMethod);
-                    }
-
-                    if (i % 2 == remainder) {
-                        image = merge.mergeImages(previousImage, image);
-                        saveMergedImage(image, outputFolder, fileNameBase, mergeCounter++);
-                        previousImage = null;
-                    } else {
-                        previousImage = image;
-                    }
-                } else {
-                    // TODO Ask User on the UI
-                    String formatName = needBinarization ? "png" : "bmp";
-                    String outputFileName = FileUtils.getFileName(fileName) + "." + formatName;
-                    File outputFile = new File(outputFolder, outputFileName );
-                    ImageIO.write(image, formatName, outputFile);
-                }
+                // TODO Ask User on the UI
+                String formatName = needBinarization ? "png" : "bmp";
+                String outputFileName = FileUtils.getFileName(fileName) + "." + formatName;
+                File outputFile = new File(outputFolder, outputFileName );
+                ImageIO.write(image, formatName, outputFile);
 
                 // Update Progress
                 progress = (double) (i + 1) / amountOfImages;
                 ThreadUtils.runLater(new UpdateProgressTask());
             }
-
-            if (needMerge && previousImage != null) {
-                BufferedImage image = merge.mergeImages(previousImage, null);
-                saveMergedImage(image, outputFolder, fileNameBase, mergeCounter++);
-            }
-        }
-
-        private String createFileNameBase(String fileName) {
-            String base = FileUtils.getFileName(fileName);
-            base = base.replaceAll("[0-9]+$", "");
-            return base;
-        }
-
-        private void saveMergedImage(BufferedImage image, File outputFolder, String fileNameBase, int counter)
-                throws IOException {
-            // TODO Ask User on UI for the output format
-            String formatName = "png";
-            String mergedFileName = fileNameBase + String.format("%04d", counter) + "." + formatName;
-            File outputFile = new File(outputFolder, mergedFileName);
-            ImageIO.write(image, formatName, outputFile);
         }
     }
 

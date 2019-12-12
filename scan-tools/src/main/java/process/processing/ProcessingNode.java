@@ -10,6 +10,7 @@ import javafx.scene.layout.GridPane;
 import process.context.ApplicationContext;
 import process.context.ApplicationEvents;
 import process.processing.actions.ActionsNode;
+import process.processing.merge.MergeNode;
 import process.processing.orientation.OrientationNode;
 import process.processing.render.RenderNode;
 import process.processing.reorder.ReorderNode;
@@ -70,6 +71,12 @@ public class ProcessingNode {
         Node renderNode = render.init(applicationContext);
         GridPane.setRowIndex(renderNode, rowIndex++);
         processingTabGridPane.getChildren().add(renderNode);
+
+        // Merge
+        MergeNode merge = new MergeNode();
+        Node mergeNode = merge.init(applicationContext);
+        GridPane.setRowIndex(mergeNode, rowIndex++);
+        processingTabGridPane.getChildren().add(mergeNode);
 
         return node;
     }

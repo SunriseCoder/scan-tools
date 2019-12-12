@@ -29,8 +29,6 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <children>
                 <!-- Smooth Filter -->
@@ -87,22 +85,9 @@
                     <TextField fx:id="weightBlueTextField" prefWidth="40" />
                 </HBox>
 
-                <!-- Merge Images -->
-                <CheckBox fx:id="imageMergeCheckBox" mnemonicParsing="false" selected="true" text="Merge Images:" GridPane.rowIndex="5">
-                    <font>
-                        <Font size="14.0" />
-                    </font>
-                </CheckBox>
-                <Label text="First Page:" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="5">
-                    <font>
-                        <Font size="14.0" />
-                    </font>
-                </Label>
-                <ComboBox fx:id="imageMergeComboBox" maxWidth="1E308" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5" />
-
                 <!-- Progress Bar and Process Button -->
-                <ProgressBar fx:id="progressBar" maxWidth="1E308" prefHeight="22.0" progress="0.0" GridPane.columnSpan="3" GridPane.hgrow="ALWAYS" GridPane.rowIndex="6" GridPane.vgrow="ALWAYS" />
-                <Button mnemonicParsing="false" onAction="#startProcessing" prefWidth="70.0" text="Process" GridPane.columnIndex="3" GridPane.hgrow="NEVER" GridPane.rowIndex="6" GridPane.vgrow="NEVER">
+                <ProgressBar fx:id="progressBar" maxWidth="1E308" prefHeight="22.0" progress="0.0" GridPane.columnSpan="3" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5" GridPane.vgrow="ALWAYS" />
+                <Button mnemonicParsing="false" onAction="#startProcessing" prefWidth="70.0" text="Process" GridPane.columnIndex="3" GridPane.hgrow="NEVER" GridPane.rowIndex="5" GridPane.vgrow="NEVER">
                     <font>
                         <Font size="14.0" />
                     </font>
