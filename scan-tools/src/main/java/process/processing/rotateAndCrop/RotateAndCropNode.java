@@ -23,8 +23,6 @@ import process.processing.render.RenderNode.SmoothFilterListCell;
 import processing.images.crop.AbstractImageCropper;
 import processing.images.crop.SimpleImageCropper;
 import processing.images.filters.ImageFilter;
-import processing.images.reordering.AbstractReorderer;
-import processing.images.reordering.Reordering4PagesOn1SheetFromMiddle;
 import processing.images.rotate.AbstractImageRotator;
 import processing.images.rotate.MarkupImageRotator;
 import utils.FileUtils;
@@ -137,26 +135,6 @@ public class RotateAndCropNode extends AbstractNode {
                 progress = (double) (i + 1) / amountOfImages;
                 Platform.runLater(new UpdateProgressTask());
             }
-        }
-    }
-
-    public enum ReorderingMethods {
-        Method4PagesOn1SheetFromMiddle("4 pages, from middle", Reordering4PagesOn1SheetFromMiddle.class);
-
-        private String text;
-        private Class<? extends AbstractReorderer> cl;
-
-        private ReorderingMethods(String text, Class<? extends AbstractReorderer> cl) {
-            this.text = text;
-            this.cl = cl;
-        }
-
-        public String getText() {
-            return text;
-        }
-
-        public Class<? extends AbstractReorderer> getCl() {
-            return cl;
         }
     }
 

@@ -1,6 +1,6 @@
 package processing.images.reordering;
 
-public class Reordering4PagesOn1SheetFromMiddle extends AbstractReorderer {
+public class Reordering4Pages1PerScanFromMiddle extends AbstractReorderer {
 
     @Override
     public int getReorderedPageNumber(int index, int amountOfPages) {

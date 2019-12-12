@@ -12,10 +12,10 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import processing.images.reordering.AbstractReorderer;
-import processing.images.reordering.Reordering4PagesOn1SheetFromMiddle;
+import processing.images.reordering.Reordering4Pages1PerScanFromMiddle;
 
 @RunWith(Parameterized.class)
-public class Reordering4PagesOn1SheetFromMiddleTest {
+public class Reordering4Pages1PerScanFromMiddleTest {
 
     @Parameters
     public static Collection<Object[]> data() {
@@ -31,8 +31,8 @@ public class Reordering4PagesOn1SheetFromMiddleTest {
     private final AbstractReorderer reorderer;
     private final List<Integer> expectedPagesList;
 
-    public Reordering4PagesOn1SheetFromMiddleTest(List<Integer> expectedPagesList) {
-        reorderer = new Reordering4PagesOn1SheetFromMiddle();
+    public Reordering4Pages1PerScanFromMiddleTest(List<Integer> expectedPagesList) {
+        reorderer = new Reordering4Pages1PerScanFromMiddle();
         this.expectedPagesList = expectedPagesList;
     }
 

@@ -1,10 +1,7 @@
 package process.processing.reorder;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-
-import javax.imageio.ImageIO;
 
 import filters.FilenameFilterImages;
 import javafx.application.Platform;
@@ -17,8 +14,10 @@ import javafx.scene.control.ProgressBar;
 import process.context.ApplicationContext;
 import process.processing.AbstractNode;
 import processing.images.reordering.AbstractReorderer;
-import processing.images.reordering.Reordering4PagesOn1SheetFromMiddle;
+import processing.images.reordering.Reordering4Pages1PerScanFromMiddle;
+import processing.images.reordering.Reordering4Pages2PerScanFromBeginning;
 import utils.FileUtils;
+import utils.NumberUtils;
 
 public class ReorderNode extends AbstractNode {
     private ApplicationContext applicationContext;
@@ -71,7 +70,7 @@ public class ReorderNode extends AbstractNode {
             AbstractReorderer reorderer = reorderingMethod.cl.newInstance();
 
             File inputFolder = applicationContext.getWorkFolder();
-            File outputFolder = new File(inputFolder, "prepared");
+            File outputFolder = new File(inputFolder, "reordered");
             outputFolder.mkdir();
 
             File[] files = inputFolder.listFiles(new FilenameFilterImages());
@@ -79,17 +78,15 @@ public class ReorderNode extends AbstractNode {
 
             for (int i = 0; i < amountOfImages; i++) {
                 int sourceIndex = i;
-                int destinationIndex = i;
 
                 sourceIndex = reorderer.getReorderedPageNumber(sourceIndex, amountOfImages);
 
                 File sourceFile = files[sourceIndex];
-                BufferedImage image = ImageIO.read(sourceFile);
 
-                String outputFileName = files[destinationIndex].getName();
+                String outputFileName = "Page-" + NumberUtils.generateNumberByMaxNumber(i + 1, amountOfImages) +
+                        "." + FileUtils.getFileExtension(sourceFile.getName());
                 File outputFile = new File(outputFolder, outputFileName);
-                String formatName = FileUtils.getFileExtension(outputFileName);
-                ImageIO.write(image, formatName, outputFile);
+                FileUtils.copyFile(sourceFile, outputFile);
 
                 progress = (double) (i + 1) / amountOfImages;
                 Platform.runLater(new UpdateProgressTask());
@@ -98,7 +95,9 @@ public class ReorderNode extends AbstractNode {
     }
 
     public enum ReorderingMethods {
-        Method4PagesOn1SheetFromMiddle("4 pages, from middle", Reordering4PagesOn1SheetFromMiddle.class);
+        Method4Pages1PerScanFromMiddle("4 pages, 1 per scan, from middle", Reordering4Pages1PerScanFromMiddle.class),
+        Method4Pages2PerScanFromBeginning("4 pages, 2 per scan, from beginning", Reordering4Pages2PerScanFromBeginning.class);
+
 
         private String text;
         private Class<? extends AbstractReorderer> cl;

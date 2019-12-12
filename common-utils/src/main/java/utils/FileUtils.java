@@ -53,7 +53,7 @@ public class FileUtils {
         return root;
     }
 
-    public static void copyFiles(File sourceFile, File destinationFile) throws IOException {
+    public static void copyFile(File sourceFile, File destinationFile) throws IOException {
         Files.copy(sourceFile.toPath(), destinationFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
