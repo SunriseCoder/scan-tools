@@ -2,7 +2,6 @@ package process.processing.rotateAndCrop;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 import dto.Point;
@@ -28,36 +27,9 @@ public class RotateAndCropTask extends AbstractTask {
     }
 
     @Override
-    public void init() throws InstantiationException, IllegalAccessException {
-        this.smoothFilter = smoothFilterClass.newInstance();
-    }
+    protected void runWithExceptions() throws Exception {
+        smoothFilter = smoothFilterClass.newInstance();
 
-    public void setSmoothFilterClass(Class<? extends AbstractImageFilter> smoothFilterClass) {
-        this.smoothFilterClass = smoothFilterClass;
-    }
-
-    public void setSourceFolder(File sourceFolder) {
-        this.sourceFolder = sourceFolder;
-    }
-
-    public void setSourceFile(File sourceFile) {
-        this.sourceFile = sourceFile;
-    }
-
-    public void setOutputFolder(File outputFolder) {
-        this.outputFolder = outputFolder;
-    }
-
-    public void setNeedRotate(boolean needRotate) {
-        this.needRotate = needRotate;
-    }
-
-    public void setNeedCrop(boolean needCrop) {
-        this.needCrop = needCrop;
-    }
-
-    @Override
-    protected void runWithExceptions() throws IOException {
         String fileName = sourceFile.getName();
         BufferedImage image = applicationContext.readImage(sourceFile);
 
@@ -90,5 +62,29 @@ public class RotateAndCropTask extends AbstractTask {
         File outputFile = new File(outputFolder, outputFileName);
         String formatName = FileUtils.getFileExtension(outputFileName);
         applicationContext.writeImage(image, formatName, outputFile);
+    }
+
+    public void setSmoothFilterClass(Class<? extends AbstractImageFilter> smoothFilterClass) {
+        this.smoothFilterClass = smoothFilterClass;
+    }
+
+    public void setSourceFolder(File sourceFolder) {
+        this.sourceFolder = sourceFolder;
+    }
+
+    public void setSourceFile(File sourceFile) {
+        this.sourceFile = sourceFile;
+    }
+
+    public void setOutputFolder(File outputFolder) {
+        this.outputFolder = outputFolder;
+    }
+
+    public void setNeedRotate(boolean needRotate) {
+        this.needRotate = needRotate;
+    }
+
+    public void setNeedCrop(boolean needCrop) {
+        this.needCrop = needCrop;
     }
 }

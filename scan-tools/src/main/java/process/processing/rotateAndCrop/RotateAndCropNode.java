@@ -7,11 +7,11 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ProgressBar;
 import process.context.ApplicationContext;
 import process.handlers.SmoothFilters;
 import process.processing.AbstractNode;
-import process.processing.render.RenderNode.SmoothFilterListCell;
 import processing.images.filters.AbstractImageFilter;
 import utils.FileUtils;
 
@@ -63,5 +63,13 @@ public class RotateAndCropNode extends AbstractNode {
 
         Thread thread = new Thread(managerTask, managerTask.getName() + " Manager");
         thread.start();
+    }
+
+    public static class SmoothFilterListCell extends ListCell<SmoothFilters> {
+        @Override
+        protected void updateItem(SmoothFilters item, boolean empty) {
+            super.updateItem(item, empty);
+            setText(item == null ? null : item.getText());
+        }
     }
 }

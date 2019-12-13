@@ -11,10 +11,6 @@ public abstract class AbstractTask implements Runnable {
         this.name = name;
     }
 
-    public void init() throws Exception {
-        // Just stub
-    }
-
     @Override
     public void run() {
         try {

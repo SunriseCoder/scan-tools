@@ -51,7 +51,7 @@ public class OrientationNode extends AbstractNode {
         thread.start();
     }
 
-    public enum RotationMethods {
+    private enum RotationMethods {
         All90DegreesCounterClockWise("All pages 90 Degrees Counter-Clock-Wise", RotationAll90DegreesCounterClockWise.class),
         Odd180Degrees("Odd pages 180 Degrees", RotationOdd180Degrees.class),
         All90DegreesClockWise("All pages 90 Degrees Clock-Wise", RotationAll90DegreesClockWise.class);

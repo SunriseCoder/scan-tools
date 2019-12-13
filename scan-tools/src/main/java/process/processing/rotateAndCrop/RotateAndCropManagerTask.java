@@ -42,13 +42,13 @@ public class RotateAndCropManagerTask extends AbstractManagerTask {
             subTask.setOutputFolder(outputFolder);
             subTask.setNeedRotate(needRotate);
             subTask.setNeedCrop(needCrop);
-            subTask.init();
 
             Future<?> future = applicationContext.submitTask(subTask);
             taskFutures.add(future);
         }
 
         int processedImagesCounter = 0;
+        applicationContext.updateProgress(progressBar, 0);
         while (processedImagesCounter < amountOfImages) {
             Iterator<Future<?>> iterator = taskFutures.iterator();
             while (iterator.hasNext()) {

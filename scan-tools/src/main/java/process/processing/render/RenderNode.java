@@ -191,32 +191,9 @@ public class RenderNode extends AbstractNode {
         }
     }
 
-    public enum ImageMergeMethods {
-        Method1ImageOnFirstPage("1 Image"),
-        Method2ImagesOnFirstPage("2 Images");
-
-        private String text;
-
-        private ImageMergeMethods(String text) {
-            this.text = text;
-        }
-
-        public String getText() {
-            return text;
-        }
-    }
-
     public static class SmoothFilterListCell extends ListCell<SmoothFilters> {
         @Override
         protected void updateItem(SmoothFilters item, boolean empty) {
-            super.updateItem(item, empty);
-            setText(item == null ? null : item.getText());
-        }
-    }
-
-    public static class ImageMergeListCell extends ListCell<ImageMergeMethods> {
-        @Override
-        protected void updateItem(ImageMergeMethods item, boolean empty) {
             super.updateItem(item, empty);
             setText(item == null ? null : item.getText());
         }

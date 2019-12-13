@@ -67,7 +67,7 @@ public class ReorderNode extends AbstractNode {
                 return;
             }
 
-            AbstractReorderer reorderer = reorderingMethod.cl.newInstance();
+            AbstractReorderer reorderer = reorderingMethod.getCl().newInstance();
 
             File inputFolder = applicationContext.getWorkFolder();
             File outputFolder = new File(inputFolder, "reordered");
@@ -94,7 +94,7 @@ public class ReorderNode extends AbstractNode {
         }
     }
 
-    public enum ReorderingMethods {
+    private enum ReorderingMethods {
         Method4Pages1PerScanFromMiddle("4 pages, 1 per scan, from middle", Reordering4Pages1PerScanFromMiddle.class),
         Method4Pages2PerScanFromBeginning("4 pages, 2 per scan, from beginning", Reordering4Pages2PerScanFromBeginning.class);
 
