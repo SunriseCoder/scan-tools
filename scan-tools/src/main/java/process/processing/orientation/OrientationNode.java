@@ -80,16 +80,12 @@ public class OrientationNode extends AbstractNode {
             int amountOfImages = files.length;
 
             for (int i = 0; i < amountOfImages; i++) {
-                int sourceIndex = i;
-                int destinationIndex = i;
-
-
-                File sourceFile = files[sourceIndex];
+                File sourceFile = files[i];
                 BufferedImage image = ImageIO.read(sourceFile);
 
-                image = rotator.rotateImage(image, destinationIndex);
+                image = rotator.rotateImage(image, i);
 
-                String outputFileName = files[destinationIndex].getName();
+                String outputFileName = FileUtils.getFileName(files[i].getName()) + ".bmp";
                 File outputFile = new File(outputFolder, outputFileName);
                 String formatName = FileUtils.getFileExtension(outputFileName);
                 ImageIO.write(image, formatName, outputFile);
