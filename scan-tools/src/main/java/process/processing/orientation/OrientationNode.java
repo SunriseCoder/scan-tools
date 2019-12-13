@@ -1,13 +1,7 @@
 package process.processing.orientation;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 
-import javax.imageio.ImageIO;
-
-import filters.FilenameFilterImages;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -45,55 +39,16 @@ public class OrientationNode extends AbstractNode {
 
     @FXML
     private void startProcessing() throws Exception {
-        Thread thread = new Thread(new OrientationTask());
+        OrientationManagerTask managerTask = new OrientationManagerTask("Change Orientation");
+        managerTask.setApplicationContext(applicationContext);
+        managerTask.setProgressBar(progressBar);
+
+        RotationMethods rotationMethod = rotationComboBox.getSelectionModel().getSelectedItem();
+        Class<? extends AbstractOrientationRotate> rotationMethodClass = rotationMethod.getCl();
+        managerTask.setRotationMethodClass(rotationMethodClass);
+
+        Thread thread = new Thread(managerTask, managerTask.getName() + " Manager");
         thread.start();
-    }
-
-    private class OrientationTask implements Runnable {
-
-        @Override
-        public void run() {
-            try {
-                // TODO Lock Start Button before start and unlock after job finished
-                // TODO Implement Cancel Button (maybe same button, but change caption)
-                runWithExceptions();
-                Platform.runLater(() -> applicationContext.showMessage("Change Images Orientation is done"));
-            } catch (Exception e) {
-                Platform.runLater(() -> applicationContext.showError("Error due to Change Images Orientation", e));
-            }
-        }
-
-        private void runWithExceptions() throws Exception {
-            RotationMethods rotationMethod = rotationComboBox.getSelectionModel().getSelectedItem();
-
-            if (rotationMethod == null) {
-                return;
-            }
-
-            AbstractOrientationRotate rotator = rotationMethod.cl.newInstance();
-
-            File inputFolder = applicationContext.getWorkFolder();
-            File outputFolder = new File(inputFolder, "oriented");
-            outputFolder.mkdir();
-
-            File[] files = inputFolder.listFiles(new FilenameFilterImages());
-            int amountOfImages = files.length;
-
-            for (int i = 0; i < amountOfImages; i++) {
-                File sourceFile = files[i];
-                BufferedImage image = ImageIO.read(sourceFile);
-
-                image = rotator.rotateImage(image, i);
-
-                String outputFileName = FileUtils.getFileName(files[i].getName()) + ".bmp";
-                File outputFile = new File(outputFolder, outputFileName);
-                String formatName = FileUtils.getFileExtension(outputFileName);
-                ImageIO.write(image, formatName, outputFile);
-
-                progress = (double) (i + 1) / amountOfImages;
-                Platform.runLater(new UpdateProgressTask());
-            }
-        }
     }
 
     public enum RotationMethods {
@@ -123,15 +78,6 @@ public class OrientationNode extends AbstractNode {
         protected void updateItem(RotationMethods item, boolean empty) {
             super.updateItem(item, empty);
             setText(item == null ? null : item.getText());
-        }
-    }
-
-    private class UpdateProgressTask implements Runnable {
-        @Override
-        public void run() {
-            if (progressBar != null) {
-                progressBar.setProgress(progress);
-            }
         }
     }
 }

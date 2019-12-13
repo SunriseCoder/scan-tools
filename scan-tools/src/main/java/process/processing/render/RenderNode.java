@@ -113,8 +113,6 @@ public class RenderNode extends AbstractNode {
             File outputFolder = new File(inputFolder, "rendered");
             outputFolder.mkdir();
 
-            applicationContext.reloadSelectionBoundaries(applicationContext.getWorkFolder());
-
             SmoothFilters selectedSmoothFilter = smoothFilterComboBox.getSelectionModel().getSelectedItem();
 
             // Preparing processors

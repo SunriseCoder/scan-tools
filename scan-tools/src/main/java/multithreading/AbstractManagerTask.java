@@ -27,6 +27,10 @@ public abstract class AbstractManagerTask implements Runnable {
 
     protected abstract void runWithExceptions() throws Exception;
 
+    public String getName() {
+        return name;
+    }
+
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }

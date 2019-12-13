@@ -44,6 +44,9 @@ public class RotateAndCropNode extends AbstractNode {
 
     @FXML
     private void startProcessing() throws Exception {
+        // Reload Markup Data from the file in current folder in case of external changes
+        applicationContext.reloadSelectionBoundaries(applicationContext.getWorkFolder());
+
         RotateAndCropManagerTask managerTask = new RotateAndCropManagerTask("Rotate and Crop");
         managerTask.setApplicationContext(applicationContext);
         managerTask.setProgressBar(progressBar);
@@ -58,7 +61,7 @@ public class RotateAndCropNode extends AbstractNode {
         Class<? extends AbstractImageFilter> smoothFilterClass = selectedSmoothFilter.getCl();
         managerTask.setSmoothFilterClass(smoothFilterClass);
 
-        Thread thread = new Thread(managerTask);
+        Thread thread = new Thread(managerTask, managerTask.getName() + " Manager");
         thread.start();
     }
 }

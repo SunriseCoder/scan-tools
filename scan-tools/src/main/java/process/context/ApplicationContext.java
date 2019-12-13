@@ -27,7 +27,8 @@ public class ApplicationContext extends AbstractApplicationContext<ApplicationPa
     public ApplicationContext(String configFileName) {
         super(configFileName);
 
-        executorService = Executors.newCachedThreadPool();
+        int numberOfCores = Runtime.getRuntime().availableProcessors();
+        executorService = Executors.newFixedThreadPool(numberOfCores * 2);
         markupStorages = new HashMap<>();
     }
 
@@ -41,33 +42,41 @@ public class ApplicationContext extends AbstractApplicationContext<ApplicationPa
         addEventListener(ApplicationEvents.WorkFolderChanged, value -> setWorkFolder(value));
     }
 
-    public synchronized void reloadSelectionBoundaries(File folder) {
-        createMarkupStorage(folder);
+    public void reloadSelectionBoundaries(File folder) {
+        synchronized (markupStorages) {
+            createMarkupStorage(folder);
+        }
     }
 
-    public synchronized List<Point> getSelectionBoundaries(File folder, String filename) {
-        MarkupStorage markupStorage = markupStorages.get(folder);
-        if (markupStorage == null) {
-            markupStorage = createMarkupStorage(folder);
-        }
+    public List<Point> getSelectionBoundaries(File folder, String filename) {
+        synchronized (markupStorages) {
+            MarkupStorage markupStorage = markupStorages.get(folder);
+            if (markupStorage == null) {
+                markupStorage = createMarkupStorage(folder);
+            }
 
-        List<Point> selectionBoundaries = markupStorage.getSelectionBoundaries(filename);
-        return selectionBoundaries;
+            List<Point> selectionBoundaries = markupStorage.getSelectionBoundaries(filename);
+            return selectionBoundaries;
+        }
     }
 
-    public synchronized void saveSelectionBoundaries(File folder, String filename, List<Point> selectionBoundaries) {
-        MarkupStorage markupStorage = markupStorages.get(folder);
-        if (markupStorage == null) {
-            markupStorage = createMarkupStorage(folder);
-        }
+    public void saveSelectionBoundaries(File folder, String filename, List<Point> selectionBoundaries) {
+        synchronized (markupStorages) {
+            MarkupStorage markupStorage = markupStorages.get(folder);
+            if (markupStorage == null) {
+                markupStorage = createMarkupStorage(folder);
+            }
 
-        markupStorage.saveSelectionBoundaries(filename, selectionBoundaries);
+            markupStorage.saveSelectionBoundaries(filename, selectionBoundaries);
+        }
     }
 
     private MarkupStorage createMarkupStorage(File folder) {
-        MarkupStorage markupStorage = new MarkupStorage(this, folder);
-        markupStorages.put(folder, markupStorage);
-        return markupStorage;
+        synchronized (markupStorages) {
+            MarkupStorage markupStorage = new MarkupStorage(this, folder);
+            markupStorages.put(folder, markupStorage);
+            return markupStorage;
+        }
     }
 
     public File getWorkFolder() {
@@ -79,12 +88,12 @@ public class ApplicationContext extends AbstractApplicationContext<ApplicationPa
         this.workFolder = workFolder;
     }
 
-    public synchronized BufferedImage readImage(File sourceFile) throws IOException {
+    public BufferedImage readImage(File sourceFile) throws IOException {
         BufferedImage image = ImageIO.read(sourceFile);
         return image;
     }
 
-    public synchronized boolean writeImage(BufferedImage image, String formatName, File outputFile) throws IOException {
+    public boolean writeImage(BufferedImage image, String formatName, File outputFile) throws IOException {
         boolean result = ImageIO.write(image, formatName, outputFile);
         return result;
     }

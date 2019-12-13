@@ -1,4 +1,4 @@
-package process.processing.rotateAndCrop;
+package process.processing.orientation;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -8,21 +8,19 @@ import java.util.concurrent.Future;
 
 import filters.FilenameFilterImages;
 import multithreading.AbstractManagerTask;
-import processing.images.filters.AbstractImageFilter;
+import processing.images.rotation.AbstractOrientationRotate;
 
-public class RotateAndCropManagerTask extends AbstractManagerTask {
-    private boolean needRotate;
-    private boolean needCrop;
-    private Class<? extends AbstractImageFilter> smoothFilterClass;
+public class OrientationManagerTask extends AbstractManagerTask {
+    private Class<? extends AbstractOrientationRotate> rotationMethodClass;
 
-    public RotateAndCropManagerTask(String name) {
+    public OrientationManagerTask(String name) {
         super(name);
     }
 
     @Override
     protected void runWithExceptions() throws Exception {
         File sourceFolder = applicationContext.getWorkFolder();
-        File outputFolder = new File(sourceFolder, "rotated-and-cropped");
+        File outputFolder = new File(sourceFolder, "oriented");
         outputFolder.mkdirs();
 
         File[] files = sourceFolder.listFiles(new FilenameFilterImages());
@@ -33,15 +31,13 @@ public class RotateAndCropManagerTask extends AbstractManagerTask {
         for (int i = 0; i < amountOfImages; i++) {
             File sourceFile = files[i];
 
-            String taskName = "Rotate and Crop Image: " + sourceFile.getAbsolutePath();
-            RotateAndCropTask subTask = new RotateAndCropTask(taskName);
+            String taskName = "Image Orientation: " + sourceFile.getAbsolutePath();
+            OrientationTask subTask = new OrientationTask(taskName);
             subTask.setApplicationContext(applicationContext);
-            subTask.setSmoothFilterClass(smoothFilterClass);
-            subTask.setSourceFolder(sourceFolder);
+            subTask.setRotationMethodClass(rotationMethodClass);
+            subTask.setImageIndex(i);
             subTask.setSourceFile(sourceFile);
             subTask.setOutputFolder(outputFolder);
-            subTask.setNeedRotate(needRotate);
-            subTask.setNeedCrop(needCrop);
             subTask.init();
 
             Future<?> future = applicationContext.submitTask(subTask);
@@ -65,15 +61,7 @@ public class RotateAndCropManagerTask extends AbstractManagerTask {
         }
     }
 
-    public void setNeedRotate(boolean needRotate) {
-        this.needRotate = needRotate;
-    }
-
-    public void setNeedCrop(boolean needCrop) {
-        this.needCrop = needCrop;
-    }
-
-    public void setSmoothFilterClass(Class<? extends AbstractImageFilter> smoothFilterClass) {
-        this.smoothFilterClass = smoothFilterClass;
+    public void setRotationMethodClass(Class<? extends AbstractOrientationRotate> rotationMethodClass) {
+        this.rotationMethodClass = rotationMethodClass;
     }
 }

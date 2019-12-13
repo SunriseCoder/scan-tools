@@ -86,7 +86,7 @@ public class RotateAndCropTask extends AbstractTask {
             image = imageCropper.processImage(image, cropBoundaries);
         }
 
-        String outputFileName = sourceFile.getName();
+        String outputFileName = FileUtils.getFileName(sourceFile.getName()) + ".bmp";
         File outputFile = new File(outputFolder, outputFileName);
         String formatName = FileUtils.getFileExtension(outputFileName);
         applicationContext.writeImage(image, formatName, outputFile);

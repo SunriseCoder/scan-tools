@@ -71,8 +71,6 @@ public class MergeNode extends AbstractNode {
             File outputFolder = new File(inputFolder, "merged");
             outputFolder.mkdir();
 
-            applicationContext.reloadSelectionBoundaries(applicationContext.getWorkFolder());
-
             ImageMerge merge = new ImageMerge();
             ImageMergeMethods mergeMethod = imageMergeComboBox.getSelectionModel().getSelectedItem();
 

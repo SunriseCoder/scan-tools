@@ -85,6 +85,7 @@ public class FileListNode {
         }
 
         currentFolderTextField.setText(currentFolder.getAbsolutePath());
+        applicationContext.reloadSelectionBoundaries(currentFolder);
 
         // Forming new list of FileListEntry for filesListView
         String[] filenames = currentFolder.list(new FilenameFilterImages());
