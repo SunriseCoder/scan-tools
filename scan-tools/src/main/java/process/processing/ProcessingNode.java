@@ -10,6 +10,7 @@ import javafx.scene.layout.GridPane;
 import process.context.ApplicationContext;
 import process.context.ApplicationEvents;
 import process.processing.actions.ActionsNode;
+import process.processing.automarkup.AutoMarkupNode;
 import process.processing.merge.MergeNode;
 import process.processing.orientation.OrientationNode;
 import process.processing.render.RenderNode;
@@ -47,6 +48,12 @@ public class ProcessingNode {
         Node orientationNode = orientation.init(applicationContext);
         GridPane.setRowIndex(orientationNode, rowIndex++);
         processingTabGridPane.getChildren().add(orientationNode);
+
+        // Auto Markup
+        AutoMarkupNode autoMarkup = new AutoMarkupNode();
+        Node autoMarkupNode = autoMarkup.init(applicationContext);
+        GridPane.setRowIndex(autoMarkupNode, rowIndex++);
+        processingTabGridPane.getChildren().add(autoMarkupNode);
 
         // Rotate and Crop
         RotateAndCropNode rotateAndCrop = new RotateAndCropNode();

@@ -79,6 +79,7 @@ public class MergeManagerTask extends AbstractManagerTask {
         }
 
         int processedImagesCounter = 0;
+        applicationContext.updateProgress(progressBar, 0);
         while (processedImagesCounter < taskCounter) {
             Iterator<Future<?>> iterator = taskFutures.iterator();
             while (iterator.hasNext()) {
