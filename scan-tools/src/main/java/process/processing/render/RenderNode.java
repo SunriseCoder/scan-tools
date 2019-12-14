@@ -1,13 +1,8 @@
 package process.processing.render;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 
-import javax.imageio.ImageIO;
-
-import filters.FilenameFilterImages;
-import javafx.application.Platform;
+import dto.TaskParameters;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -20,12 +15,7 @@ import javafx.scene.layout.GridPane;
 import process.context.ApplicationContext;
 import process.handlers.SmoothFilters;
 import process.processing.AbstractNode;
-import processing.images.binarization.ImageBinarization;
-import processing.images.filters.BinarizationFilter;
-import processing.images.filters.ImageFilter;
-import processing.images.resize.ImageResize;
 import utils.FileUtils;
-import utils.ThreadUtils;
 
 public class RenderNode extends AbstractNode {
     private static final String DEFAULT_RESIZE_SOURCE_DPI = "600";
@@ -65,8 +55,6 @@ public class RenderNode extends AbstractNode {
     @FXML
     private ProgressBar progressBar;
 
-    private double progress;
-
     public Node init(ApplicationContext applicationContext) throws IOException {
         this.applicationContext = applicationContext;
         Parent rootNode = FileUtils.loadFXML(this);
@@ -87,108 +75,43 @@ public class RenderNode extends AbstractNode {
 
     @FXML
     private void startProcessing() {
-        Thread thread = new Thread(new RenderTask());
+        RenderManagerTask managerTask = new RenderManagerTask("Render Images");
+        managerTask.setApplicationContext(applicationContext);
+        managerTask.setProgressBar(progressBar);
+
+        TaskParameters parameters = new TaskParameters();
+
+        SmoothFilters selectedSmoothFilter = smoothFilterComboBox.getSelectionModel().getSelectedItem();
+        parameters.setClass(RenderTask.SMOOTH_FILTER_CLASS, selectedSmoothFilter.getCl());
+
+        boolean needResize = imageResizeCheckBox.isSelected();
+        parameters.setBoolean(RenderTask.NEED_RESIZE, needResize);
+
+        int sourceDPI = Integer.parseInt(sourceDPITextField.getText());
+        parameters.setInt(RenderTask.SOURCE_DPI, sourceDPI);
+
+        int targetDPI = Integer.parseInt(targetDPITextField.getText());
+        parameters.setInt(RenderTask.TARGET_DPI, targetDPI);
+
+        boolean needBinarization = imageBinarizationCheckBox.isSelected();
+        parameters.setBoolean(RenderTask.NEED_BINARIZATION, needBinarization);
+
+        double weightRed = Double.parseDouble(weightRedTextField.getText());
+        parameters.setDouble(RenderTask.WEIGHT_RED, weightRed);
+
+        double weightGreen = Double.parseDouble(weightGreenTextField.getText());
+        parameters.setDouble(RenderTask.WEIGHT_GREEN, weightGreen);
+
+        double weightBlue = Double.parseDouble(weightBlueTextField.getText());
+        parameters.setDouble(RenderTask.WEIGHT_BLUE, weightBlue);
+
+        double colorThreshold = Double.parseDouble(thresholdTextField.getText());
+        parameters.setDouble(RenderTask.COLOR_THRESHOLD, colorThreshold);
+
+        managerTask.setTaskParameters(parameters);
+
+        Thread thread = new Thread(managerTask, managerTask.getName() + " Manager");
         thread.start();
-    }
-
-    private class RenderTask implements Runnable {
-
-        @Override
-        public void run() {
-            try {
-                // TODO Lock Start Button before start and unlock after job finished
-                // TODO Implement Cancel Button (maybe same button, but change caption)
-                runWithExceptions();
-                Platform.runLater(() -> applicationContext.showMessage("Render Images is done"));
-            } catch (Exception e) {
-                Platform.runLater(() -> applicationContext.showError("Error due to Render Images", e));
-            }
-        }
-
-        private void runWithExceptions() throws Exception {
-            boolean needResize = imageResizeCheckBox.isSelected();
-            boolean needBinarization = imageBinarizationCheckBox.isSelected();
-
-            File inputFolder = applicationContext.getWorkFolder();
-            File outputFolder = new File(inputFolder, "rendered");
-            outputFolder.mkdir();
-
-            SmoothFilters selectedSmoothFilter = smoothFilterComboBox.getSelectionModel().getSelectedItem();
-
-            // Preparing processors
-            ImageFilter smoothFilter = selectedSmoothFilter.getCl().newInstance();
-
-            ImageResize resize = null;
-            if (needResize) {
-                resize = new ImageResize();
-                resize.setSmoothFilter(smoothFilter);
-                int sourceDPI = Integer.parseInt(sourceDPITextField.getText());
-                resize.setSourceDPI(sourceDPI);
-                int targetDPI = Integer.parseInt(targetDPITextField.getText());
-                resize.setTargetDPI(targetDPI);
-            }
-
-            ImageBinarization binarization = null;
-            if (needBinarization) {
-                BinarizationFilter binarizationFilter = new BinarizationFilter();
-                double weightRed = Double.parseDouble(weightRedTextField.getText());
-                binarizationFilter.setWeightRed(weightRed);
-                double weightGreen = Double.parseDouble(weightGreenTextField.getText());
-                binarizationFilter.setWeightGreen(weightGreen);
-                double weightBlue = Double.parseDouble(weightBlueTextField.getText());
-                binarizationFilter.setWeightBlue(weightBlue);
-                double threshold = Double.parseDouble(thresholdTextField.getText());
-                threshold *= weightRed + weightGreen + weightBlue;
-                binarizationFilter.setThreshold(threshold);
-
-                binarization = new ImageBinarization();
-                binarization.setColorFilter(binarizationFilter);
-            }
-
-            File[] files = inputFolder.listFiles(new FilenameFilterImages());
-            int amountOfImages = files.length;
-            if (amountOfImages == 0) {
-                applicationContext.showWarning("There is no images to render", null);
-                return;
-            }
-
-            progress = 0;
-            ThreadUtils.runLater(new UpdateProgressTask());
-            for (int i = 0; i < amountOfImages; i++) {
-                File inputFile = files[i];
-                String fileName = inputFile.getName();
-                BufferedImage image = ImageIO.read(inputFile);
-
-                // Resize
-                if (needResize) {
-                    image = resize.processImage(image);
-                }
-
-                // Binarization
-                if (needBinarization) {
-                    image = binarization.processImage(image);
-                }
-
-                // TODO Ask User on the UI
-                String formatName = needBinarization ? "png" : "bmp";
-                String outputFileName = FileUtils.getFileName(fileName) + "." + formatName;
-                File outputFile = new File(outputFolder, outputFileName );
-                ImageIO.write(image, formatName, outputFile);
-
-                // Update Progress
-                progress = (double) (i + 1) / amountOfImages;
-                ThreadUtils.runLater(new UpdateProgressTask());
-            }
-        }
-    }
-
-    private class UpdateProgressTask implements Runnable {
-        @Override
-        public void run() {
-            if (progressBar != null) {
-                progressBar.setProgress(progress);
-            }
-        }
     }
 
     public static class SmoothFilterListCell extends ListCell<SmoothFilters> {

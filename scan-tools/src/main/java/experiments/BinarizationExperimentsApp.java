@@ -182,7 +182,7 @@ public class BinarizationExperimentsApp extends Application {
         filter.setWeightRed(rw);
         filter.setWeightGreen(gw);
         filter.setWeightBlue(bw);
-        filter.setThreshold(threshold);
+        filter.setColorThreshold(threshold);
 
         for (int y = 0; y < newImage.getHeight(); y++) {
             for (int x = 0; x < newImage.getWidth(); x++) {

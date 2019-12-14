@@ -40,7 +40,7 @@ public class MergeManagerTask extends AbstractManagerTask {
             File sourceFile = files[i];
             if (i % 2 == remainder) {
                 String outputFileName = fileNameBase + NumberUtils.generateNumberByLength(taskCounter + 1, 4) + ".png";
-                String taskName = "Rotate and Crop Image: " + outputFileName;
+                String taskName = "Merge Image: " + outputFileName;
                 MergeTask subTask = new MergeTask(taskName);
 
                 subTask.setApplicationContext(applicationContext);
@@ -62,7 +62,7 @@ public class MergeManagerTask extends AbstractManagerTask {
 
         if (previousImageFile != null) {
             String outputFileName = fileNameBase + NumberUtils.generateNumberByLength(taskCounter + 1, 4) + ".png";
-            String taskName = "Rotate and Crop Image: " + outputFileName;
+            String taskName = "Merge Image: " + outputFileName;
             MergeTask subTask = new MergeTask(taskName);
 
             subTask.setApplicationContext(applicationContext);
