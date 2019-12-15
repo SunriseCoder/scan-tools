@@ -10,6 +10,7 @@ import dto.Point;
 import multithreading.AbstractTask;
 import structures.RGB;
 import utils.ColorUtils;
+import utils.MathUtils;
 
 public class AutoMarkupTask extends AbstractTask {
     private File sourceFile;
@@ -23,7 +24,7 @@ public class AutoMarkupTask extends AbstractTask {
     @Override
     protected void runWithExceptions() throws Exception {
         BufferedImage image = applicationContext.readImage(sourceFile);
-        ImageMap imageMap = new ImageMap(image, threshold);
+        ImageMap imageMap = new ImageMap(image, threshold, areaSize);
         ImageAnalyzer analyzer = new ImageAnalyzer(imageMap, areaSize);
 
         List<Point> selectionBoundaries = new ArrayList<>();
@@ -34,8 +35,12 @@ public class AutoMarkupTask extends AbstractTask {
         // Top Left
         outer:
         for (int i = 0; i < minImageSide; i++) {
+            System.out.println(i);
             for (int x = 0; x <= i; x++) {
                 int y = i - x;
+                if (x == 124 && y == 171) {
+                    System.out.println();
+                }
                 boolean hasConnections = analyzer.findUsefulNeighbors(x, y);
                 if (hasConnections) {
                     selectionBoundaries.add(new Point(x, y));
@@ -103,12 +108,15 @@ public class AutoMarkupTask extends AbstractTask {
     private static class ImageMap {
         private BufferedImage image;
         private int threshold;
+        private int areaSide;
 
         private Status[][] imageMap;
+        private Boundaries boundaries;
 
-        public ImageMap(BufferedImage image, int threshold) {
+        public ImageMap(BufferedImage image, int threshold, int areaSize) {
             this.image = image;
             this.threshold = threshold;
+            this.areaSide = MathUtils.ceilToInt(Math.sqrt(areaSize)) * 2; // For non-square areas
             imageMap = new Status[image.getWidth()][image.getHeight()];
         }
 
@@ -128,6 +136,9 @@ public class AutoMarkupTask extends AbstractTask {
             }
 
             boolean isUseful = mapValue == Status.Useful;
+            if (isUseful) {
+                isUseful &= isMatchesAreaBoundaries(x, y);
+            }
             return isUseful;
         }
 
@@ -143,8 +154,85 @@ public class AutoMarkupTask extends AbstractTask {
             return result;
         }
 
+        private boolean isMatchesAreaBoundaries(int x, int y) {
+            if (boundaries.reachedLimitX && (x < boundaries.minX || x > boundaries.maxX)) {
+                return false;
+            }
+
+            if (boundaries.reachedLimitY && (y < boundaries.minY || y > boundaries.maxY)) {
+                return false;
+            }
+
+            if (x < boundaries.minX) {
+                boundaries.setMinX(x);
+            }
+
+            if (x > boundaries.maxX) {
+                boundaries.setMaxX(x);
+            }
+
+            if (y < boundaries.minY) {
+                boundaries.setMinY(y);
+            }
+
+            if (y > boundaries.maxY) {
+                boundaries.setMaxY(y);
+            }
+
+            return true;
+        }
+
         private enum Status {
             Useful, NotUseful;
+        }
+
+        public void clearAreaMeasurements() {
+            boundaries = new Boundaries();
+            boundaries.areaSide = areaSide;
+        }
+
+        private class Boundaries {
+            private int minX = Integer.MAX_VALUE - 10;
+            private int maxX = -1;
+            private int minY = Integer.MAX_VALUE - 10;
+            private int maxY = -1;
+
+            private boolean reachedLimitX = false;
+            private boolean reachedLimitY = false;
+
+            private int areaSide;
+
+            public void setMinX(int minX) {
+                this.minX = minX;
+                checkLimitX();
+            }
+
+            public void setMaxX(int maxX) {
+                this.maxX = maxX;
+                checkLimitX();
+            }
+
+            public void setMinY(int minY) {
+                this.minY = minY;
+                checkLimitY();
+            }
+
+            public void setMaxY(int maxY) {
+                this.maxY = maxY;
+                checkLimitY();
+            }
+
+            private void checkLimitX() {
+                if (maxX - minX >= areaSide) {
+                    reachedLimitX = true;
+                }
+            }
+
+            private void checkLimitY() {
+                if (maxY - minY >= areaSide) {
+                    reachedLimitY = true;
+                }
+            }
         }
     }
 
@@ -161,6 +249,7 @@ public class AutoMarkupTask extends AbstractTask {
         }
 
         public boolean findUsefulNeighbors(int x, int y) {
+            imageMap.clearAreaMeasurements();
             boolean isUseful = imageMap.isUseful(x, y);
             if (!isUseful) {
                 return false;

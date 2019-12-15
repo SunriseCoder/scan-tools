@@ -13,7 +13,7 @@ import utils.FileUtils;
 
 public class AutoMarkupNode extends AbstractNode {
     private static final String DEFAULT_THRESHOLD = "30000";
-    private static final String DEFAULT_AREA_SIZE = "100";
+    private static final String DEFAULT_AREA_SIZE = "2000";
 
     private ApplicationContext applicationContext;
 

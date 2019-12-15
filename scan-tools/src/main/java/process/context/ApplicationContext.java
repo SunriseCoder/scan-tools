@@ -20,7 +20,7 @@ import process.MarkupStorage;
 
 public class ApplicationContext extends AbstractApplicationContext<ApplicationParameters, ApplicationEvents> {
     private ExecutorService executorService;
-    private Map<File, MarkupStorage> markupStorages;
+    private Map<String, MarkupStorage> markupStorages;
 
     private File workFolder;
 
@@ -50,7 +50,7 @@ public class ApplicationContext extends AbstractApplicationContext<ApplicationPa
 
     public List<Point> getSelectionBoundaries(File folder, String filename) {
         synchronized (markupStorages) {
-            MarkupStorage markupStorage = markupStorages.get(folder);
+            MarkupStorage markupStorage = markupStorages.get(folder.getAbsolutePath());
             if (markupStorage == null) {
                 markupStorage = createMarkupStorage(folder);
             }
@@ -62,7 +62,7 @@ public class ApplicationContext extends AbstractApplicationContext<ApplicationPa
 
     public void saveSelectionBoundaries(File folder, String filename, List<Point> selectionBoundaries) {
         synchronized (markupStorages) {
-            MarkupStorage markupStorage = markupStorages.get(folder);
+            MarkupStorage markupStorage = markupStorages.get(folder.getAbsolutePath());
             if (markupStorage == null) {
                 markupStorage = createMarkupStorage(folder);
             }
@@ -74,7 +74,7 @@ public class ApplicationContext extends AbstractApplicationContext<ApplicationPa
     private MarkupStorage createMarkupStorage(File folder) {
         synchronized (markupStorages) {
             MarkupStorage markupStorage = new MarkupStorage(this, folder);
-            markupStorages.put(folder, markupStorage);
+            markupStorages.put(folder.getAbsolutePath(), markupStorage);
             return markupStorage;
         }
     }
