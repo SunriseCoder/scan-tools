@@ -9,15 +9,16 @@
     <packaging>pom</packaging>
 
     <modules>
-		<module>common-utils</module>
+        <module>common-utils</module>
         <module>audio-tools</module>
         <module>book-tools</module>
-		<module>debug-proxy</module>
+        <module>debug-proxy</module>
         <module>graph-tools</module>
         <module>password-tools</module>
         <module>scan-tools</module>
         <module>script-tools</module>
         <module>subtitles-tools</module>
+        <module>updates-monitor</module>
     </modules>
 
     <dependencyManagement>
