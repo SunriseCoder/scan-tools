@@ -38,7 +38,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>monitor.UpdatesMonitorApp</mainClass>
+                            <mainClass>app.UpdatesMonitorApp</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
