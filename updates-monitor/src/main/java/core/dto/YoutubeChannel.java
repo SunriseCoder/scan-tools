@@ -18,16 +18,16 @@ public class YoutubeChannel {
         return channelId;
     }
 
+    public void setChannelId(String channelId) {
+        this.channelId = channelId;
+    }
+
     public String getTitle() {
         return title;
     }
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public void setChannelId(String channelId) {
-        this.channelId = channelId;
     }
 
     @Transient

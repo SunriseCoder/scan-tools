@@ -12,7 +12,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import core.Database;
 import core.dto.YoutubeChannel;
 import core.youtube.YoutubeChannelHandler;
-import core.youtube.YoutubeChannelHandler.UpdateResult;
+import core.youtube.YoutubeChannelHandler.Result;
 import utils.JSONUtils;
 import utils.ThreadUtils;
 
@@ -91,22 +91,29 @@ public class ConsoleInterfaceHandler {
         String input;
         boolean inputAcceptedFlag = false;
         while (!inputAcceptedFlag) {
-            System.out.println("Please enter resource URL or cancel: ");
+            System.out.println("Please enter resource URL or [0] for previous menu: ");
             input = scanner.next();
             input = input.trim();
-            if ("cancel".equalsIgnoreCase(input)) {
+            if ("0".equalsIgnoreCase(input)) {
                 inputAcceptedFlag = true;
-            } else if (YoutubeChannelHandler.isURLAChannel(input)) {
+            } else if (YoutubeChannelHandler.isChannelURL(input) || YoutubeChannelHandler.isChannelCustomURL(input)) {
+                // Adding Youtube Channel
                 try {
-                    String channelId = YoutubeChannelHandler.parseChannelId(input);
-                    if (database.getYoutubeChannel(channelId) == null) {
-                        // Adding Youtube Channel to the Database
-                        YoutubeChannel channel = new YoutubeChannel(channelId);
-                        database.addYoutubeChannel(channel);
-                        saveDatabase();
-                        System.out.println("Youtube Channel with ID: " + channelId + " has beed added successfully");
+                    System.out.print("\tDownloading channel info for URL: " + input + "... ");
+                    Result youtubeChannelFetchResult = YoutubeChannelHandler.fetchNewChannel(input);
+                    if (youtubeChannelFetchResult.channelNotFound) {
+                        System.out.println("Channel not found");
                     } else {
-                        System.out.println("Youtube Channel with ID: " + channelId + " is already in the database");
+                        System.out.println("Done");
+                        YoutubeChannel youtubeChannel = youtubeChannelFetchResult.youtubeChannel;
+                        if (database.getYoutubeChannel(youtubeChannel.getChannelId()) == null) {
+                            // Adding Youtube Channel to the Database
+                            database.addYoutubeChannel(youtubeChannel);
+                            saveDatabase();
+                            System.out.println("Youtube Channel \"" + youtubeChannel + "\" has beed added successfully");
+                        } else {
+                            System.out.println("Youtube Channel \"" + youtubeChannel + "\" is already in the database");
+                        }
                     }
                 } catch (Exception e) {
                     System.out.println("Could not add (" + input + ") as Youtube channel becase of: " + e.getMessage());
@@ -133,7 +140,7 @@ public class ConsoleInterfaceHandler {
             do {
                 try {
                     System.out.print("\tUpdating Youtube Channel " + channel + "... ");
-                    UpdateResult updateResult = YoutubeChannelHandler.checkUpdates(channel);
+                    Result updateResult = YoutubeChannelHandler.checkUpdates(channel);
                     if (updateResult.channelNotFound) {
                         System.out.println("Channel not found on Youtube!!!");
                     } else {
