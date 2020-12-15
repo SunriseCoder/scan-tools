@@ -1,4 +1,4 @@
-package dto;
+package adaptors;
 
 import java.io.IOException;
 import java.io.OutputStream;

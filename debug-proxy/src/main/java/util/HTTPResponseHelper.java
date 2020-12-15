@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
-import dto.ByteArray;
+import adaptors.ByteArray;
 import dto.HTTPRequest;
 import dto.HTTPResponse;
 

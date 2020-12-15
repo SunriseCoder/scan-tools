@@ -3,6 +3,8 @@ package dto;
 import java.util.ArrayList;
 import java.util.List;
 
+import adaptors.ByteArray;
+
 public class HTTPResponse {
     private List<String> headers;
     private byte[] body;

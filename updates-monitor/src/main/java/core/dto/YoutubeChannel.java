@@ -18,12 +18,25 @@ public class YoutubeChannel {
         return channelId;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public void setChannelId(String channelId) {
         this.channelId = channelId;
     }
 
     @Transient
     public String getStatusString() {
+        return channelId + ": " + (title == null ? "Unknown yet" : title);
+    }
+
+    @Override
+    public String toString() {
         return channelId + ": " + (title == null ? "Unknown yet" : title);
     }
 }
