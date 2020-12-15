@@ -1,2 +1,5 @@
+# Application database
+database/
+
 # Java keystore
 keystore

@@ -8,12 +8,20 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 
 public class JSONUtils {
+
+    public static JsonNode loadFromDisk(File file) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setVisibility(PropertyAccessor.ALL, Visibility.ANY);
+        JsonNode result = mapper.readTree(file);
+        return result;
+    }
 
     public static <T> T loadFromDisk(File file, TypeReference<T> typeReference) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
