@@ -12,7 +12,7 @@ import core.dto.YoutubeChannel;
 
 public class YoutubeChannelHandler {
     private static final Pattern CHANNEL_URL_PATTERN = Pattern
-            .compile("^https?://www.youtube.com/channel/([0-9A-Za-z]+)$");
+            .compile("^https?://www.youtube.com/channel/([0-9A-Za-z_-]+)$");
 
     public static boolean isURLAChannel(String url) {
         Matcher matcher = CHANNEL_URL_PATTERN.matcher(url);
