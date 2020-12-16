@@ -49,4 +49,11 @@ public class JSONUtils {
         String json = writer.writeValueAsString(object);
         return json;
     }
+
+    public static JsonNode parseJSON(String jsonText) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setVisibility(PropertyAccessor.ALL, Visibility.ANY);
+        JsonNode node = mapper.readTree(jsonText);
+        return node;
+    }
 }

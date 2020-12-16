@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 import core.Database;
 import core.dto.YoutubeChannel;
+import core.dto.YoutubeVideo;
 import core.youtube.YoutubeChannelHandler;
 import core.youtube.YoutubeChannelHandler.Result;
 import utils.JSONUtils;
@@ -38,6 +39,7 @@ public class ConsoleInterfaceHandler {
             try {
                 TypeReference<Database> typeReference = new TypeReference<Database>() {};
                 database = JSONUtils.loadFromDisk(databaseFile, typeReference);
+                database.linkEntities();
             } catch (Exception e) {
                 System.out.println("Could not read database from file " + databaseFile.getAbsolutePath() + ", creating a new one");
                 e.printStackTrace();
@@ -48,7 +50,7 @@ public class ConsoleInterfaceHandler {
             database = new Database();
         }
 
-        System.out.println("Applicatoin started successfully");
+        System.out.println("Application started successfully");
 
         mainMenu();
     }
@@ -82,7 +84,8 @@ public class ConsoleInterfaceHandler {
         System.out.println("Youtube channels:");
         Collection<YoutubeChannel> youtubeChannels = database.getYoutubeChannels().values();
         for (YoutubeChannel channel : youtubeChannels) {
-            System.out.println("\t" + channel.getStatusString());
+            System.out.println("\t" + channel);
+            System.out.println("\t\t" + channel.getStatusString());
         }
         System.out.println(youtubeChannels.size() + " channel(s) total");
     }
@@ -110,9 +113,9 @@ public class ConsoleInterfaceHandler {
                             // Adding Youtube Channel to the Database
                             database.addYoutubeChannel(youtubeChannel);
                             saveDatabase();
-                            System.out.println("Youtube Channel \"" + youtubeChannel + "\" has beed added successfully");
+                            System.out.println("\tYoutube Channel \"" + youtubeChannel + "\" has beed added successfully");
                         } else {
-                            System.out.println("Youtube Channel \"" + youtubeChannel + "\" is already in the database");
+                            System.out.println("\tYoutube Channel \"" + youtubeChannel + "\" is already in the database");
                         }
                     }
                 } catch (Exception e) {
@@ -149,7 +152,16 @@ public class ConsoleInterfaceHandler {
                             System.out.println("\t\tYoutube Channel " + channel.getChannelId() + " Title was changed from \""
                                             + updateResult.oldTitle + "\" to \"" + updateResult.newTitle + "\"");
                         }
-                        // TODO Add update details about videos and playlists
+
+                        // Update details about new videos
+                        if (updateResult.newVideos.size() > 0) {
+                            for (YoutubeVideo youtubeVideo : updateResult.newVideos) {
+                                database.addYoutubeVideo(youtubeVideo);
+                            }
+                            System.out.println("\t\tFound " + updateResult.newVideos.size() + " new video(s)");
+                        }
+
+                        // TODO Add update details about playlists
                         saveDatabase();
                     }
                     updateSuccess = true;

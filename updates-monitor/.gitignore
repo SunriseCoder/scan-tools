@@ -1,5 +1,8 @@
 # Application database
 database/
 
+# Error dumps
+error-page-dump.dat
+
 # Java keystore
 keystore

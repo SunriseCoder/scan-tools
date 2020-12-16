@@ -1,17 +1,24 @@
 package core.dto;
 
-import java.beans.Transient;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class YoutubeChannel {
     private String channelId;
     private String title;
 
+    @JsonIgnore
+    private Map<String, YoutubeVideo> videos;
+
     public YoutubeChannel() {
-        // Default constructor
+        this(null);
     }
 
     public YoutubeChannel(String channelId) {
         this.channelId = channelId;
+        videos = new HashMap<>();
     }
 
     public String getChannelId() {
@@ -30,13 +37,23 @@ public class YoutubeChannel {
         this.title = title;
     }
 
-    @Transient
+    @JsonIgnore
     public String getStatusString() {
-        return channelId + ": " + (title == null ? "Unknown yet" : title);
+        return videos.size() + " video(s)";
+    }
+
+    public void addVideo(YoutubeVideo video) {
+        videos.put(video.getVideoId(), video);
+
+    }
+
+    public boolean containVideo(String videoId) {
+        boolean result = videos.containsKey(videoId);
+        return result;
     }
 
     @Override
     public String toString() {
-        return channelId + ": " + (title == null ? "Unknown yet" : title);
+        return channelId + ": " + title;
     }
 }
