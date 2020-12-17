@@ -9,6 +9,8 @@ public class YoutubeChannel {
     private String channelId;
     private String title;
 
+    private String foldername;
+
     @JsonIgnore
     private Map<String, YoutubeVideo> videos;
 
@@ -33,23 +35,32 @@ public class YoutubeChannel {
         return title;
     }
 
+    public String getFoldername() {
+        return foldername;
+    }
+
+    public void setFoldername(String foldername) {
+        this.foldername = foldername;
+    }
+
     public void setTitle(String title) {
         this.title = title;
     }
 
-    @JsonIgnore
-    public String getStatusString() {
-        return videos.size() + " video(s)";
-    }
-
     public void addVideo(YoutubeVideo video) {
         videos.put(video.getVideoId(), video);
-
     }
 
     public boolean containVideo(String videoId) {
         boolean result = videos.containsKey(videoId);
         return result;
+    }
+
+    @JsonIgnore
+    public String getStatusString() {
+        long completedVideos = videos.values().stream().filter(v -> v.isDownloaded()).count();
+        long newVideos = videos.size() - completedVideos;
+        return "Videos: " + completedVideos + " done, " + newVideos + " new, " + videos.size() + " total";
     }
 
     @Override

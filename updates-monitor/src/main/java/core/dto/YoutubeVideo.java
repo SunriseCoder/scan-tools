@@ -4,6 +4,17 @@ public class YoutubeVideo {
     private String videoId;
     private String channelId;
     private String title;
+    private String description;
+    private int durationInSeconds;
+
+    private int bitrate;
+    private int width;
+    private int height;
+    private int fps;
+    private int itag;
+
+    private boolean downloaded = false;
+    private String filename;
 
     public String getVideoId() {
         return videoId;
@@ -27,5 +38,82 @@ public class YoutubeVideo {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public int getDurationInSeconds() {
+        return durationInSeconds;
+    }
+
+    public void setDurationInSeconds(int durationInSeconds) {
+        this.durationInSeconds = durationInSeconds;
+    }
+
+    public int getBitrate() {
+        return bitrate;
+    }
+
+    public void setBitrate(int bitrate) {
+        this.bitrate = bitrate;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public int getFps() {
+        return fps;
+    }
+
+    public void setFps(int fps) {
+        this.fps = fps;
+    }
+
+    public int getItag() {
+        return itag;
+    }
+
+    public void setItag(int itag) {
+        this.itag = itag;
+    }
+
+    public boolean isDownloaded() {
+        return downloaded;
+    }
+
+    public void setDownloaded(boolean downloaded) {
+        this.downloaded = downloaded;
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
+    @Override
+    public String toString() {
+        return videoId + ": " + title;
     }
 }

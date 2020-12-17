@@ -97,7 +97,6 @@ public class YoutubeChannelHandler {
         // Checking Channel Title
         Result downloadTitleResult = downloadChannelTitle(channel.getChannelId());
         String channelTitle = downloadTitleResult.newTitle;
-        channel.setTitle(channelTitle);
         result.newTitle = channelTitle;
 
         // Fetching Videos from Channel

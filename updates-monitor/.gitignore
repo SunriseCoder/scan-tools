@@ -1,8 +1,15 @@
 # Application database
 database/
 
+# Download folder
+download/
+
 # Error dumps
 error-page-dump.dat
 
 # Java keystore
 keystore
+
+# Staff folders
+dumps/
+tmp/

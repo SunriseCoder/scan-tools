@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 
@@ -13,11 +14,16 @@ import core.Database;
 import core.dto.YoutubeChannel;
 import core.dto.YoutubeVideo;
 import core.youtube.YoutubeChannelHandler;
-import core.youtube.YoutubeChannelHandler.Result;
+import core.youtube.YoutubeVideoHandler;
+import utils.FileUtils;
 import utils.JSONUtils;
 import utils.ThreadUtils;
 
 public class ConsoleInterfaceHandler {
+    private static final String DATABASE_FOLDER = "database";
+    private static final String DOWNLOAD_FOLDER = "download";
+    private static final String TEMPORARY_FOLDER = "tmp";
+
     private Scanner scanner;
     private File databaseFile;
     private Database database;
@@ -29,12 +35,12 @@ public class ConsoleInterfaceHandler {
     public void start() throws IOException {
         System.out.println("Application is starting...");
 
+        FileUtils.createFolderIfNotExists(DATABASE_FOLDER);
+        FileUtils.createFolderIfNotExists(DOWNLOAD_FOLDER);
+        FileUtils.createFolderIfNotExists(TEMPORARY_FOLDER);
+
         System.out.println("Loading database...");
-        File databasePath = new File("database");
-        if (!databasePath.exists()) {
-            databasePath.mkdir();
-        }
-        databaseFile = new File(databasePath, "database.json");
+        databaseFile = new File(DATABASE_FOLDER, "database.json");
         if (databaseFile.exists()) {
             try {
                 TypeReference<Database> typeReference = new TypeReference<Database>() {};
@@ -70,6 +76,9 @@ public class ConsoleInterfaceHandler {
             case "8":
                 checkUpdates();
                 break;
+            case "9":
+                downloadAllFiles();
+                break;
             case "0":
                 System.out.println("Exiting...");
                 scanner.close();
@@ -88,6 +97,8 @@ public class ConsoleInterfaceHandler {
             System.out.println("\t\t" + channel.getStatusString());
         }
         System.out.println(youtubeChannels.size() + " channel(s) total");
+        System.out.println("Youtube videos: " + database.getYoutubeNewVideos().size() + " new, "
+                + database.getYoutubeDownloadedVideos().size() + " done, " + database.getYoutubeVideos().size() + " total");
     }
 
     private void addResource() {
@@ -103,7 +114,7 @@ public class ConsoleInterfaceHandler {
                 // Adding Youtube Channel
                 try {
                     System.out.print("\tDownloading channel info for URL: " + input + "... ");
-                    Result youtubeChannelFetchResult = YoutubeChannelHandler.fetchNewChannel(input);
+                    YoutubeChannelHandler.Result youtubeChannelFetchResult = YoutubeChannelHandler.fetchNewChannel(input);
                     if (youtubeChannelFetchResult.channelNotFound) {
                         System.out.println("Channel not found");
                     } else {
@@ -111,6 +122,9 @@ public class ConsoleInterfaceHandler {
                         YoutubeChannel youtubeChannel = youtubeChannelFetchResult.youtubeChannel;
                         if (database.getYoutubeChannel(youtubeChannel.getChannelId()) == null) {
                             // Adding Youtube Channel to the Database
+                            String foldername = FileUtils.getSafeFilename(youtubeChannel.getTitle());
+                            FileUtils.createFolderIfNotExists(DOWNLOAD_FOLDER, foldername);
+                            youtubeChannel.setFoldername(foldername);
                             database.addYoutubeChannel(youtubeChannel);
                             saveDatabase();
                             System.out.println("\tYoutube Channel \"" + youtubeChannel + "\" has beed added successfully");
@@ -143,12 +157,20 @@ public class ConsoleInterfaceHandler {
             do {
                 try {
                     System.out.print("\tUpdating Youtube Channel " + channel + "... ");
-                    Result updateResult = YoutubeChannelHandler.checkUpdates(channel);
+                    YoutubeChannelHandler.Result updateResult = YoutubeChannelHandler.checkUpdates(channel);
                     if (updateResult.channelNotFound) {
                         System.out.println("Channel not found on Youtube!!!");
                     } else {
                         System.out.println("Successfully");
                         if (!updateResult.newTitle.equals(updateResult.oldTitle)) {
+                            channel.setTitle(updateResult.newTitle);
+
+                            // Renaming Channel Download Folder
+                            String channelNewFoldername = FileUtils.getSafeFilename(updateResult.newTitle);
+                            String channelOldFoldername = channel.getFoldername();
+                            channel.setFoldername(channelNewFoldername);
+                            FileUtils.renameOrCreateFileOrFolder(new File(DOWNLOAD_FOLDER, channelOldFoldername), new File(DOWNLOAD_FOLDER, channelNewFoldername));
+
                             System.out.println("\t\tYoutube Channel " + channel.getChannelId() + " Title was changed from \""
                                             + updateResult.oldTitle + "\" to \"" + updateResult.newTitle + "\"");
                         }
@@ -162,6 +184,7 @@ public class ConsoleInterfaceHandler {
                         }
 
                         // TODO Add update details about playlists
+                        database.linkEntities();
                         saveDatabase();
                     }
                     updateSuccess = true;
@@ -175,6 +198,41 @@ public class ConsoleInterfaceHandler {
                     }
                 }
             } while (!updateSuccess);
+        }
+    }
+
+    private void downloadAllFiles() {
+        System.out.print("Downloading Youtube videos... ");
+
+        YoutubeVideoHandler youtubeVideoHandler = new YoutubeVideoHandler();
+        youtubeVideoHandler.setPrintProgress(true);
+
+        Map<String, YoutubeVideo> youtubeVideos = database.getYoutubeNewVideos();
+        System.out.println(youtubeVideos.size() + " video(s) to go...");
+        Iterator<Entry<String, YoutubeVideo>> iterator = youtubeVideos.entrySet().iterator();
+        while (iterator.hasNext()) {
+            YoutubeVideo youtubeVideo = iterator.next().getValue();
+            YoutubeVideoHandler.Result result = new YoutubeVideoHandler.Result();
+            while (!result.completed && !result.notFound) {
+                System.out.print("Downloading video: " + youtubeVideo + "... ");
+                try {
+                    YoutubeChannel youtubeChannel = database.getYoutubeChannel(youtubeVideo.getChannelId());
+                    String downloadPath = DOWNLOAD_FOLDER + "/" + youtubeChannel.getFoldername();
+                    FileUtils.createFolderIfNotExists(downloadPath);
+                    result = youtubeVideoHandler.downloadVideo(youtubeVideo, downloadPath, TEMPORARY_FOLDER);
+                    if (result.completed) {
+                        youtubeVideo.setDownloaded(true);
+                        iterator.remove();
+                        database.getYoutubeDownloadedVideos().put(youtubeVideo.getVideoId(), youtubeVideo);
+                        saveDatabase();
+                        System.out.println();
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error: " + e.getMessage());
+                    e.printStackTrace();
+                    ThreadUtils.sleep(5000);
+                }
+            }
         }
     }
 }

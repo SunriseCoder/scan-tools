@@ -97,6 +97,22 @@ public class FileUtils {
         return file;
     }
 
+    public static void createFolderIfNotExists(String folderPath) {
+        File folder = new File(folderPath);
+        createFolderIfNotExists(folder);
+    }
+
+    public static void createFolderIfNotExists(String parent, String folderName) {
+        File folder = new File(parent, folderName);
+        createFolderIfNotExists(folder);
+    }
+
+    private static void createFolderIfNotExists(File folder) {
+        if (!folder.exists()) {
+            folder.mkdir();
+        }
+    }
+
     public static File checkAndGetFile(String foldername, String filename) throws FileNotFoundException {
         File folder = new File(foldername);
         File file = new File(folder, filename);
@@ -137,5 +153,21 @@ public class FileUtils {
         String newFileName = getFileName(filename);
         newFileName += "." + replacement;
         return newFileName;
+    }
+
+    public static String getSafeFilename(String filename) {
+        String safeFilename = filename.replaceAll("\\r|\\n", "").trim().replaceAll("(?U)[^\\w\\s\\-_]", "_");
+        return safeFilename;
+    }
+
+
+    public static boolean renameOrCreateFileOrFolder(File oldFile, File newFile) {
+        boolean result;
+        if (oldFile.exists()) {
+            result = oldFile.renameTo(newFile);
+        } else {
+            result = newFile.mkdir();
+        }
+        return result;
     }
 }
