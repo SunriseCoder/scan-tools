@@ -25,18 +25,20 @@ import util.DownloadUtils.Response;
 import utils.JSONUtils;
 
 public class YoutubeChannelHandler {
-    private static final Pattern CHANNEL_URL_PATTERN = Pattern.compile("^https?://www.youtube.com/channel/([0-9A-Za-z_-]+)$");
+    private static final Pattern CHANNEL_URL_PATTERN = Pattern.compile("^https?://www.youtube.com/channel/([0-9A-Za-z_-]+)/?.*$");
     private static final Pattern CHANNEL_CUSTOM_URL_PATTERN = Pattern.compile("^https?://www.youtube.com/c/([^/\\s]+)/?.*$");
+    private static final Pattern CHANNEL_USER_URL_PATTERN = Pattern.compile("^https?://www.youtube.com/user/([0-9A-Za-z_-]+)/?.*$");
 
-    public static boolean isChannelURL(String url) {
+    public static boolean isYoutubeChannelURL(String url) {
         Matcher matcher = CHANNEL_URL_PATTERN.matcher(url);
         boolean result = matcher.matches() && matcher.groupCount() == 1;
-        return result;
-    }
 
-    public static boolean isChannelCustomURL(String url) {
-        Matcher matcher = CHANNEL_CUSTOM_URL_PATTERN.matcher(url);
-        boolean result = matcher.matches() && matcher.groupCount() == 1;
+        matcher = CHANNEL_CUSTOM_URL_PATTERN.matcher(url);
+        result |= matcher.matches() && matcher.groupCount() == 1;
+
+        matcher = CHANNEL_USER_URL_PATTERN.matcher(url);
+        result |= matcher.matches() && matcher.groupCount() == 1;
+
         return result;
     }
 
@@ -46,19 +48,12 @@ public class YoutubeChannelHandler {
         YoutubeChannel channel = new YoutubeChannel();
         result.youtubeChannel = channel;
 
-        if (isChannelURL(url)) {
-            String channelId = parseChannelId(url);
-            channel.setChannelId(channelId);
-        } else if (isChannelCustomURL(url)) {
-            String customURL = parseChannelCustomURL(url);
-            Result channelIdResult = downloadChannelIdByCustomURL(customURL);
-            if (channelIdResult.channelNotFound) {
-                result.channelNotFound = channelIdResult.channelNotFound;
-                return result;
-            }
-
-            channel.setChannelId(channelIdResult.channelId);
+        Result channelIdResult = downloadChannelIdByCustomURL(url);
+        if (channelIdResult.channelNotFound) {
+            result.channelNotFound = channelIdResult.channelNotFound;
+            return result;
         }
+        channel.setChannelId(channelIdResult.channelId);
 
         Result downloadTitleResult = downloadChannelTitle(channel.getChannelId());
         if (downloadTitleResult.channelNotFound) {
@@ -72,16 +67,6 @@ public class YoutubeChannelHandler {
 
     public static String parseChannelId(String url) {
         Matcher matcher = CHANNEL_URL_PATTERN.matcher(url);
-        if (matcher.matches() && matcher.groupCount() > 0) {
-            String channelId = matcher.group(1);
-            return channelId;
-        } else {
-            throw new RuntimeException("URL: (" + url + ") is not a Youtube Channel");
-        }
-    }
-
-    public static String parseChannelCustomURL(String url) {
-        Matcher matcher = CHANNEL_CUSTOM_URL_PATTERN.matcher(url);
         if (matcher.matches() && matcher.groupCount() > 0) {
             String channelId = matcher.group(1);
             return channelId;
@@ -133,7 +118,7 @@ public class YoutubeChannelHandler {
 
     private static Result downloadChannelIdByCustomURL(String url) throws IOException {
         Result result = new Result();
-        Connection connection = Jsoup.connect("https://www.youtube.com/c/" + url);
+        Connection connection = Jsoup.connect(url);
         if (connection.response().statusCode() == 404) {
             result.channelNotFound = true;
             return result;

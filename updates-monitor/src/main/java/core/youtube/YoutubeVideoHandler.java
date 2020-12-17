@@ -48,7 +48,8 @@ public class YoutubeVideoHandler {
         video.setTitle(videoDetailsNode.get("title").asText());
         video.setDescription(videoDetailsNode.get("shortDescription").asText());
         video.setDurationInSeconds(Integer.parseInt(videoDetailsNode.get("lengthSeconds").asText()));
-        video.setFilename(FileUtils.getSafeFilename(video.getTitle()));
+        String videoFilename = video.getVideoId() + "_" + FileUtils.getSafeFilename(video.getTitle());
+        video.setFilename(videoFilename);
 
         // Fetching Video Formats
         List<VideoFormat> videoFormats = fetchVideoFormats(playerResponseNode);
@@ -135,10 +136,10 @@ public class YoutubeVideoHandler {
                 return b.height - a.height;
             }
 
-            if (a.fileExtension != b.fileExtension && "mp4".equals(a.fileExtension)) {
+            if ("mp4".equals(a.fileExtension) && !a.fileExtension.equals(b.fileExtension)) {
                 return -1;
             }
-            if (a.fileExtension != b.fileExtension && "mp4".equals(b.fileExtension)) {
+            if ("mp4".equals(b.fileExtension) && !a.fileExtension.equals(b.fileExtension)) {
                 return 1;
             }
 
@@ -189,10 +190,10 @@ public class YoutubeVideoHandler {
                 return b.channels - a.channels;
             }
 
-            if (a.fileExtension != b.fileExtension && "m4a".equals(a.fileExtension)) {
+            if ("m4a".equals(a.fileExtension) && !a.fileExtension.equals(b.fileExtension)) {
                 return -1;
             }
-            if (a.fileExtension != b.fileExtension && "m4a".equals(b.fileExtension)) {
+            if ("m4a".equals(b.fileExtension) && !a.fileExtension.equals(b.fileExtension)) {
                 return 1;
             }
 

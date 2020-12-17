@@ -110,7 +110,7 @@ public class ConsoleInterfaceHandler {
             input = input.trim();
             if ("0".equalsIgnoreCase(input)) {
                 inputAcceptedFlag = true;
-            } else if (YoutubeChannelHandler.isChannelURL(input) || YoutubeChannelHandler.isChannelCustomURL(input)) {
+            } else if (YoutubeChannelHandler.isYoutubeChannelURL(input)) {
                 // Adding Youtube Channel
                 try {
                     System.out.print("\tDownloading channel info for URL: " + input + "... ");
@@ -122,7 +122,7 @@ public class ConsoleInterfaceHandler {
                         YoutubeChannel youtubeChannel = youtubeChannelFetchResult.youtubeChannel;
                         if (database.getYoutubeChannel(youtubeChannel.getChannelId()) == null) {
                             // Adding Youtube Channel to the Database
-                            String foldername = FileUtils.getSafeFilename(youtubeChannel.getTitle());
+                            String foldername = youtubeChannel.getChannelId() + "_" + FileUtils.getSafeFilename(youtubeChannel.getTitle());
                             FileUtils.createFolderIfNotExists(DOWNLOAD_FOLDER, foldername);
                             youtubeChannel.setFoldername(foldername);
                             database.addYoutubeChannel(youtubeChannel);
@@ -166,7 +166,7 @@ public class ConsoleInterfaceHandler {
                             channel.setTitle(updateResult.newTitle);
 
                             // Renaming Channel Download Folder
-                            String channelNewFoldername = FileUtils.getSafeFilename(updateResult.newTitle);
+                            String channelNewFoldername = channel.getChannelId() + "_" + FileUtils.getSafeFilename(updateResult.newTitle);
                             String channelOldFoldername = channel.getFoldername();
                             channel.setFoldername(channelNewFoldername);
                             FileUtils.renameOrCreateFileOrFolder(new File(DOWNLOAD_FOLDER, channelOldFoldername), new File(DOWNLOAD_FOLDER, channelNewFoldername));
