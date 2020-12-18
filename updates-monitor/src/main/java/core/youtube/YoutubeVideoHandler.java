@@ -78,6 +78,13 @@ public class YoutubeVideoHandler {
             System.out.print("\n\tDownloading video... ");
         }
         Result downloadVideoResult = downloadFile(fileDownloadPath, temporaryFilePath, videoFormats);
+        if (downloadVideoResult.notFound) {
+            if (printProgress) {
+                System.out.print("Not found...");
+            }
+            result.notFound = true;
+            return result;
+        }
         result.completed = downloadVideoResult.completed;
 
         // Downloading Audio file
@@ -85,6 +92,13 @@ public class YoutubeVideoHandler {
             System.out.print("\n\tDownloading audio... ");
         }
         Result downloadAudioResult = downloadFile(fileDownloadPath, temporaryFilePath, audioFormats);
+        if (downloadAudioResult.notFound) {
+            if (printProgress) {
+                System.out.print("Not found...");
+            }
+            result.notFound = true;
+            return result;
+        }
         result.completed &= downloadAudioResult.completed;
 
         return result;

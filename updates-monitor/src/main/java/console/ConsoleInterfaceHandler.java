@@ -212,11 +212,11 @@ public class ConsoleInterfaceHandler {
         Iterator<Entry<String, YoutubeVideo>> iterator = youtubeVideos.entrySet().iterator();
         while (iterator.hasNext()) {
             YoutubeVideo youtubeVideo = iterator.next().getValue();
+            YoutubeChannel youtubeChannel = database.getYoutubeChannel(youtubeVideo.getChannelId());
             YoutubeVideoHandler.Result result = new YoutubeVideoHandler.Result();
             while (!result.completed && !result.notFound) {
-                System.out.print("Downloading video: " + youtubeVideo + "... ");
+                System.out.print("Downloading video: " + youtubeChannel + " - " + youtubeVideo + "... ");
                 try {
-                    YoutubeChannel youtubeChannel = database.getYoutubeChannel(youtubeVideo.getChannelId());
                     String downloadPath = DOWNLOAD_FOLDER + "/" + youtubeChannel.getFoldername();
                     FileUtils.createFolderIfNotExists(downloadPath);
                     result = youtubeVideoHandler.downloadVideo(youtubeVideo, downloadPath, TEMPORARY_FOLDER);
