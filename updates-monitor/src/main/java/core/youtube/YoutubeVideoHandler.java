@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -24,12 +26,24 @@ import utils.JSONUtils;
 import utils.NumberUtils;
 
 public class YoutubeVideoHandler {
+    private static final Pattern VIDEO_URL_PATTERN = Pattern.compile("^https?://www.youtube.com/watch?v=([0-9A-Za-z_-]+)&?.*$");
     private static final int UPDATE_PROGRESS_INTERVAL = 100;
+
 
     private boolean printProgress;
 
     public void setPrintProgress(boolean printProgress) {
         this.printProgress = printProgress;
+    }
+
+    public String parseVideoId(String url) {
+        Matcher matcher = VIDEO_URL_PATTERN.matcher(url);
+        if (matcher.matches() && matcher.groupCount() > 0) {
+            String channelId = matcher.group(1);
+            return channelId;
+        } else {
+            throw new RuntimeException("URL: (" + url + ") is not a Youtube Video");
+        }
     }
 
     public Result downloadVideo(YoutubeVideo video, String downloadChannelPath, String temporaryFolderPath) throws IOException {
@@ -101,6 +115,11 @@ public class YoutubeVideoHandler {
         List<VideoFormat> videoFormats = new ArrayList<>();
 
         for (JsonNode formatNode : adaptiveFormatsNode) {
+            // Strange, but happens sometimes
+            if (!formatNode.has("url")) {
+                continue;
+            }
+
             if (formatNode.get("mimeType").asText().startsWith("video")) {
                 VideoFormat format = new VideoFormat();
 
@@ -160,6 +179,11 @@ public class YoutubeVideoHandler {
         List<AudioFormat> audioFormats = new ArrayList<>();
 
         for (JsonNode formatNode : adaptiveFormatsNode) {
+            // Strange, but happens sometimes
+            if (!formatNode.has("url")) {
+                continue;
+            }
+
             if (formatNode.get("mimeType").asText().startsWith("audio")) {
                 AudioFormat format = new AudioFormat();
 
@@ -210,12 +234,12 @@ public class YoutubeVideoHandler {
         // TODO Download resume support
 
         Iterator<? extends Format> formatIterator = formats.iterator();
-        int responseCode;
-        Format format;
+        Format format = null;
         String videoFilename;
-        File resultFile;
-        HttpURLConnection connection;
-        do {
+        File resultFile = null;
+        HttpURLConnection connection = null;
+        int responseCode = 404;
+        while (responseCode == 404 && formatIterator.hasNext()) {
             format = formatIterator.next();
 
             videoFilename = downloadFilePath + "." + format.fileExtension;
@@ -236,7 +260,7 @@ public class YoutubeVideoHandler {
             if (connection.getResponseCode() == 404) {
                 format = formatIterator.next();
             }
-        } while (responseCode == 404 && formatIterator.hasNext());
+        }
 
         if (responseCode == 404) {
             result.notFound = true;
