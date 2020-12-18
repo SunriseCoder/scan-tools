@@ -225,13 +225,13 @@ public class ConsoleInterfaceHandler {
                         iterator.remove();
                         database.getYoutubeDownloadedVideos().put(youtubeVideo.getVideoId(), youtubeVideo);
                         saveDatabase();
-                        System.out.println();
                     }
                 } catch (Exception e) {
                     System.out.println("Error: " + e.getMessage());
                     e.printStackTrace();
                     ThreadUtils.sleep(5000);
                 }
+                System.out.println();
             }
         }
     }
